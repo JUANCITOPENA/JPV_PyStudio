@@ -1,0 +1,1627 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/png" href="https://silentinstallhq.com/wp-content/uploads/2025/09/Python.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JPV PyStudio // WebAssembly Panoramic Studio Pro</title>
+  
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,700;1,400&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Prism.js Tema Okaidia -->
+  <link href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-okaidia.min.css" rel="stylesheet">
+
+  <!-- Pyodide Wasm -->
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.26.1/full/pyodide.js"></script>
+
+  <style>
+    :root {
+      --bg-workspace: #080c14;
+      --panel-bg: #0f172a;
+      --panel-border: #1e293b;
+      --cyan-neon: #00f2fe;
+      --cyan-neon-glow: rgba(0, 242, 254, 0.25);
+      --code-font: 'JetBrains Mono', monospace;
+    }
+
+    html, body {
+      height: 100vh;
+      width: 100vw;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background-color: var(--bg-workspace);
+      color: #e2e8f0;
+      font-family: 'Outfit', sans-serif;
+      user-select: none;
+    }
+
+    .app-viewport {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      padding: 10px 16px;
+      gap: 10px;
+    }
+
+    header {
+      flex-shrink: 0;
+      height: 48px;
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 8px;
+      padding: 0 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .split-container {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: row;
+      position: relative;
+      width: 100%;
+      overflow: hidden;
+    }
+
+    .ide-panel {
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      min-height: 0;
+      min-width: 260px;
+      overflow: hidden;
+      user-select: text;
+      position: relative;
+    }
+
+    #panel-editor { width: 50%; }
+    #panel-output { flex: 1; min-width: 260px; }
+
+    .gutter-col {
+      width: 10px;
+      cursor: col-resize;
+      background-color: transparent;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.2s;
+      z-index: 10;
+    }
+    .gutter-col::after {
+      content: "";
+      width: 2px;
+      height: 40px;
+      background-color: #334155;
+      border-radius: 2px;
+      transition: all 0.2s;
+    }
+    .gutter-col:hover::after, .gutter-col.dragging::after {
+      background-color: var(--cyan-neon);
+      height: 80px;
+      box-shadow: 0 0 8px var(--cyan-neon-glow);
+    }
+    .gutter-col:hover, .gutter-col.dragging {
+      background-color: rgba(0, 242, 254, 0.05);
+    }
+
+    .ide-panel.panel-maximized {
+      position: fixed !important;
+      top: 10px;
+      left: 10px;
+      right: 10px;
+      bottom: 10px;
+      z-index: 1050;
+      width: auto !important;
+      box-shadow: 0 0 50px rgba(0,0,0,0.85);
+      border-color: var(--cyan-neon);
+    }
+
+    .panel-toolbar {
+      flex-shrink: 0;
+      height: 42px;
+      background: rgba(255, 255, 255, 0.02);
+      border-bottom: 1px solid var(--panel-border);
+      padding: 0 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .panel-footer {
+      flex-shrink: 0;
+      height: 46px;
+      background: rgba(0, 0, 0, 0.25);
+      border-top: 1px solid var(--panel-border);
+      padding: 0 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .editor-body {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      background-color: #06090f;
+      position: relative;
+    }
+
+    .line-counter {
+      width: 44px;
+      padding: 12px 6px 12px 0;
+      text-align: right;
+      font-family: var(--code-font);
+      font-size: 13px;
+      line-height: 1.55;
+      color: #3b4d66;
+      background-color: #080d16;
+      border-right: 1px solid var(--panel-border);
+      user-select: none;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .code-stage {
+      flex: 1;
+      height: 100%;
+      position: relative;
+      overflow: hidden;
+    }
+
+    #highlight-layer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      margin: 0;
+      padding: 12px 14px;
+      font-family: var(--code-font) !important;
+      font-size: 13px;
+      line-height: 1.55;
+      background: transparent !important;
+      border: none;
+      white-space: pre !important;
+      overflow: hidden;
+      pointer-events: none;
+      tab-size: 4;
+      box-sizing: border-box;
+    }
+    #highlight-layer code {
+      font-family: inherit !important;
+      font-size: inherit !important;
+      line-height: inherit !important;
+      white-space: inherit !important;
+      padding: 0 !important;
+      background: transparent !important;
+    }
+
+    #codigo-editor {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      padding: 12px 14px;
+      font-family: var(--code-font);
+      font-size: 13px;
+      line-height: 1.55;
+      color: transparent;
+      caret-color: var(--cyan-neon);
+      background: transparent;
+      border: none;
+      resize: none;
+      outline: none;
+      white-space: pre;
+      overflow: auto;
+      tab-size: 4;
+      box-sizing: border-box;
+    }
+    #codigo-editor::selection {
+      background: rgba(0, 242, 254, 0.25);
+      color: transparent;
+    }
+
+    /* DRAG OVERLAY */
+    .drag-drop-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(15, 23, 42, 0.92);
+      border: 2px dashed var(--cyan-neon);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .drag-drop-overlay.active {
+      opacity: 1;
+    }
+
+    /* POPUP DE INTELLISENSE */
+    #autocomplete-popup {
+      position: absolute;
+      z-index: 1000;
+      background: #111a2e;
+      border: 1px solid #2d3f5e;
+      border-radius: 6px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.75);
+      width: 330px;
+      max-height: 240px;
+      overflow-y: auto;
+      display: none;
+      font-family: var(--code-font);
+      font-size: 12px;
+    }
+    .ac-item {
+      padding: 6px 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: #cbd5e1;
+      cursor: pointer;
+      border-bottom: 1px solid rgba(255,255,255,0.02);
+    }
+    .ac-item:hover, .ac-item.selected {
+      background: #1e293b;
+      color: #fff;
+    }
+    .ac-item.selected {
+      border-left: 3px solid var(--cyan-neon);
+      background: #192438;
+    }
+    .ac-item .ac-badge {
+      font-size: 9px;
+      padding: 1px 5px;
+      border-radius: 3px;
+      background: #090e17;
+      color: #94a3b8;
+      border: 1px solid #334155;
+      text-transform: uppercase;
+    }
+    .ac-item.selected .ac-badge {
+      border-color: var(--cyan-neon);
+      color: var(--cyan-neon);
+    }
+    .ac-item .ac-icon {
+      width: 16px;
+      text-align: center;
+      flex-shrink: 0;
+      color: var(--cyan-neon);
+    }
+    .ac-item .ac-main {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+    .ac-item .ac-desc {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: #64748b;
+      font-size: 11px;
+    }
+    .ac-badge[data-tipo="variable"]       { color: #a3e635; border-color: #4d7c0f; }
+    .ac-badge[data-tipo="función"]        { color: #38bdf8; border-color: #0284c7; }
+    .ac-badge[data-tipo="palabra clave"]  { color: #c084fc; border-color: #6d28d9; }
+    .ac-badge[data-tipo="función nativa"] { color: #fbbf24; border-color: #92400e; }
+    .ac-badge[data-tipo="pandas"]         { color: #34d399; border-color: #065f46; }
+    .ac-badge[data-tipo="matplotlib"]     { color: #60a5fa; border-color: #1e40af; }
+    .ac-badge[data-tipo="snippet"]        { color: var(--cyan-neon); border-color: #0e7490; }
+
+    .tab-btn {
+      background: transparent;
+      border: none;
+      color: #64748b;
+      font-family: var(--code-font);
+      font-size: 12.5px;
+      padding: 6px 12px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .tab-btn:hover { color: #cbd5e1; }
+    .tab-btn.active {
+      color: #fff;
+      background-color: #1e293b;
+    }
+
+    .output-viewport {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      background-color: #06090f;
+      overflow: hidden;
+    }
+
+    #tab-terminal-container {
+      flex: 1;
+      min-height: 0;
+      margin: 0;
+      padding: 14px;
+      background: #06090f !important;
+      border: none;
+      overflow: auto;
+      cursor: text;
+    }
+    #tab-terminal {
+      font-family: var(--code-font) !important;
+      font-size: 12px;
+      line-height: 1.55;
+      white-space: pre-wrap !important;
+      color: #38bdf8;
+      background: transparent !important;
+      display: inline;
+    }
+    #tab-terminal.error-state {
+      color: #f87171 !important;
+    }
+
+    /* INPUT INLINE EN TERMINAL */
+    .terminal-inline-input {
+      background: transparent !important;
+      border: none !important;
+      border-bottom: 2px solid var(--cyan-neon) !important;
+      outline: none !important;
+      color: #fff !important;
+      font-family: var(--code-font) !important;
+      font-size: 12px !important;
+      line-height: 1.55 !important;
+      padding: 0 4px !important;
+      margin: 0 !important;
+      min-width: 140px;
+      max-width: 320px;
+      caret-color: var(--cyan-neon) !important;
+    }
+    .terminal-inline-input:focus {
+      background: rgba(0, 242, 254, 0.08) !important;
+    }
+
+    #tab-grafico {
+      flex: 1;
+      min-height: 0;
+      overflow: hidden;
+      position: relative;
+      background: #06090f;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: grab;
+    }
+    #tab-grafico:active {
+      cursor: grabbing;
+    }
+
+    #chart-drag-layer {
+      position: absolute;
+      transform-origin: center center;
+      display: inline-block;
+      user-select: none;
+      will-change: transform;
+    }
+
+    #rendered-plot {
+      display: block;
+      border-radius: 8px;
+      box-shadow: 0 4px 25px rgba(0, 0, 0, 0.7);
+      border: 1px solid var(--panel-border);
+      pointer-events: none;
+    }
+
+    .zoom-toolbar {
+      display: inline-flex;
+      align-items: center;
+      background: #090e17;
+      border: 1px solid var(--panel-border);
+      border-radius: 6px;
+      padding: 2px;
+    }
+    .zoom-btn {
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      font-size: 11px;
+      padding: 2px 7px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .zoom-btn:hover {
+      background: #1e293b;
+      color: #fff;
+    }
+    .zoom-label {
+      font-family: var(--code-font);
+      font-size: 11px;
+      color: #64748b;
+      padding: 0 4px;
+      min-width: 38px;
+      text-align: center;
+      user-select: none;
+    }
+
+    .btn-run {
+      background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+      color: #050b14;
+      font-weight: 700;
+      font-size: 13px;
+      border: none;
+      border-radius: 6px;
+      padding: 6px 18px;
+      box-shadow: 0 0 12px var(--cyan-neon-glow);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-run:hover:not(:disabled) {
+      box-shadow: 0 0 20px rgba(0, 242, 254, 0.4);
+      color: #000;
+    }
+    .btn-run:disabled {
+      background: #1e293b;
+      color: #475569;
+      box-shadow: none;
+    }
+
+    .btn-action {
+      font-size: 11.5px;
+      padding: 3px 9px;
+      border-radius: 5px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #334155; }
+  </style>
+</head>
+<body>
+
+<div class="app-viewport" id="viewport">
+  
+  <!-- Overlay Drag & Drop -->
+  <div id="drag-overlay" class="drag-drop-overlay">
+    <i class="bi bi-cloud-arrow-up-fill text-info" style="font-size: 4rem;"></i>
+    <h4 class="fw-bold mt-2">Suelta tu archivo aquí</h4>
+    <p class="text-secondary small">Compatible con CSV, Excel (.xlsx), JSON y TXT</p>
+  </div>
+
+  <header>
+    <div class="d-flex align-items-center gap-2">
+      <img src="https://avatars.githubusercontent.com/u/38921558?v=4" 
+           alt="JPV Avatar" 
+           class="rounded-circle border border-info" 
+           style="width: 30px; height: 30px; object-fit: cover; box-shadow: 0 0 8px rgba(0, 242, 254, 0.35);">
+      <span class="fw-bold fs-6">JPV <span class="text-info">PyStudio</span></span>
+      <span class="badge bg-dark border border-secondary text-secondary d-none d-md-inline ms-2">Lectura URLs + Carga Local</span>
+    </div>
+
+    <!-- Acciones de Archivos -->
+    <div class="d-flex align-items-center gap-2">
+      <input type="file" id="input-archivo-local" accept=".csv, .xlsx, .xls, .json, .txt" style="display: none;" onchange="manejarSubidaArchivo(this)">
+      
+      <button class="btn btn-sm btn-outline-info btn-action" onclick="document.getElementById('input-archivo-local').click()" title="Cargar archivo local desde la PC">
+        <i class="bi bi-upload"></i> Subir CSV / Excel
+      </button>
+
+      <button class="btn btn-sm btn-dark text-secondary btn-action" onclick="mostrarArchivosEnMemoria()" title="Ver archivos cargados en el disco virtual">
+        <i class="bi bi-folder2-open"></i> Archivos (VFS)
+      </button>
+
+      <span id="badge-estado" class="badge bg-dark border border-warning text-warning d-flex align-items-center gap-2 px-3 py-1">
+        <span class="spinner-border spinner-border-sm"></span> Cargando WebAssembly...
+      </span>
+    </div>
+  </header>
+
+  <main class="split-container" id="split-container">
+    
+    <!-- Panel Editor -->
+    <section id="panel-editor" class="ide-panel">
+      <div class="panel-header panel-toolbar">
+        <div class="d-flex align-items-center gap-2">
+          <i class="bi bi-file-earmark-code text-info"></i>
+          <span class="small fw-semibold text-light">titanic_analisis.py</span>
+          <span class="badge bg-dark text-info border border-info border-opacity-25" style="font-size: 10px;">Tab completa</span>
+        </div>
+
+        <div class="d-flex align-items-center gap-2">
+          <div class="zoom-toolbar">
+            <button class="zoom-btn" onclick="ajustarZoomEditor(-1)" title="Reducir fuente"><i class="bi bi-dash"></i></button>
+            <span id="editor-zoom-label" class="zoom-label">13px</span>
+            <button class="zoom-btn" onclick="ajustarZoomEditor(1)" title="Aumentar fuente"><i class="bi bi-plus"></i></button>
+            <button class="zoom-btn" onclick="resetZoomEditor()" title="Resetear"><i class="bi bi-arrow-counterclockwise"></i></button>
+          </div>
+
+          <button class="btn btn-sm btn-dark text-muted py-0 px-2" onclick="toggleMaximize('panel-editor')" title="Maximizar panel">
+            <i class="bi bi-arrows-fullscreen"></i>
+          </button>
+          <button class="btn btn-sm btn-outline-secondary text-light py-0 px-2" onclick="limpiarEditor()" title="Limpiar código">
+            <i class="bi bi-file-earmark-x"></i> Vaciar
+          </button>
+        </div>
+      </div>
+
+      <div class="editor-body">
+        <div id="lineas" class="line-counter">1</div>
+        <div class="code-stage">
+          <!-- Menú Flotante -->
+          <div id="autocomplete-popup"></div>
+
+          <!-- Capa Resaltado Prism -->
+          <pre id="highlight-layer" aria-hidden="true"><code id="highlight-code" class="language-python"></code></pre>
+          <!-- Textarea Editable -->
+          <textarea id="codigo-editor" spellcheck="false" placeholder="# Escribe código Python...">import pandas as pd
+import matplotlib.pyplot as plt
+
+print("=============================================================")
+print("🌐 LECTURA DE ARCHIVO CSV DIRECTO DESDE LA WEB (URL)")
+print("=============================================================")
+
+# URL pública en GitHub (Dataset Titanic)
+url_web = "https://raw.githubusercontent.com/datasciencedojo/datasets/master/titanic.csv"
+
+print(f"Descargando y procesando: {url_web} ...")
+df_web = pd.read_csv(url_web)
+
+print(f"\n✅ Datos descargados exitosamente: {len(df_web)} filas.")
+print(df_web[["PassengerId", "Name", "Sex", "Age", "Survived"]].head(8))
+
+# Análisis gráfico de los datos descargados
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(9, 3.8))
+
+# Gráfico 1: Supervivientes
+conteo_survived = df_web["Survived"].value_counts()
+ax1.pie(conteo_survived, labels=["Fallecidos", "Sobrevivientes"], autopct="%1.1f%%", colors=["#f87171", "#00f2fe"], startangle=90)
+ax1.set_title("Tasa de Supervivencia Titanic")
+
+# Gráfico 2: Pasajeros por Clase
+df_web["Pclass"].value_counts().sort_index().plot(kind='bar', ax=ax2, color="#38bdf8", edgecolor='black')
+ax2.set_title("Pasajeros por Clase de Boleto")
+ax2.set_xlabel("Clase (1ra, 2da, 3ra)")
+ax2.set_ylabel("Cantidad de Pasajeros")
+
+plt.tight_layout()
+plt.show()
+
+# Guardar reporte para descargar
+df_web.to_csv("Reporte_Titanic_Descargado.csv", index=False)
+print("\n💾 Archivo 'Reporte_Titanic_Descargado.csv' listo para descargar.")
+</textarea>
+        </div>
+      </div>
+
+      <div class="panel-footer">
+        <div class="small text-muted d-none d-sm-flex align-items-center gap-1" style="font-size: 11.5px;">
+          <kbd class="bg-dark border border-secondary text-secondary">Tab</kbd> completa &bull; <kbd class="bg-dark border border-secondary text-secondary">Ctrl</kbd> + <kbd class="bg-dark border border-secondary text-secondary">Enter</kbd> ejecuta
+        </div>
+
+        <div class="d-flex align-items-center gap-2 ms-auto">
+          <button id="btn-run" class="btn-run" onclick="ejecutarPython()" disabled>
+            <span id="btn-spinner" class="spinner-border spinner-border-sm d-none"></span>
+            <i id="btn-icon" class="bi bi-play-fill fs-6"></i>
+            <span>Ejecutar</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Separador -->
+    <div id="drag-gutter" class="gutter-col" title="Arrastra para redimensionar"></div>
+
+    <!-- Panel Salida -->
+    <section id="panel-output" class="ide-panel">
+      <div class="panel-header panel-toolbar">
+        <div class="d-flex align-items-center gap-1">
+          <button id="tab-btn-terminal" class="tab-btn active" onclick="cambiarTab('terminal')">
+            <i class="bi bi-terminal"></i> Consola / Tablas
+          </button>
+          <button id="tab-btn-grafico" class="tab-btn" onclick="cambiarTab('grafico')">
+            <i class="bi bi-pie-chart"></i> Gráfico
+            <span id="grafico-dot" class="badge rounded-pill bg-info p-1 d-none"></span>
+          </button>
+        </div>
+
+        <div class="d-flex align-items-center gap-2">
+          <!-- Herramientas Consola -->
+          <div id="tools-consola" class="d-flex align-items-center gap-1">
+            <button id="btn-dl-table" class="btn btn-outline-success btn-action" onclick="descargarTablaCSV()" title="Descargar DataFrame o CSV">
+              <i class="bi bi-file-earmark-excel"></i> Descargar Excel / CSV
+            </button>
+            <div class="zoom-toolbar">
+              <button class="zoom-btn" onclick="ajustarZoomConsola(-1)" title="Reducir fuente"><i class="bi bi-dash"></i></button>
+              <span id="consola-zoom-label" class="zoom-label">12px</span>
+              <button class="zoom-btn" onclick="ajustarZoomConsola(1)" title="Aumentar fuente"><i class="bi bi-plus"></i></button>
+            </div>
+          </div>
+
+          <!-- Herramientas Gráficos -->
+          <div id="tools-grafico" class="d-flex align-items-center gap-1 d-none">
+            <button id="btn-dl-plot" class="btn btn-outline-info btn-action" onclick="descargarGraficoPNG()" title="Guardar gráfico en PNG" disabled>
+              <i class="bi bi-download"></i> Guardar PNG
+            </button>
+            <div class="zoom-toolbar">
+              <button class="zoom-btn" onclick="ajustarZoomGrafico(-0.15)" title="Alejar"><i class="bi bi-zoom-out"></i></button>
+              <span id="grafico-zoom-label" class="zoom-label">100%</span>
+              <button class="zoom-btn" onclick="ajustarZoomGrafico(0.15)" title="Acercar"><i class="bi bi-zoom-in"></i></button>
+              <button class="zoom-btn" onclick="resetZoomGrafico()" title="Centrar"><i class="bi bi-arrows-collapse"></i></button>
+            </div>
+          </div>
+
+          <button class="btn btn-sm btn-dark text-muted py-0 px-2" onclick="toggleMaximize('panel-output')" title="Maximizar panel">
+            <i class="bi bi-arrows-fullscreen"></i>
+          </button>
+          <button class="btn btn-sm btn-dark text-muted py-0 px-2" onclick="copiarConsola()" title="Copiar consola">
+            <i class="bi bi-copy"></i>
+          </button>
+          <button class="btn btn-sm btn-dark text-muted py-0 px-2" onclick="limpiarConsola()" title="Limpiar">
+            <i class="bi bi-trash3"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="output-viewport">
+        <div id="tab-terminal-container">
+          <div id="tab-terminal"># Esperando inicio de WebAssembly...</div>
+        </div>
+
+        <div id="tab-grafico" class="d-none">
+          <div id="chart-drag-layer">
+            <span class="text-secondary small">Sin gráficos generados.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-footer" style="height: 38px;">
+        <span id="tiempo-ejecucion" class="small text-muted" style="font-size: 11px;">Listo</span>
+        <span id="estado-csv" class="small text-info" style="font-size: 11px; cursor: pointer;" onclick="descargarTablaCSV()"></span>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- Prism Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-python.min.js"></script>
+
+<script>
+let pyodideInstance = null;
+let currentPlotB64 = "";
+
+// Estados
+let fontSizeEditor = 13;
+let fontSizeConsola = 12;
+let scaleGrafico = 1.0;
+let panX = 0;
+let panY = 0;
+let isPanning = false;
+let startX = 0;
+let startY = 0;
+
+let suprimirPopup = false;
+let usuarioNavegoConFlechas = false;
+
+// Elementos DOM
+const editor = document.getElementById("codigo-editor");
+const highlightCode = document.getElementById("highlight-code");
+const highlightLayer = document.getElementById("highlight-layer");
+const lineas = document.getElementById("lineas");
+const popup = document.getElementById("autocomplete-popup");
+const terminal = document.getElementById("tab-terminal");
+const terminalContainer = document.getElementById("tab-terminal-container");
+const btnDlPlot = document.getElementById("btn-dl-plot");
+const estadoCsv = document.getElementById("estado-csv");
+const dragOverlay = document.getElementById("drag-overlay");
+
+// =======================================================
+// SUBIDA DE ARCHIVOS LOCALES (CSV / EXCEL XLSX / JSON)
+// =======================================================
+function manejarSubidaArchivo(input) {
+  if (!input.files || input.files.length === 0) return;
+  const archivo = input.files[0];
+  guardarArchivoEnPython(archivo);
+  input.value = "";
+}
+
+function guardarArchivoEnPython(archivo) {
+  if (!pyodideInstance) {
+    alert("Espera a que el motor WebAssembly termine de cargar.");
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const data = new Uint8Array(e.target.result);
+    pyodideInstance.FS.writeFile(archivo.name, data);
+
+    const ext = archivo.name.split('.').pop().toLowerCase();
+    let snippet = "";
+    if (ext === "csv") {
+      snippet = `df = pd.read_csv("${archivo.name}")`;
+    } else if (ext === "xlsx" || ext === "xls") {
+      snippet = `df = pd.read_excel("${archivo.name}")`;
+    } else if (ext === "json") {
+      snippet = `df = pd.read_json("${archivo.name}")`;
+    } else {
+      snippet = `with open("${archivo.name}", "r", encoding="utf-8") as f:\n    contenido = f.read()`;
+    }
+
+    terminal.textContent += `\n📂 Archivo cargado con éxito: '${archivo.name}' (${(archivo.size / 1024).toFixed(1)} KB)\n`;
+    terminal.textContent += `👉 Código para usarlo:\n   ${snippet}\n\n`;
+    terminalContainer.scrollTop = terminalContainer.scrollHeight;
+    cambiarTab('terminal');
+  };
+  reader.readAsArrayBuffer(archivo);
+}
+
+// Drag & Drop
+window.addEventListener("dragover", (e) => {
+  e.preventDefault();
+  dragOverlay.classList.add("active");
+});
+
+window.addEventListener("dragleave", (e) => {
+  if (e.relatedTarget === null || e.clientX === 0 || e.clientY === 0) {
+    dragOverlay.classList.remove("active");
+  }
+});
+
+window.addEventListener("drop", (e) => {
+  e.preventDefault();
+  dragOverlay.classList.remove("active");
+  if (e.dataTransfer && e.dataTransfer.files.length > 0) {
+    guardarArchivoEnPython(e.dataTransfer.files[0]);
+  }
+});
+
+async function mostrarArchivosEnMemoria() {
+  if (!pyodideInstance) return;
+  try {
+    const jsonStr = await pyodideInstance.runPythonAsync(`
+import os, json
+json.dumps([f for f in os.listdir('.') if not f.startswith('.')])
+    `);
+    const archivos = JSON.parse(jsonStr);
+    if (archivos.length === 0) {
+      alert("No hay archivos en la memoria virtual aún.\nPuedes subir uno con el botón 'Subir CSV / Excel' o arrastrándolo aquí.");
+    } else {
+      alert("📁 Archivos en memoria virtual (VFS):\n\n" + archivos.map(a => "• " + a).join("\n"));
+    }
+  } catch(e) {
+    console.error(e);
+  }
+}
+
+// =======================================================
+// ENTRADA Y SALIDA NATIVA EN TERMINAL
+// =======================================================
+window.escribirEnTerminal = function(texto) {
+  terminal.textContent += texto;
+  terminalContainer.scrollTop = terminalContainer.scrollHeight;
+};
+
+window.solicitarInputTerminal = function(promptText) {
+  return new Promise((resolve) => {
+    if (promptText) {
+      terminal.textContent += promptText;
+    }
+
+    const inputField = document.createElement("input");
+    inputField.type = "text";
+    inputField.className = "terminal-inline-input";
+    inputField.autocomplete = "off";
+    inputField.spellcheck = false;
+
+    terminal.appendChild(inputField);
+    inputField.focus();
+    terminalContainer.scrollTop = terminalContainer.scrollHeight;
+
+    const refocuser = () => inputField.focus();
+    terminalContainer.addEventListener("click", refocuser);
+
+    inputField.addEventListener("keydown", function(e) {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        const valor = inputField.value;
+
+        terminalContainer.removeEventListener("click", refocuser);
+        terminal.removeChild(inputField);
+
+        terminal.textContent += valor + "\n";
+        terminalContainer.scrollTop = terminalContainer.scrollHeight;
+
+        resolve(valor);
+      }
+    });
+  });
+};
+
+// =======================================================
+// DESCARGA: GRÁFICO (PNG) & TABLA (CSV / EXCEL)
+// =======================================================
+function descargarGraficoPNG() {
+  if (!currentPlotB64) {
+    alert("No hay gráfico generado para descargar.");
+    return;
+  }
+  const enlace = document.createElement("a");
+  enlace.href = "data:image/png;base64," + currentPlotB64;
+  enlace.download = "grafico_pystudio_" + new Date().toISOString().slice(0, 10) + ".png";
+  document.body.appendChild(enlace);
+  enlace.click();
+  document.body.removeChild(enlace);
+}
+
+async function descargarTablaCSV() {
+  if (!pyodideInstance) return;
+
+  try {
+    const infoJson = await pyodideInstance.runPythonAsync("__obtener_datos_descargables()");
+    const info = JSON.parse(infoJson);
+
+    let contenido = "";
+    let nombreArchivo = "datos_exportados.csv";
+
+    if (info.csvs && info.csvs.length > 0) {
+      const archivo = info.csvs[info.csvs.length - 1];
+      nombreArchivo = archivo;
+      contenido = await pyodideInstance.runPythonAsync(`__leer_archivo_csv('${archivo}')`);
+    } else if (info.dfs && info.dfs.length > 0) {
+      const nombreDf = info.dfs[info.dfs.length - 1];
+      nombreArchivo = `${nombreDf}.csv`;
+      contenido = await pyodideInstance.runPythonAsync(`__exportar_df_csv('${nombreDf}')`);
+    } else {
+      const textoConsola = terminal.textContent.trim();
+      if (!textoConsola) {
+        alert("No hay tablas ni salidas en consola para descargar.");
+        return;
+      }
+      nombreArchivo = "salida_consola.txt";
+      contenido = textoConsola;
+    }
+
+    if (!contenido) {
+      alert("No se pudo obtener el contenido.");
+      return;
+    }
+
+    const blob = new Blob(["\uFEFF" + contenido], { 
+      type: nombreArchivo.endsWith('.csv') ? "text/csv;charset=utf-8;" : "text/plain;charset=utf-8;" 
+    });
+
+    const url = URL.createObjectURL(blob);
+    const enlace = document.createElement("a");
+    enlace.href = url;
+    enlace.download = nombreArchivo;
+    document.body.appendChild(enlace);
+    enlace.click();
+    document.body.removeChild(enlace);
+    URL.revokeObjectURL(url);
+  } catch (err) {
+    alert("Error al exportar tabla: " + err.message);
+  }
+}
+
+// =======================================================
+// AUTOCOMPLETADO & SNIPPETS
+// =======================================================
+const CATALOGO_SNIPPETS = [
+  { trigger: "pr", label: "print()", desc: "imprimir en consola", type: "snippet", text: "print($0)" },
+  { trigger: "prf", label: "print(f\"...\")", desc: "print con f-string", type: "snippet", text: 'print(f"$0")' },
+  { trigger: "inp", label: "input()", desc: "pedir datos interactivos", type: "snippet", text: 'input("$0")' },
+  { trigger: "urlcsv", label: "pd.read_csv(url)", desc: "leer CSV desde internet (URL)", type: "pandas", text: 'df = pd.read_csv("$0")\nprint(df.head())' },
+  { trigger: "readexcel", label: "pd.read_excel()", desc: "leer archivo Excel (.xlsx)", type: "pandas", text: 'df = pd.read_excel("$0.xlsx")\nprint(df.head())' },
+  { trigger: "readcsv", label: "pd.read_csv()", desc: "cargar archivo CSV local", type: "pandas", text: 'pd.read_csv("$0.csv")' },
+  { trigger: "df", label: "pd.DataFrame()", desc: "crear DataFrame", type: "pandas", text: "df = pd.DataFrame({\n    \"col1\": [1, 2, 3],\n    \"col2\": [\"A\", \"B\", \"C\"]\n})\nprint(df)$0" },
+  { trigger: "plot", label: "plt.subplots()", desc: "crear gráfico", type: "matplotlib", text: "fig, ax = plt.subplots(figsize=(7, 3.5))\nax.plot([1, 2, 3], [10, 20, 15], color=\"#00f2fe\")\nplt.tight_layout()$0" },
+  { trigger: "fori", label: "for i in range():", desc: "bucle de conteo", type: "snippet", text: "for i in range(10):\n    $0" },
+  { trigger: "def", label: "def funcion():", desc: "definir función", type: "palabra clave", text: "def mi_funcion($0):\n    pass" },
+  { trigger: "try", label: "try / except", desc: "control de excepciones", type: "snippet", text: "try:\n    $0\nexcept Exception as e:\n    print(f\"Error: {e}\")" },
+  { trigger: "tocsv", label: ".to_csv()", desc: "exportar a CSV", type: "pandas", text: 'to_csv("$0.csv", index=False)' },
+  { trigger: "import", label: "import", desc: "importar módulo", type: "palabra clave", text: "import $0" }
+];
+
+const PALABRAS_CLAVE = [
+  "True", "False", "None", "and", "or", "not", "in", "is", "lambda", "while", "with", "as", 
+  "class", "elif", "else", "if", "pass", "break", "continue", "yield"
+].map(k => ({ trigger: k, label: k, desc: "palabra reservada", type: "palabra clave", text: k }));
+
+const NATIVAS = [
+  "input", "print", "len", "range", "enumerate", "zip", "sum", "min", "max", "round", "open", 
+  "str", "int", "float", "list", "dict", "set", "tuple", "isinstance", "type"
+].map(b => ({ trigger: b, label: b + "()", desc: "función nativa", type: "función nativa", text: b + "($0)" }));
+
+const CATALOGO_COMPLETO = [...CATALOGO_SNIPPETS, ...PALABRAS_CLAVE, ...NATIVAS];
+
+let sugerenciasActivas = [];
+let indiceSeleccionado = 0;
+
+function extraerVariablesUsuario(codigo) {
+  const variables = new Map();
+  const lineasCod = codigo.split("\n");
+
+  for (let l of lineasCod) {
+    const comentarioPos = l.indexOf("#");
+    if (comentarioPos !== -1) l = l.substring(0, comentarioPos);
+    l = l.trim();
+    if (!l) continue;
+
+    const matchVar = l.match(/^([a-zA-Z_][a-zA-Z0-9_]*)\s*=/);
+    if (matchVar && !["import", "from", "def", "class", "if", "for", "while"].includes(matchVar[1])) {
+      variables.set(matchVar[1], {
+        trigger: matchVar[1],
+        label: matchVar[1],
+        desc: "variable definida",
+        type: "variable",
+        text: matchVar[1]
+      });
+    }
+
+    const matchDef = l.match(/^def\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*\(/);
+    if (matchDef) {
+      variables.set(matchDef[1], {
+        trigger: matchDef[1],
+        label: matchDef[1] + "()",
+        desc: "función definida",
+        type: "función",
+        text: matchDef[1] + "($0)"
+      });
+    }
+  }
+  return Array.from(variables.values());
+}
+
+function sincronizarPrism() {
+  let codigo = editor.value;
+  if (codigo.endsWith("\n")) codigo += " ";
+  highlightCode.textContent = codigo;
+  Prism.highlightElement(highlightCode);
+}
+
+function actualizarContador() {
+  const total = editor.value.split("\n").length;
+  lineas.innerHTML = Array.from({ length: total }, (_, i) => i + 1).join("<br>");
+}
+
+function obtenerPalabraActual() {
+  const pos = editor.selectionStart;
+  const textoHastaCursor = editor.value.substring(0, pos);
+  const ultimaLinea = textoHastaCursor.split("\n").pop();
+  if (ultimaLinea.includes("#")) return null;
+
+  const match = textoHastaCursor.match(/([a-zA-Z_][a-zA-Z0-9_]*)$/);
+  return match ? { palabra: match[1], inicio: pos - match[1].length, fin: pos } : null;
+}
+
+function mostrarAutocomplete() {
+  if (suprimirPopup) {
+    suprimirPopup = false;
+    ocultarAutocomplete();
+    return;
+  }
+
+  const obj = obtenerPalabraActual();
+  if (!obj || obj.palabra.length < 2) {
+    ocultarAutocomplete();
+    return;
+  }
+
+  const query = obj.palabra.toLowerCase();
+  const catalogo = [...extraerVariablesUsuario(editor.value), ...CATALOGO_COMPLETO];
+  const vistos = new Set();
+  const resultados = [];
+
+  for (const item of catalogo) {
+    const trig = item.trigger.toLowerCase();
+    if (vistos.has(trig)) continue;
+    vistos.add(trig);
+
+    if (trig.startsWith(query)) {
+      resultados.push({ item, exact: trig === query ? 0 : 1 });
+    }
+  }
+
+  if (resultados.length === 0 || (resultados.length === 1 && resultados[0].exact === 0)) {
+    ocultarAutocomplete();
+    return;
+  }
+
+  resultados.sort((a, b) => a.exact - b.exact);
+  sugerenciasActivas = resultados.slice(0, 7).map(r => r.item);
+  indiceSeleccionado = 0;
+  usuarioNavegoConFlechas = false;
+
+  renderizarPopup();
+  posicionarPopup();
+  popup.style.display = "block";
+}
+
+function renderizarPopup() {
+  popup.innerHTML = sugerenciasActivas.map((s, idx) => `
+    <div class="ac-item ${idx === indiceSeleccionado ? 'selected' : ''}" data-index="${idx}">
+      <div class="ac-main">
+        <i class="bi bi-code-slash ac-icon"></i>
+        <span class="fw-bold">${s.label}</span>
+        <small class="ac-desc">${s.desc}</small>
+      </div>
+      <span class="ac-badge" data-tipo="${s.type}">${s.type}</span>
+    </div>
+  `).join("");
+
+  popup.querySelectorAll(".ac-item").forEach(el => {
+    el.onmousedown = (e) => {
+      e.preventDefault();
+      aplicarSnippet(sugerenciasActivas[parseInt(el.dataset.index)]);
+    };
+  });
+}
+
+function posicionarPopup() {
+  const pos = editor.selectionStart;
+  const textoHastaCursor = editor.value.substring(0, pos);
+  const numLineas = textoHastaCursor.split("\n").length;
+  const col = textoHastaCursor.split("\n").pop().length;
+
+  const lineHeight = fontSizeEditor * 1.55;
+  const charWidth = fontSizeEditor * 0.60;
+
+  let top = (numLineas * lineHeight) - editor.scrollTop + 14;
+  let left = (col * charWidth) - editor.scrollLeft + 14;
+
+  popup.style.top = `${Math.min(top, editor.clientHeight - 240)}px`;
+  popup.style.left = `${Math.min(left, editor.clientWidth - 340)}px`;
+}
+
+function ocultarAutocomplete() {
+  popup.style.display = "none";
+  sugerenciasActivas = [];
+  usuarioNavegoConFlechas = false;
+}
+
+function aplicarSnippet(snippet) {
+  const obj = obtenerPalabraActual();
+  if (!obj) {
+    ocultarAutocomplete();
+    return;
+  }
+
+  const antes = editor.value.substring(0, obj.inicio);
+  const despues = editor.value.substring(obj.fin);
+
+  let textoInsertar = snippet.text;
+  let offset = textoInsertar.indexOf("$0");
+  if (offset !== -1) {
+    textoInsertar = textoInsertar.replace("$0", "");
+  } else {
+    offset = textoInsertar.length;
+  }
+
+  editor.value = antes + textoInsertar + despues;
+  editor.selectionStart = editor.selectionEnd = obj.inicio + offset;
+
+  suprimirPopup = true;
+  ocultarAutocomplete();
+  actualizarContador();
+  sincronizarPrism();
+}
+
+// =======================================================
+// TECLADO (TAB / ENTER / SÍMBOLOS)
+// =======================================================
+editor.addEventListener("keydown", (e) => {
+  const abierto = popup.style.display === "block" && sugerenciasActivas.length > 0;
+
+  if (e.key === "Escape") {
+    if (abierto) {
+      e.preventDefault();
+      ocultarAutocomplete();
+      suprimirPopup = true;
+      return;
+    }
+  }
+
+  if (abierto) {
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      usuarioNavegoConFlechas = true;
+      indiceSeleccionado = (indiceSeleccionado + 1) % sugerenciasActivas.length;
+      renderizarPopup();
+      return;
+    }
+    if (e.key === "ArrowUp") {
+      e.preventDefault();
+      usuarioNavegoConFlechas = true;
+      indiceSeleccionado = (indiceSeleccionado - 1 + sugerenciasActivas.length) % sugerenciasActivas.length;
+      renderizarPopup();
+      return;
+    }
+  }
+
+  if (e.key === "Tab") {
+    if (abierto) {
+      e.preventDefault();
+      aplicarSnippet(sugerenciasActivas[indiceSeleccionado]);
+      return;
+    } else {
+      e.preventDefault();
+      const pos = editor.selectionStart;
+      editor.value = editor.value.substring(0, pos) + "    " + editor.value.substring(editor.selectionEnd);
+      editor.selectionStart = editor.selectionEnd = pos + 4;
+      actualizarContador();
+      sincronizarPrism();
+      return;
+    }
+  }
+
+  if (e.key === "Enter") {
+    if (abierto && usuarioNavegoConFlechas) {
+      e.preventDefault();
+      aplicarSnippet(sugerenciasActivas[indiceSeleccionado]);
+      return;
+    }
+
+    if (abierto) ocultarAutocomplete();
+
+    const pos = editor.selectionStart;
+    const lineaActual = editor.value.substring(0, pos).split("\n").pop();
+    let sangria = (lineaActual.match(/^(\s*)/) || [""])[1];
+
+    if (lineaActual.trim().endsWith(":")) {
+      sangria += "    ";
+    }
+
+    e.preventDefault();
+    editor.value = editor.value.substring(0, pos) + "\n" + sangria + editor.value.substring(pos);
+    editor.selectionStart = editor.selectionEnd = pos + 1 + sangria.length;
+    actualizarContador();
+    sincronizarPrism();
+    return;
+  }
+
+  if (e.key === " " || ["=", ":", "(", ")", "[", "]", "{", "}", ",", "+", "-", "*", "/"].includes(e.key)) {
+    if (abierto) ocultarAutocomplete();
+  }
+
+  if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
+    if (abierto) ocultarAutocomplete();
+  }
+
+  if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+    e.preventDefault();
+    if (!document.getElementById("btn-run").disabled) ejecutarPython();
+  }
+});
+
+editor.addEventListener("input", () => {
+  actualizarContador();
+  sincronizarPrism();
+  mostrarAutocomplete();
+});
+
+editor.addEventListener("click", () => {
+  ocultarAutocomplete();
+});
+
+editor.addEventListener("scroll", () => {
+  highlightLayer.scrollTop = editor.scrollTop;
+  highlightLayer.scrollLeft = editor.scrollLeft;
+  lineas.scrollTop = editor.scrollTop;
+  ocultarAutocomplete();
+});
+
+// =======================================================
+// GUTTER SPLITTER
+// =======================================================
+const gutter = document.getElementById("drag-gutter");
+const container = document.getElementById("split-container");
+const panelEditor = document.getElementById("panel-editor");
+let isDraggingGutter = false;
+
+gutter.addEventListener("mousedown", (e) => {
+  isDraggingGutter = true;
+  gutter.classList.add("dragging");
+  document.body.style.cursor = "col-resize";
+  e.preventDefault();
+});
+
+window.addEventListener("mousemove", (e) => {
+  if (!isDraggingGutter) return;
+  const rect = container.getBoundingClientRect();
+  const offset = e.clientX - rect.left;
+  const total = rect.width;
+
+  if (offset >= 220 && offset <= total - 220) {
+    panelEditor.style.width = `${(offset / total) * 100}%`;
+  }
+});
+
+window.addEventListener("mouseup", () => {
+  if (isDraggingGutter) {
+    isDraggingGutter = false;
+    gutter.classList.remove("dragging");
+    document.body.style.cursor = "default";
+  }
+});
+
+// =======================================================
+// PAN & ZOOM GRÁFICO
+// =======================================================
+const chartViewport = document.getElementById("tab-grafico");
+const dragLayer = document.getElementById("chart-drag-layer");
+
+chartViewport.addEventListener("mousedown", (e) => {
+  if (e.button !== 0) return;
+  isPanning = true;
+  startX = e.clientX - panX;
+  startY = e.clientY - panY;
+  chartViewport.style.cursor = "grabbing";
+});
+
+window.addEventListener("mousemove", (e) => {
+  if (!isPanning) return;
+  panX = e.clientX - startX;
+  panY = e.clientY - startY;
+  dragLayer.style.transform = `translate(${panX}px, ${panY}px) scale(${scaleGrafico})`;
+});
+
+window.addEventListener("mouseup", () => {
+  isPanning = false;
+  chartViewport.style.cursor = "grab";
+});
+
+chartViewport.addEventListener("wheel", (e) => {
+  e.preventDefault();
+  scaleGrafico = Math.min(Math.max(scaleGrafico + (e.deltaY < 0 ? 0.12 : -0.12), 0.4), 4.0);
+  dragLayer.style.transform = `translate(${panX}px, ${panY}px) scale(${scaleGrafico})`;
+  document.getElementById("grafico-zoom-label").innerText = Math.round(scaleGrafico * 100) + "%";
+}, { passive: false });
+
+function resetZoomGrafico() {
+  scaleGrafico = 1.0;
+  panX = 0;
+  panY = 0;
+  dragLayer.style.transform = "translate(0px, 0px) scale(1)";
+  document.getElementById("grafico-zoom-label").innerText = "100%";
+}
+
+function ajustarZoomGrafico(delta) {
+  scaleGrafico = Math.min(Math.max(scaleGrafico + delta, 0.4), 4.0);
+  dragLayer.style.transform = `translate(${panX}px, ${panY}px) scale(${scaleGrafico})`;
+  document.getElementById("grafico-zoom-label").innerText = Math.round(scaleGrafico * 100) + "%";
+}
+
+// =======================================================
+// MOTOR PYTHON WASM: CONEXIÓN ROBUSTA DE URLS & EXCEL
+// =======================================================
+async function bootWasm() {
+  const badge = document.getElementById("badge-estado");
+  const btn = document.getElementById("btn-run");
+
+  try {
+    badge.innerHTML = `<span class="spinner-border spinner-border-sm"></span> Cargando WebAssembly...`;
+    pyodideInstance = await loadPyodide();
+
+    badge.innerHTML = `<span class="spinner-border spinner-border-sm"></span> Instalando Pandas & Matplotlib...`;
+    await pyodideInstance.loadPackage(["pandas", "matplotlib", "micropip"]);
+
+    badge.innerHTML = `<span class="spinner-border spinner-border-sm"></span> Configurando Excel & Conectores Web...`;
+    try {
+      await pyodideInstance.runPythonAsync(`
+import micropip
+await micropip.install(["openpyxl", "pyodide-http"])
+import pyodide_http
+pyodide_http.patch_all()
+      `);
+    } catch(e) {
+      console.warn("Aviso al configurar paquetes micropip:", e);
+    }
+
+    // Configuración central: Puente de terminal + Interceptor de URLs seguro
+    await pyodideInstance.runPythonAsync(`
+import sys
+import io
+import js
+import ast
+import json
+import os
+import builtins
+from pyodide.http import open_url
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+import pandas as pd
+
+plt.show = lambda *args, **kwargs: None
+
+# 1. INTERCEPTOR ROBUSTO DE PANDAS PARA URLS (Sin fallo de headers)
+_orig_read_csv = pd.read_csv
+def _safe_read_csv(filepath_or_buffer, *args, **kwargs):
+    if isinstance(filepath_or_buffer, str) and (filepath_or_buffer.startswith("http://") or filepath_or_buffer.startswith("https://")):
+        # Descarga segura como buffer directo en memoria
+        buf = open_url(filepath_or_buffer)
+        return _orig_read_csv(buf, *args, **kwargs)
+    return _orig_read_csv(filepath_or_buffer, *args, **kwargs)
+
+pd.read_csv = _safe_read_csv
+
+_orig_read_json = pd.read_json
+def _safe_read_json(path_or_buf, *args, **kwargs):
+    if isinstance(path_or_buf, str) and (path_or_buf.startswith("http://") or path_or_buf.startswith("https://")):
+        buf = open_url(path_or_buf)
+        return _orig_read_json(buf, *args, **kwargs)
+    return _orig_read_json(path_or_buf, *args, **kwargs)
+
+pd.read_json = _safe_read_json
+
+# 2. PUENTE DE TERMINAL EN VIVO
+class LiveStdout:
+    def write(self, text):
+        if text:
+            js.escribirEnTerminal(str(text))
+    def flush(self):
+        pass
+
+sys.stdout = LiveStdout()
+sys.stderr = LiveStdout()
+
+async def __custom_async_input(prompt=""):
+    p_str = str(prompt) if prompt is not None else ""
+    val = await js.solicitarInputTerminal(p_str)
+    return str(val)
+
+builtins.input = __custom_async_input
+
+# 3. EJECUTOR CON TOP-LEVEL AWAIT Y TRANSFORMADOR DE INPUT
+async def __ejecutar_codigo_usuario(code_str):
+    tree = ast.parse(code_str)
+    
+    class InputReplacer(ast.NodeTransformer):
+        def visit_Call(self, node):
+            self.generic_visit(node)
+            if isinstance(node.func, ast.Name) and node.func.id == 'input':
+                return ast.Await(value=ast.Call(
+                    func=ast.Name(id='__custom_async_input', ctx=ast.Load()),
+                    args=node.args,
+                    keywords=node.keywords
+                ))
+            return node
+            
+    tree = InputReplacer().visit(tree)
+    ast.fix_missing_locations(tree)
+    
+    code_obj = compile(tree, filename="<editor>", mode="exec", flags=ast.PyCF_ALLOW_TOP_LEVEL_AWAIT)
+    res = eval(code_obj, globals())
+    if hasattr(res, '__await__'):
+        await res
+
+def __extraer_plot():
+    if not plt.get_fignums():
+        return ""
+    b = io.BytesIO()
+    plt.savefig(b, format="png", bbox_inches="tight", dpi=130)
+    plt.clf()
+    plt.close('all')
+    b.seek(0)
+    import base64
+    return base64.b64encode(b.read()).decode("utf-8")
+
+def __obtener_datos_descargables():
+    archivos_csv = [f for f in os.listdir('.') if f.endswith('.csv')]
+    dfs = []
+    for k, v in list(globals().items()):
+        if isinstance(v, pd.DataFrame) and not k.startswith('_'):
+            dfs.append(k)
+    return json.dumps({"csvs": archivos_csv, "dfs": dfs})
+
+def __leer_archivo_csv(nombre):
+    if os.path.exists(nombre):
+        with open(nombre, 'r', encoding='utf-8') as f:
+            return f.read()
+    return ""
+
+def __exportar_df_csv(df_name):
+    if df_name in globals():
+        obj = globals()[df_name]
+        if isinstance(obj, pd.DataFrame):
+            return obj.to_csv(index=False)
+    return ""
+    `);
+
+    badge.className = "badge bg-dark border border-success text-success px-3 py-1";
+    badge.innerHTML = `<i class="bi bi-check-circle-fill"></i> Runtime Listo (URLs + Excel)`;
+    btn.disabled = false;
+    
+    terminal.textContent = "# Motor Python listo. Soporta lectura directa de URLs, archivos locales y Excel.\n";
+  } catch (err) {
+    badge.className = "badge bg-dark border border-danger text-danger px-3 py-1";
+    badge.innerHTML = `<i class="bi bi-exclamation-triangle-fill"></i> Fallo Wasm`;
+    terminal.className = "error-state";
+    terminal.innerText = "Error cargando runtime:\n" + err;
+  }
+}
+
+async function ejecutarPython() {
+  if (!pyodideInstance) return;
+
+  const btn = document.getElementById("btn-run");
+  const spinner = document.getElementById("btn-spinner");
+  const icon = document.getElementById("btn-icon");
+  const dot = document.getElementById("grafico-dot");
+  const tiempoLbl = document.getElementById("tiempo-ejecucion");
+  const code = editor.value;
+
+  if (!code.trim()) {
+    terminal.innerText = "# [Editor vacío]";
+    return;
+  }
+
+  btn.disabled = true;
+  spinner.classList.remove("d-none");
+  icon.classList.add("d-none");
+  terminal.className = "";
+  terminal.textContent = "";
+  currentPlotB64 = "";
+  btnDlPlot.disabled = true;
+  cambiarTab('terminal');
+
+  const t0 = performance.now();
+
+  try {
+    pyodideInstance.globals.set("__user_code_raw__", code);
+    await pyodideInstance.runPythonAsync("await __ejecutar_codigo_usuario(__user_code_raw__)");
+
+    const imgB64 = await pyodideInstance.runPythonAsync("__extraer_plot()");
+    const t1 = performance.now();
+    tiempoLbl.innerText = `Ejecutado en ${((t1 - t0) / 1000).toFixed(2)}s`;
+
+    const infoJson = await pyodideInstance.runPythonAsync("__obtener_datos_descargables()");
+    const info = JSON.parse(infoJson);
+    if (info.csvs && info.csvs.length > 0) {
+      estadoCsv.innerHTML = `<i class="bi bi-download"></i> Descargar: <b>${info.csvs[info.csvs.length - 1]}</b>`;
+    } else if (info.dfs && info.dfs.length > 0) {
+      estadoCsv.innerHTML = `<i class="bi bi-file-earmark-excel"></i> Descargar DataFrame: <b>${info.dfs[info.dfs.length - 1]}</b>`;
+    } else {
+      estadoCsv.innerHTML = "";
+    }
+
+    if (imgB64 && imgB64.trim() !== "") {
+      currentPlotB64 = imgB64;
+      dragLayer.innerHTML = `<img id="rendered-plot" src="data:image/png;base64,${imgB64}" alt="Gráfico">`;
+      resetZoomGrafico();
+      dot.classList.remove("d-none");
+      btnDlPlot.disabled = false;
+    } else {
+      dragLayer.innerHTML = `<span class="text-secondary small">No hay gráficos generados.</span>`;
+      dot.classList.add("d-none");
+      btnDlPlot.disabled = true;
+    }
+
+  } catch (err) {
+    terminal.className = "error-state";
+    terminal.textContent += "\n❌ Error de Ejecución:\n" + (err.message || err);
+    cambiarTab('terminal');
+  } finally {
+    btn.disabled = false;
+    spinner.classList.add("d-none");
+    icon.classList.remove("d-none");
+  }
+}
+
+function cambiarTab(tab) {
+  const btnTerm = document.getElementById("tab-btn-terminal");
+  const btnGraf = document.getElementById("tab-btn-grafico");
+  const viewTerm = document.getElementById("tab-terminal-container");
+  const viewGraf = document.getElementById("tab-grafico");
+  const dot = document.getElementById("grafico-dot");
+  
+  const toolsTerm = document.getElementById("tools-consola");
+  const toolsGraf = document.getElementById("tools-grafico");
+
+  if (tab === 'terminal') {
+    btnTerm.classList.add("active");
+    btnGraf.classList.remove("active");
+    viewTerm.classList.remove("d-none");
+    viewGraf.classList.add("d-none");
+    toolsTerm.classList.remove("d-none");
+    toolsGraf.classList.add("d-none");
+  } else {
+    btnGraf.classList.add("active");
+    btnTerm.classList.remove("active");
+    viewGraf.classList.remove("d-none");
+    viewTerm.classList.add("d-none");
+    dot.classList.add("d-none");
+    toolsGraf.classList.remove("d-none");
+    toolsTerm.classList.add("d-none");
+  }
+}
+
+function ajustarZoomEditor(delta) {
+  fontSizeEditor = Math.min(Math.max(fontSizeEditor + delta, 10), 22);
+  editor.style.fontSize = fontSizeEditor + "px";
+  highlightLayer.style.fontSize = fontSizeEditor + "px";
+  lineas.style.fontSize = fontSizeEditor + "px";
+  document.getElementById("editor-zoom-label").innerText = fontSizeEditor + "px";
+}
+
+function resetZoomEditor() {
+  fontSizeEditor = 13;
+  editor.style.fontSize = "13px";
+  highlightLayer.style.fontSize = "13px";
+  lineas.style.fontSize = "13px";
+  document.getElementById("editor-zoom-label").innerText = "13px";
+}
+
+function ajustarZoomConsola(delta) {
+  fontSizeConsola = Math.min(Math.max(fontSizeConsola + delta, 9), 22);
+  terminal.style.fontSize = fontSizeConsola + "px";
+  document.getElementById("consola-zoom-label").innerText = fontSizeConsola + "px";
+}
+
+function resetZoomConsola() {
+  fontSizeConsola = 12;
+  terminal.style.fontSize = "12px";
+  document.getElementById("consola-zoom-label").innerText = "12px";
+}
+
+function toggleMaximize(panelId) {
+  document.getElementById(panelId).classList.toggle("panel-maximized");
+}
+
+function limpiarEditor() {
+  editor.value = "";
+  actualizarContador();
+  sincronizarPrism();
+  terminal.textContent = "";
+}
+
+function limpiarConsola() {
+  terminal.textContent = "";
+  terminal.className = "";
+  estadoCsv.innerHTML = "";
+}
+
+function copiarConsola() {
+  navigator.clipboard.writeText(terminal.textContent);
+}
+
+window.addEventListener("DOMContentLoaded", () => {
+  actualizarContador();
+  sincronizarPrism();
+  bootWasm();
+});
+</script>
+
+</body>
+</html>
