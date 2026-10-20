@@ -537,6 +537,7 @@
         <option value="" disabled selected>📂 Plantillas Rápidas...</option>
         <option value="titanic">🚢 Titanic (CSV Web + Matplotlib)</option>
         <option value="seaborn">📊 Seaborn (Heatmap & Correlación)</option>
+        <option value="sklearn">🤖 Machine Learning (Scikit-Learn Regresión)</option>
         <option value="requests">🌐 Requests HTTPS (API REST en vivo)</option>
         <option value="excel">📑 Excel (.xlsx Lectura y Escritura)</option>
         <option value="scipy">🔬 Scipy & Curvas Matemáticas</option>
@@ -1178,6 +1179,63 @@ df.to_csv("analisis_seaborn_reporte.csv", index=False)
 df.to_excel("analisis_seaborn_reporte.xlsx", index=False)
 print("\\n💾 Exportados: 'analisis_seaborn_reporte.csv' y '.xlsx'")`,
 
+    sklearn: `import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import r2_score, mean_squared_error
+
+print("=============================================================")
+print("🤖 MACHINE LEARNING CON SCIKIT-LEARN (MODELO PREDICTIVO)")
+print("=============================================================")
+
+# Datos simulados: Inversión en Publicidad vs Ventas Reales
+np.random.seed(42)
+n = 100
+inversion_pub = np.random.uniform(10, 100, n)
+ventas_reales = 4.5 * inversion_pub + np.random.normal(0, 30, n) + 50
+
+df_ml = pd.DataFrame({
+    "Inversion_Publicidad_USD": inversion_pub,
+    "Ventas_Reales_USD": ventas_reales
+})
+
+print(f"✅ Dataset de entrenamiento generado ({len(df_ml)} muestras).")
+print(df_ml.head(5).round(2))
+
+# Entrenar modelo Scikit-Learn
+X = df_ml[["Inversion_Publicidad_USD"]]
+y = df_ml["Ventas_Reales_USD"]
+
+modelo = LinearRegression()
+modelo.fit(X, y)
+predicciones = modelo.predict(X)
+
+r2 = r2_score(y, predicciones)
+rmse = np.sqrt(mean_squared_error(y, predicciones))
+
+print(f"\n📈 Métricas del Modelo Scikit-Learn:")
+print(f"   • Pendiente (Coeficiente): {modelo.coef_[0]:.3f}")
+print(f"   • Intersección: {modelo.intercept_:.3f}")
+print(f"   • Coeficiente R²: {r2:.4f}")
+print(f"   • Error RMSE: {rmse:.2f} USD")
+
+# Gráfico de Dispersión y Línea de Regresión
+fig, ax = plt.subplots(figsize=(8.5, 4.2))
+ax.scatter(X, y, color="#00f2fe", alpha=0.7, label="Datos Reales de Ventas")
+ax.plot(X, predicciones, color="#f43f5e", linewidth=2.5, label=f"Recta de Regresión (R²={r2:.2f})")
+ax.set_title("Machine Learning: Predicción de Ventas vs Inversión")
+ax.set_xlabel("Inversión en Publicidad (USD)")
+ax.set_ylabel("Ventas Totales (USD)")
+ax.legend()
+plt.tight_layout()
+plt.show()
+
+# Guardar predicciones en disco virtual
+df_ml["Ventas_Predichas_USD"] = predicciones.round(2)
+df_ml.to_csv("predicciones_ventas_ml.csv", index=False)
+print("\n💾 Predicciones guardadas en: 'predicciones_ventas_ml.csv'")`,
+
   requests: `import requests
 import pandas as pd
 
@@ -1722,19 +1780,29 @@ async function bootWasm() {
   const btn = document.getElementById("btn-run");
 
   try {
-    badge.innerHTML = `<span class="spinner-border spinner-border-sm"></span> Cargando WebAssembly...`;
+    badge.innerHTML = `<span class="spinner-border spinner-border-sm"></span> Cargando WebAssembly Core...`;
     pyodideInstance = await loadPyodide();
 
-    badge.innerHTML = `<span class="spinner-border spinner-border-sm"></span> Instalando Pandas, Seaborn, Matplotlib & Scipy...`;
-    await pyodideInstance.loadPackage(["pandas", "numpy", "matplotlib", "scipy", "seaborn", "micropip"]);
+    badge.innerHTML = `<span class="spinner-border spinner-border-sm"></span> Cargando NumPy, Pandas, Matplotlib & Scipy...`;
+    // Carga de paquetes pre-compilados en WebAssembly (Pyodide oficial)
+    await pyodideInstance.loadPackage(["pandas", "numpy", "matplotlib", "scipy", "micropip"]);
 
-    badge.innerHTML = `<span class="spinner-border spinner-border-sm"></span> Configurando Requests, Excel & Conectores HTTPS...`;
+    badge.innerHTML = `<span class="spinner-border spinner-border-sm"></span> Instalando Seaborn, Requests, Excel (OpenPyXL) & Conectores HTTPS...`;
     try {
       await pyodideInstance.runPythonAsync(`
 import micropip
-await micropip.install(["requests", "openpyxl", "xlsxwriter", "pyodide-http"])
-import pyodide_http
-pyodide_http.patch_all()
+_paquetes_pypi = ["seaborn", "openpyxl", "xlsxwriter", "requests", "pyodide-http", "tabulate"]
+for _p in _paquetes_pypi:
+    try:
+        await micropip.install(_p)
+    except Exception as _ex:
+        print(f"[Aviso] Precarga opcional de '{_p}': {_ex}")
+
+try:
+    import pyodide_http
+    pyodide_http.patch_all()
+except Exception as _ex:
+    pass
       `);
     } catch(e) {
       console.warn("Aviso al configurar paquetes micropip:", e);
@@ -1753,7 +1821,10 @@ from pyodide.http import open_url
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-import seaborn as sns
+try:
+    import seaborn as sns
+except Exception:
+    sns = None
 import pandas as pd
 import numpy as np
 
@@ -1781,8 +1852,13 @@ pd.read_json = _safe_read_json
 _orig_read_excel = pd.read_excel
 def _safe_read_excel(io_or_url, *args, **kwargs):
     if isinstance(io_or_url, str) and (io_or_url.startswith("http://") or io_or_url.startswith("https://")):
-        buf = open_url(io_or_url)
-        return _orig_read_excel(buf, *args, **kwargs)
+        try:
+            import requests
+            res = requests.get(io_or_url)
+            return _orig_read_excel(io.BytesIO(res.content), *args, **kwargs)
+        except Exception:
+            buf = open_url(io_or_url)
+            return _orig_read_excel(buf, *args, **kwargs)
     return _orig_read_excel(io_or_url, *args, **kwargs)
 
 pd.read_excel = _safe_read_excel
@@ -1866,7 +1942,11 @@ def __exportar_df_csv(df_name):
     badge.innerHTML = `<i class="bi bi-check-circle-fill"></i> Motor Wasm Listo (Seaborn + Excel + Requests)`;
     btn.disabled = false;
     
-    terminal.textContent = "# 🐍 JPV PyStudio Pro inicializado con éxito.\\n# Librerías activas: Pandas, NumPy, Matplotlib, Seaborn, Scipy, OpenPyXL, XlsxWriter, Requests (HTTPS).\\n# Soporta lectura de archivos locales, URLs directas, APIs REST y exportación descargable.\\n";
+    terminal.textContent = `# 🐍 JPV PyStudio Pro inicializado con éxito.
+# Librerías activas: Pandas, NumPy, Matplotlib, Seaborn, Scipy, OpenPyXL, XlsxWriter, Requests (HTTPS), Tabulate.
+# Auto-Instalador activo: Detecta librerías PyPI faltantes y las descarga en vivo.
+# Soporta lectura de archivos locales, URLs directas, APIs REST y exportación descargable.
+`;
   } catch (err) {
     badge.className = "badge bg-dark border border-danger text-danger px-3 py-1";
     badge.innerHTML = `<i class="bi bi-exclamation-triangle-fill"></i> Fallo Wasm`;
@@ -1902,15 +1982,50 @@ async function ejecutarPython() {
   const t0 = performance.now();
 
   try {
-    // Autocarga inteligente de cualquier paquete importado en el script
+        // 1. Autocarga de paquetes compilados en WebAssembly (scikit-learn, scipy, sympy, etc.)
     try {
       await pyodideInstance.loadPackagesFromImports(code);
     } catch(ePkg) {
       console.warn("Aviso en autocarga de paquetes:", ePkg);
     }
 
-    pyodideInstance.globals.set("__user_code_raw__", code);
-    await pyodideInstance.runPythonAsync("await __ejecutar_codigo_usuario(__user_code_raw__)");
+    // 2. Ejecutor con auto-instalación inteligente de dependencias faltantes desde PyPI
+    let intento = 0;
+    while (intento < 2) {
+      try {
+        pyodideInstance.globals.set("__user_code_raw__", code);
+        await pyodideInstance.runPythonAsync("await __ejecutar_codigo_usuario(__user_code_raw__)");
+        break; // Éxito en ejecución
+      } catch (runErr) {
+        const msg = String(runErr && (runErr.message || runErr));
+        const match = msg.match(/No module named ['"]([^'"]+)['"]/);
+        if (match && intento === 0) {
+          const missingMod = match[1];
+          terminal.textContent += `
+📦 [Auto-Instalador Wasm] Módulo '${missingMod}' no encontrado. Descargando desde PyPI vía micropip...
+`;
+          terminalContainer.scrollTop = terminalContainer.scrollHeight;
+          try {
+            await pyodideInstance.runPythonAsync(`
+import micropip
+await micropip.install('${missingMod}')
+`);
+            terminal.textContent += `✅ [Auto-Instalador Wasm] '${missingMod}' instalado con éxito. Reanudando compilación...
+
+`;
+            terminalContainer.scrollTop = terminalContainer.scrollHeight;
+            intento++;
+            continue;
+          } catch(pipErr) {
+            terminal.textContent += `⚠️ No se pudo auto-instalar '${missingMod}': ${pipErr.message || pipErr}
+`;
+            throw runErr;
+          }
+        } else {
+          throw runErr;
+        }
+      }
+    }
 
     const imgB64 = await pyodideInstance.runPythonAsync("__extraer_plot()");
     const t1 = performance.now();
