@@ -1963,33 +1963,152 @@ async def __ejecutar_codigo_usuario(code_str):
     if hasattr(res, '__await__'):
         await res
 
+def __get_luminance(color):
+    try:
+        import matplotlib.colors as mcolors
+        rgba = mcolors.to_rgba(color)
+        return 0.299 * rgba[0] + 0.587 * rgba[1] + 0.114 * rgba[2]
+    except Exception:
+        return 0.5
+
+def __adaptar_figura_contraste(fig, modo):
+    import matplotlib.patheffects as pe
+    
+    if modo == "blanco":
+        bg_fig = "#ffffff"
+        bg_ax = "#ffffff"
+        fg_target = "#0f172a"
+        spine_target = "#94a3b8"
+        fig.patch.set_facecolor(bg_fig)
+        fig.patch.set_alpha(1.0)
+    elif modo == "negro":
+        bg_fig = "#080c14"
+        bg_ax = "#0f172a"
+        fg_target = "#f8fafc"
+        spine_target = "#475569"
+        fig.patch.set_facecolor(bg_fig)
+        fig.patch.set_alpha(1.0)
+    else:
+        bg_fig = None
+        bg_ax = None
+        fg_target = "#ffffff"
+        spine_target = "#64748b"
+        fig.patch.set_alpha(0.0)
+
+    if hasattr(fig, "_suptitle") and fig._suptitle:
+        if modo != "transparente":
+            fig._suptitle.set_color(fg_target)
+            fig._suptitle.set_path_effects([])
+        else:
+            fig._suptitle.set_color("#ffffff")
+            fig._suptitle.set_path_effects([pe.withStroke(linewidth=2.5, foreground="#000000")])
+
+    for ax in fig.axes:
+        if modo == "transparente":
+            ax.patch.set_alpha(0.0)
+        else:
+            ax.patch.set_facecolor(bg_ax)
+            ax.patch.set_alpha(1.0)
+            
+        for item in [ax.title, ax.xaxis.label, ax.yaxis.label]:
+            if item:
+                if modo == "blanco":
+                    if __get_luminance(item.get_color()) > 0.55:
+                        item.set_color(fg_target)
+                    item.set_path_effects([])
+                elif modo == "negro":
+                    if __get_luminance(item.get_color()) < 0.45:
+                        item.set_color(fg_target)
+                    item.set_path_effects([])
+                else:
+                    item.set_color("#ffffff")
+                    item.set_path_effects([pe.withStroke(linewidth=2.5, foreground="#000000")])
+
+        for lbl in ax.get_xticklabels() + ax.get_yticklabels():
+            if modo == "blanco":
+                if __get_luminance(lbl.get_color()) > 0.55:
+                    lbl.set_color(fg_target)
+                lbl.set_path_effects([])
+            elif modo == "negro":
+                if __get_luminance(lbl.get_color()) < 0.45:
+                    lbl.set_color(fg_target)
+                lbl.set_path_effects([])
+            else:
+                lbl.set_color("#ffffff")
+                lbl.set_path_effects([pe.withStroke(linewidth=2.0, foreground="#000000")])
+                
+        ax.tick_params(colors=fg_target if modo != "transparente" else "#ffffff", which="both")
+        
+        for s in ax.spines.values():
+            s.set_color(spine_target)
+            
+        leg = ax.get_legend()
+        if leg:
+            if modo == "blanco":
+                leg.get_frame().set_facecolor("#ffffff")
+                leg.get_frame().set_edgecolor(spine_target)
+                leg.get_frame().set_alpha(0.95)
+                for t in leg.get_texts(): 
+                    t.set_color(fg_target)
+                    t.set_path_effects([])
+            elif modo == "negro":
+                leg.get_frame().set_facecolor("#1e293b")
+                leg.get_frame().set_edgecolor(spine_target)
+                leg.get_frame().set_alpha(0.95)
+                for t in leg.get_texts(): 
+                    t.set_color(fg_target)
+                    t.set_path_effects([])
+            else:
+                leg.get_frame().set_alpha(0.3)
+                for t in leg.get_texts():
+                    t.set_color("#ffffff")
+                    t.set_path_effects([pe.withStroke(linewidth=2.0, foreground="#000000")])
+
+        is_heatmap = any("QuadMesh" in type(c).__name__ for c in ax.collections)
+        if not is_heatmap:
+            for t in ax.texts:
+                if modo == "blanco":
+                    if __get_luminance(t.get_color()) > 0.55:
+                        t.set_color(fg_target)
+                    t.set_path_effects([])
+                elif modo == "negro":
+                    if __get_luminance(t.get_color()) < 0.45:
+                        t.set_color(fg_target)
+                    t.set_path_effects([])
+                else:
+                    t.set_path_effects([pe.withStroke(linewidth=2.0, foreground="#000000")])
+
 def __extraer_plots():
     if not plt.get_fignums():
         return json.dumps({"transparente": "", "blanco": "", "negro": ""})
     
     import base64
     res = {}
+    fig = plt.gcf()
     
-    # 1. Transparente
-    b_trans = io.BytesIO()
-    plt.savefig(b_trans, format="png", bbox_inches="tight", dpi=140, transparent=True)
-    b_trans.seek(0)
-    res["transparente"] = base64.b64encode(b_trans.read()).decode("utf-8")
-    
-    # 2. Blanco (Fondo blanco puro para reportes, documentos o presentaciones claras)
+    # 1. Blanco adaptativo (Garantiza alto contraste para reportes y Word)
+    __adaptar_figura_contraste(fig, "blanco")
     b_white = io.BytesIO()
-    plt.savefig(b_white, format="png", bbox_inches="tight", dpi=140, facecolor="white", edgecolor="none")
+    plt.savefig(b_white, format="png", bbox_inches="tight", dpi=140, facecolor="#ffffff", edgecolor="none")
     b_white.seek(0)
     res["blanco"] = base64.b64encode(b_white.read()).decode("utf-8")
-    
-    # 3. Negro (Fondo oscuro elegante para dashboards y temas oscuros)
+
+    # 2. Negro adaptativo (Garantiza alto contraste para dashboards y modo oscuro)
+    __adaptar_figura_contraste(fig, "negro")
     b_black = io.BytesIO()
     plt.savefig(b_black, format="png", bbox_inches="tight", dpi=140, facecolor="#080c14", edgecolor="none")
     b_black.seek(0)
     res["negro"] = base64.b64encode(b_black.read()).decode("utf-8")
-    
+
+    # 3. Transparente adaptativo (Con contorno protector para visibilidad universal)
+    __adaptar_figura_contraste(fig, "transparente")
+    b_trans = io.BytesIO()
+    plt.savefig(b_trans, format="png", bbox_inches="tight", dpi=140, transparent=True)
+    b_trans.seek(0)
+    res["transparente"] = base64.b64encode(b_trans.read()).decode("utf-8")
+
     plt.clf()
-    plt.close('all')
+    plt.close("all")
     return json.dumps(res)
 
 def __extraer_plot():
