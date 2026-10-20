@@ -558,6 +558,7 @@
         <option value="requests">🌐 Requests HTTPS (API REST en vivo)</option>
         <option value="excel">📑 Excel (.xlsx Lectura y Escritura)</option>
         <option value="scipy">🔬 Scipy & Curvas Matemáticas</option>
+        <option value="animacion">🎬 Animación Avanzada (Dashboard Titanic 8-en-1 GIF)</option>
       </select>
 
       <input type="file" id="input-archivo-local" accept=".csv, .xlsx, .xls, .json, .txt, .parquet" style="display: none;" onchange="manejarSubidaArchivo(this)">
@@ -922,6 +923,8 @@ json.dumps(archivos_info)
         if (ext === "csv" || ext === "xlsx" || ext === "xls") icon = "bi-file-earmark-excel text-success";
         else if (ext === "json") icon = "bi-file-earmark-code text-warning";
         else if (ext === "png" || ext === "jpg") icon = "bi-file-earmark-image text-info";
+        else if (ext === "gif") icon = "bi-film text-danger";
+        else if (ext === "html") icon = "bi-filetype-html text-primary";
         
         html += `
           <tr>
@@ -974,6 +977,8 @@ function descargarArchivoVFS(nombreArchivo) {
     else if (ext === "xls") mime = "application/vnd.ms-excel";
     else if (ext === "json") mime = "application/json";
     else if (ext === "png") mime = "image/png";
+    else if (ext === "gif") mime = "image/gif";
+    else if (ext === "html") mime = "text/html;charset=utf-8;";
     else if (ext === "txt") mime = "text/plain;charset=utf-8;";
 
     const blob = new Blob([data], { type: mime });
@@ -1075,7 +1080,20 @@ function cambiarFondoGrafico(modo) {
   }
 }
 
+let currentPlotType = "png";
+let currentPlotFilename = "";
+
 function descargarGraficoPNG() {
+  if (currentPlotType === "gif" && currentPlotB64) {
+    const enlace = document.createElement("a");
+    enlace.href = "data:image/gif;base64," + currentPlotB64;
+    enlace.download = currentPlotFilename || "animacion_pystudio.gif";
+    document.body.appendChild(enlace);
+    enlace.click();
+    document.body.removeChild(enlace);
+    return;
+  }
+
   const b64 = (plotsBase64 && plotsBase64[fondoGraficoActual]) || currentPlotB64;
   if (!b64) {
     alert("No hay gráfico generado para descargar.");
@@ -1381,6 +1399,167 @@ with pd.ExcelWriter(archivo_excel, engine="openpyxl") as writer:
 
 print(f"\\n💾 Libro Excel generado: '{archivo_excel}' con 2 hojas de cálculo.")
 print("👉 Descárgalo con el botón 'Descargar Excel / CSV' o en 'Archivos (VFS)'!")`,
+
+    animacion: `import matplotlib.animation as animation
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+
+print("=============================================================")
+print("🎬 GENERANDO TABLERO ANALÍTICO ANIMADO DEL TITANIC (8 PANELES)")
+print("=============================================================")
+
+# 1. Cargar dataset
+url = "https://raw.githubusercontent.com/datasciencedojo/datasets/master/titanic.csv"
+print("Descargando dataset Titanic...")
+df = pd.read_csv(url)
+
+# 2. Paleta de colores consistente
+COLOR_SURV = "#0ea5e9"    # Azul/Cian vivo (Sobrevivientes)
+COLOR_DIED = "#64748b"    # Gris neutro (Fallecidos)
+COLOR_ACCENT = "#e11d48"  # Acento de alerta/énfasis
+
+# 3. Precalcular agregaciones
+tasa_global = df["Survived"].mean() * 100
+surv_counts = df["Survived"].value_counts()
+pclass_counts = df["Pclass"].value_counts().sort_index()
+surv_sex = df.groupby("Sex")["Survived"].mean() * 100
+surv_class = df.groupby("Pclass")["Survived"].mean() * 100
+surv_matrix = df.groupby(["Pclass", "Sex"])["Survived"].mean().unstack() * 100
+mediana_edad = df["Age"].median()
+
+age_counts, age_bins = np.histogram(df["Age"].dropna(), bins=25)
+fare_counts, fare_bins = np.histogram(df["Fare"], bins=35)
+
+# 4. Inicializar figura del tablero completo (2x4)
+fig, axes = plt.subplots(2, 4, figsize=(18, 9))
+TOTAL_FRAMES = 25
+
+def limpiar_bordes(ax):
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+    ax.spines["left"].set_color("#cbd5e1")
+    ax.spines["bottom"].set_color("#cbd5e1")
+
+def actualizar_tablero(frame):
+    for r in range(2):
+        for c in range(4):
+            axes[r, c].clear()
+
+    fig.suptitle(
+        """TRAGEDIA DEL TITANIC: PROTOCOLO DE RESCATE Y PRIVILEGIO SOCIAL\nTablero Analítico Animado (891 Pasajeros)""",
+        fontsize=14, fontweight="bold", y=0.98, color="#0f172a"
+    )
+
+    progreso = 1 - (1 - (frame + 1) / TOTAL_FRAMES) ** 2
+
+    # 1. Donut Chart de Supervivencia General
+    vivos_val = max(1, int(surv_counts.get(1, 0) * progreso))
+    muertos_val = max(1, int(surv_counts.get(0, 0) * progreso))
+    wedges, _, autotexts = axes[0, 0].pie(
+        [muertos_val, vivos_val],
+        labels=["Fallecidos", "Sobrevivientes"],
+        autopct="%1.1f%%",
+        pctdistance=0.75,
+        colors=[COLOR_DIED, COLOR_SURV],
+        startangle=90,
+        wedgeprops=dict(width=0.4, edgecolor="white", linewidth=2)
+    )
+    for t in autotexts:
+        t.set_color("white")
+        t.set_fontweight("bold")
+    axes[0, 0].text(0, 0, f"{vivos_val} Vivos", ha="center", va="center", fontsize=11, fontweight="bold", color="#0f172a")
+    axes[0, 0].set_title(f"Balance General: {tasa_global:.1f}% supervivencia", fontweight="bold", fontsize=9.5)
+
+    # 2. Volumen de Pasajeros por Clase
+    p_curr = pclass_counts * progreso
+    bars2 = axes[0, 1].bar(["1ra", "2da", "3ra"], p_curr, color="#94a3b8")
+    bars2[2].set_color(COLOR_ACCENT)
+    axes[0, 1].set_ylim(0, pclass_counts.max() * 1.15)
+    for b in bars2:
+        h = b.get_height()
+        if h > 10:
+            axes[0, 1].text(b.get_x() + b.get_width()/2, h + 6, f"{int(h)}", ha="center", va="bottom", fontweight="bold", fontsize=8, color="#334155")
+    axes[0, 1].set_title("Población por Boleto (Mayoría en 3ra clase)", fontweight="bold", fontsize=9.5)
+    limpiar_bordes(axes[0, 1])
+
+    # 3. Supervivencia por Sexo (Mujeres primero)
+    s_curr = [surv_sex.get("female", 0) * progreso, surv_sex.get("male", 0) * progreso]
+    bars3 = axes[0, 2].bar(["Mujeres", "Hombres"], s_curr, color=[COLOR_SURV, COLOR_DIED], width=0.5)
+    axes[0, 2].axhline(tasa_global * progreso, color="#dc2626", linestyle="--", linewidth=1.2, label=f"Media ({tasa_global:.1f}%)")
+    axes[0, 2].set_ylim(0, 95)
+    for b in bars3:
+        h = b.get_height()
+        if h > 2:
+            axes[0, 2].text(b.get_x() + b.get_width()/2, h + 1.5, f"{h:.1f}%", ha="center", va="bottom", fontweight="bold", fontsize=8)
+    axes[0, 2].set_title("Protocolo de Evacuación ('Mujeres primero')", fontweight="bold", fontsize=9.5)
+    axes[0, 2].legend(frameon=False, loc="upper right", fontsize=7.5)
+    limpiar_bordes(axes[0, 2])
+
+    # 4. Supervivencia por Clase Social
+    c_curr = [surv_class.get(1, 0) * progreso, surv_class.get(2, 0) * progreso, surv_class.get(3, 0) * progreso]
+    bars4 = axes[0, 3].bar(["1ra", "2da", "3ra"], c_curr, color=[COLOR_SURV, "#38bdf8", COLOR_DIED], width=0.55)
+    axes[0, 3].axhline(tasa_global * progreso, color="#dc2626", linestyle="--", linewidth=1.2)
+    axes[0, 3].set_ylim(0, 85)
+    for b in bars4:
+        h = b.get_height()
+        if h > 2:
+            axes[0, 3].text(b.get_x() + b.get_width()/2, h + 1.5, f"{h:.1f}%", ha="center", va="bottom", fontweight="bold", fontsize=8)
+    axes[0, 3].set_title("Brecha de Clase (1ra duplicó a 3ra)", fontweight="bold", fontsize=9.5)
+    limpiar_bordes(axes[0, 3])
+
+    # 5. Histograma Dinámico de Edades
+    age_widths = np.diff(age_bins)
+    axes[1, 0].bar(age_bins[:-1], age_counts * progreso, width=age_widths, align="edge", color="#cbd5e1", edgecolor="white")
+    axes[1, 0].set_ylim(0, age_counts.max() * 1.15)
+    axes[1, 0].axvline(mediana_edad, color="#0f172a", linestyle=":", linewidth=1.2, label=f"Mediana: {mediana_edad:.0f}a")
+    axes[1, 0].set_title("Demografía (Concentración 20-35 años)", fontweight="bold", fontsize=9.5)
+    axes[1, 0].legend(frameon=False, fontsize=7.5)
+    limpiar_bordes(axes[1, 0])
+
+    # 6. Distribución de Tarifas (Escala Log)
+    fare_widths = np.diff(fare_bins)
+    axes[1, 1].bar(fare_bins[:-1], np.maximum(fare_counts * progreso, 0.1), width=fare_widths, align="edge", color="#cbd5e1", edgecolor="white")
+    axes[1, 1].set_yscale("log")
+    axes[1, 1].set_ylim(1, max(fare_counts) * 2)
+    axes[1, 1].set_title("Dispersión del Boleto (Mayoría <30$)", fontweight="bold", fontsize=9.5)
+    limpiar_bordes(axes[1, 1])
+
+    # 7. Supervivencia Cruzada (Sexo x Clase)
+    x = np.arange(3)
+    w = 0.35
+    axes[1, 2].bar(x - w/2, surv_matrix["female"] * progreso, w, color=COLOR_SURV, label="Mujeres")
+    axes[1, 2].bar(x + w/2, surv_matrix["male"] * progreso, w, color=COLOR_DIED, label="Hombres")
+    axes[1, 2].set_ylim(0, 110)
+    axes[1, 2].set_xticks(x)
+    axes[1, 2].set_xticklabels(["1ra", "2da", "3ra"])
+    axes[1, 2].set_title("Efecto Combinado (Mujeres 1ra clase ~97%)", fontweight="bold", fontsize=9.5)
+    axes[1, 2].legend(frameon=False, fontsize=7.5)
+    limpiar_bordes(axes[1, 2])
+
+    # 8. Dispersión Edad vs Tarifa
+    lim_puntos = max(5, int(len(df) * progreso))
+    df_sub = df.iloc[:lim_puntos]
+    fallecidos = df_sub[df_sub["Survived"] == 0]
+    vivos = df_sub[df_sub["Survived"] == 1]
+    axes[1, 3].scatter(fallecidos["Age"], fallecidos["Fare"], color=COLOR_DIED, alpha=0.35, s=18, label="Fallecido")
+    axes[1, 3].scatter(vivos["Age"], vivos["Fare"], color=COLOR_SURV, alpha=0.7, s=18, label="Sobreviviente")
+    axes[1, 3].set_xlim(0, 85)
+    axes[1, 3].set_ylim(-10, 520)
+    axes[1, 3].set_title("Tarifas Altas Blindaron Vidas (0 muertes >200$)", fontweight="bold", fontsize=9.5)
+    axes[1, 3].legend(frameon=False, loc="upper right", fontsize=7.5)
+    limpiar_bordes(axes[1, 3])
+
+    plt.tight_layout(rect=[0, 0, 1, 0.94])
+
+print("Compilando cuadros de animación con Pillow...")
+ani = animation.FuncAnimation(fig, actualizar_tablero, frames=TOTAL_FRAMES, interval=60, repeat=False)
+writer = animation.PillowWriter(fps=12)
+ani.save("titanic_dashboard_completo_animado.gif", writer=writer)
+
+print()
+print("🎉 Animación generada: 'titanic_dashboard_completo_animado.gif'")
+print("👉 El visor gráfico mostrará la animación en bucle infinito.")`,
 
   scipy: `import numpy as np
 import matplotlib.pyplot as plt
@@ -1844,13 +2023,13 @@ async function bootWasm() {
 
     badge.innerHTML = `<span class="spinner-border spinner-border-sm"></span> Cargando NumPy, Pandas, Matplotlib & Scipy...`;
     // Carga de paquetes pre-compilados en WebAssembly (Pyodide oficial)
-    await pyodideInstance.loadPackage(["pandas", "numpy", "matplotlib", "scipy", "micropip"]);
+    await pyodideInstance.loadPackage(["pandas", "numpy", "matplotlib", "scipy", "pillow", "micropip"]);
 
     badge.innerHTML = `<span class="spinner-border spinner-border-sm"></span> Instalando Seaborn, Requests, Excel (OpenPyXL) & Conectores HTTPS...`;
     try {
       await pyodideInstance.runPythonAsync(`
 import micropip
-_paquetes_pypi = ["seaborn", "openpyxl", "xlsxwriter", "requests", "pyodide-http", "tabulate"]
+_paquetes_pypi = ["seaborn", "openpyxl", "xlsxwriter", "requests", "pyodide-http", "tabulate", "imageio"]
 for _p in _paquetes_pypi:
     try:
         await micropip.install(_p)
@@ -2079,36 +2258,52 @@ def __adaptar_figura_contraste(fig, modo):
                     t.set_path_effects([pe.withStroke(linewidth=2.0, foreground="#000000")])
 
 def __extraer_plots():
-    if not plt.get_fignums():
-        return json.dumps({"transparente": "", "blanco": "", "negro": ""})
-    
     import base64
-    res = {}
-    fig = plt.gcf()
+    res = {"tipo": "estatico", "transparente": "", "blanco": "", "negro": "", "gif_b64": "", "gif_nombre": ""}
     
-    # 1. Blanco adaptativo (Garantiza alto contraste para reportes y Word)
-    __adaptar_figura_contraste(fig, "blanco")
-    b_white = io.BytesIO()
-    plt.savefig(b_white, format="png", bbox_inches="tight", dpi=140, facecolor="#ffffff", edgecolor="none")
-    b_white.seek(0)
-    res["blanco"] = base64.b64encode(b_white.read()).decode("utf-8")
+    # 1. Detectar si se generó recientemente algún archivo .gif (animación)
+    gifs = [f for f in os.listdir('.') if f.endswith('.gif') and os.path.isfile(f)]
+    if gifs:
+        gifs.sort(key=lambda x: os.path.getmtime(x), reverse=True)
+        reciente_gif = gifs[0]
+        try:
+            with open(reciente_gif, 'rb') as gf:
+                gif_bytes = gf.read()
+            if len(gif_bytes) > 0:
+                res["tipo"] = "gif"
+                res["gif_nombre"] = reciente_gif
+                res["gif_b64"] = base64.b64encode(gif_bytes).decode("utf-8")
+        except Exception:
+            pass
 
-    # 2. Negro adaptativo (Garantiza alto contraste para dashboards y modo oscuro)
-    __adaptar_figura_contraste(fig, "negro")
-    b_black = io.BytesIO()
-    plt.savefig(b_black, format="png", bbox_inches="tight", dpi=140, facecolor="#080c14", edgecolor="none")
-    b_black.seek(0)
-    res["negro"] = base64.b64encode(b_black.read()).decode("utf-8")
+    # 2. Si hay figuras estáticas abiertas en matplotlib:
+    if plt.get_fignums():
+        fig = plt.gcf()
+        
+        # 1. Blanco adaptativo
+        __adaptar_figura_contraste(fig, "blanco")
+        b_white = io.BytesIO()
+        plt.savefig(b_white, format="png", bbox_inches="tight", dpi=140, facecolor="#ffffff", edgecolor="none")
+        b_white.seek(0)
+        res["blanco"] = base64.b64encode(b_white.read()).decode("utf-8")
 
-    # 3. Transparente adaptativo (Con contorno protector para visibilidad universal)
-    __adaptar_figura_contraste(fig, "transparente")
-    b_trans = io.BytesIO()
-    plt.savefig(b_trans, format="png", bbox_inches="tight", dpi=140, transparent=True)
-    b_trans.seek(0)
-    res["transparente"] = base64.b64encode(b_trans.read()).decode("utf-8")
+        # 2. Negro adaptativo
+        __adaptar_figura_contraste(fig, "negro")
+        b_black = io.BytesIO()
+        plt.savefig(b_black, format="png", bbox_inches="tight", dpi=140, facecolor="#080c14", edgecolor="none")
+        b_black.seek(0)
+        res["negro"] = base64.b64encode(b_black.read()).decode("utf-8")
 
-    plt.clf()
-    plt.close("all")
+        # 3. Transparente adaptativo
+        __adaptar_figura_contraste(fig, "transparente")
+        b_trans = io.BytesIO()
+        plt.savefig(b_trans, format="png", bbox_inches="tight", dpi=140, transparent=True)
+        b_trans.seek(0)
+        res["transparente"] = base64.b64encode(b_trans.read()).decode("utf-8")
+
+        plt.clf()
+        plt.close("all")
+
     return json.dumps(res)
 
 def __extraer_plot():
@@ -2116,7 +2311,7 @@ def __extraer_plot():
 
 def __obtener_datos_descargables():
     archivos = [f for f in os.listdir('.') if not f.startswith('.') and not f.startswith('__') and os.path.isfile(f)]
-    archivos_data = [f for f in archivos if f.endswith(('.csv', '.xlsx', '.xls', '.json', '.txt', '.png', '.parquet'))]
+    archivos_data = [f for f in archivos if f.endswith(('.csv', '.xlsx', '.xls', '.json', '.txt', '.png', '.parquet', '.gif', '.html'))]
     dfs = []
     for k, v in list(globals().items()):
         if isinstance(v, pd.DataFrame) and not k.startswith('_'):
@@ -2247,19 +2442,38 @@ await micropip.install('${missingMod}')
       estadoCsv.innerHTML = "";
     }
 
-    const b64Actual = (plotsBase64 && plotsBase64[fondoGraficoActual]) || plotsBase64.negro || plotsBase64.blanco || plotsBase64.transparente;
+    const btnDl = document.getElementById("btn-dl-plot");
+    if (plotsBase64 && plotsBase64.tipo === "gif" && plotsBase64.gif_b64) {
+      currentPlotB64 = plotsBase64.gif_b64;
+      currentPlotType = "gif";
+      currentPlotFilename = plotsBase64.gif_nombre || "animacion.gif";
 
-    if (b64Actual && b64Actual.trim() !== "") {
-      currentPlotB64 = b64Actual;
-      dragLayer.innerHTML = `<img id="rendered-plot" src="data:image/png;base64,${b64Actual}" alt="Gráfico">`;
+      dragLayer.innerHTML = `<img id="rendered-plot" src="data:image/gif;base64,${plotsBase64.gif_b64}" alt="Animación GIF" style="border-radius: 6px; box-shadow: 0 4px 20px rgba(0,0,0,0.6);">`;
       resetZoomGrafico();
       dot.classList.remove("d-none");
-      btnDlPlot.disabled = false;
-      cambiarFondoGrafico(fondoGraficoActual);
+      btnDl.disabled = false;
+      btnDl.innerHTML = `<i class="bi bi-film"></i> Guardar GIF`;
+      btnDl.title = `Descargar animación ${currentPlotFilename}`;
+      cambiarTab('grafico');
     } else {
-      dragLayer.innerHTML = `<span class="text-secondary small">No hay gráficos generados.</span>`;
-      dot.classList.add("d-none");
-      btnDlPlot.disabled = true;
+      currentPlotType = "png";
+      btnDl.innerHTML = `<i class="bi bi-download"></i> Guardar PNG`;
+      btnDl.title = "Guardar gráfico en PNG con el fondo seleccionado";
+
+      const b64Actual = (plotsBase64 && plotsBase64[fondoGraficoActual]) || (plotsBase64 && (plotsBase64.negro || plotsBase64.blanco || plotsBase64.transparente));
+
+      if (b64Actual && b64Actual.trim() !== "") {
+        currentPlotB64 = b64Actual;
+        dragLayer.innerHTML = `<img id="rendered-plot" src="data:image/png;base64,${b64Actual}" alt="Gráfico">`;
+        resetZoomGrafico();
+        dot.classList.remove("d-none");
+        btnDl.disabled = false;
+        cambiarFondoGrafico(fondoGraficoActual);
+      } else {
+        dragLayer.innerHTML = `<span class="text-secondary small">No hay gráficos generados.</span>`;
+        dot.classList.add("d-none");
+        btnDl.disabled = true;
+      }
     }
 
   } catch (err) {
