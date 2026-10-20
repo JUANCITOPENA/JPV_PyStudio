@@ -415,9 +415,26 @@
       align-items: center;
       justify-content: center;
       cursor: grab;
+      transition: background 0.25s ease;
     }
     #tab-grafico:active {
       cursor: grabbing;
+    }
+    #tab-grafico.bg-modo-negro {
+      background: #06090f !important;
+    }
+    #tab-grafico.bg-modo-blanco {
+      background: #ffffff !important;
+    }
+    #tab-grafico.bg-modo-transparente {
+      background-color: #0b0f19 !important;
+      background-image: 
+        linear-gradient(45deg, #182234 25%, transparent 25%), 
+        linear-gradient(-45deg, #182234 25%, transparent 25%), 
+        linear-gradient(45deg, transparent 75%, #182234 75%), 
+        linear-gradient(-45deg, transparent 75%, #182234 75%) !important;
+      background-size: 20px 20px !important;
+      background-position: 0 0, 0 10px, 10px -10px, -10px 0px !important;
     }
 
     #chart-drag-layer {
@@ -681,8 +698,18 @@ print("\n💾 Archivo 'Reporte_Titanic_Descargado.csv' listo para descargar.")
           </div>
 
           <!-- Herramientas Gráficos -->
-          <div id="tools-grafico" class="d-flex align-items-center gap-1 d-none">
-            <button id="btn-dl-plot" class="btn btn-outline-info btn-action" onclick="descargarGraficoPNG()" title="Guardar gráfico en PNG" disabled>
+          <div id="tools-grafico" class="d-flex align-items-center gap-2 d-none">
+            <!-- Selector de Fondo (Presentar / Descargar) -->
+            <div class="d-flex align-items-center gap-1 bg-dark border border-secondary rounded px-2 py-0" style="height: 28px;">
+              <span class="text-secondary small" style="font-size: 11px;"><i class="bi bi-palette"></i> Fondo:</span>
+              <select id="select-fondo-grafico" class="form-select form-select-sm bg-dark text-info border-0 p-0 shadow-none" style="font-size: 11px; width: auto; cursor: pointer;" onchange="cambiarFondoGrafico(this.value)" title="Elegir fondo para presentar y descargar el gráfico">
+                <option value="negro" selected>🌙 Negro</option>
+                <option value="blanco">☀️ Blanco</option>
+                <option value="transparente">🏁 Transparente</option>
+              </select>
+            </div>
+
+            <button id="btn-dl-plot" class="btn btn-outline-info btn-action" onclick="descargarGraficoPNG()" title="Guardar gráfico en PNG con el fondo seleccionado" disabled>
               <i class="bi bi-download"></i> Guardar PNG
             </button>
             <div class="zoom-toolbar">
@@ -1020,14 +1047,44 @@ window.solicitarInputTerminal = function(promptText) {
 // =======================================================
 // DESCARGA: GRÁFICO (PNG) & TABLA (CSV / EXCEL / JSON)
 // =======================================================
+let plotsBase64 = {
+  transparente: "",
+  blanco: "",
+  negro: ""
+};
+let fondoGraficoActual = "negro";
+
+function cambiarFondoGrafico(modo) {
+  fondoGraficoActual = modo;
+  const select = document.getElementById("select-fondo-grafico");
+  if (select && select.value !== modo) select.value = modo;
+
+  const chartViewport = document.getElementById("tab-grafico");
+  if (chartViewport) {
+    chartViewport.classList.remove("bg-modo-negro", "bg-modo-blanco", "bg-modo-transparente");
+    chartViewport.classList.add("bg-modo-" + modo);
+  }
+
+  const imgElement = document.getElementById("rendered-plot");
+  if (imgElement && plotsBase64) {
+    const b64 = plotsBase64[modo] || plotsBase64.negro || plotsBase64.blanco || plotsBase64.transparente;
+    if (b64) {
+      imgElement.src = "data:image/png;base64," + b64;
+      currentPlotB64 = b64;
+    }
+  }
+}
+
 function descargarGraficoPNG() {
-  if (!currentPlotB64) {
+  const b64 = (plotsBase64 && plotsBase64[fondoGraficoActual]) || currentPlotB64;
+  if (!b64) {
     alert("No hay gráfico generado para descargar.");
     return;
   }
   const enlace = document.createElement("a");
-  enlace.href = "data:image/png;base64," + currentPlotB64;
-  enlace.download = "grafico_pystudio_" + new Date().toISOString().slice(0, 10) + ".png";
+  enlace.href = "data:image/png;base64," + b64;
+  const fecha = new Date().toISOString().slice(0, 10);
+  enlace.download = `grafico_pystudio_${fondoGraficoActual}_${fecha}.png`;
   document.body.appendChild(enlace);
   enlace.click();
   document.body.removeChild(enlace);
@@ -1906,16 +1963,37 @@ async def __ejecutar_codigo_usuario(code_str):
     if hasattr(res, '__await__'):
         await res
 
-def __extraer_plot():
+def __extraer_plots():
     if not plt.get_fignums():
-        return ""
-    b = io.BytesIO()
-    plt.savefig(b, format="png", bbox_inches="tight", dpi=130)
+        return json.dumps({"transparente": "", "blanco": "", "negro": ""})
+    
+    import base64
+    res = {}
+    
+    # 1. Transparente
+    b_trans = io.BytesIO()
+    plt.savefig(b_trans, format="png", bbox_inches="tight", dpi=140, transparent=True)
+    b_trans.seek(0)
+    res["transparente"] = base64.b64encode(b_trans.read()).decode("utf-8")
+    
+    # 2. Blanco (Fondo blanco puro para reportes, documentos o presentaciones claras)
+    b_white = io.BytesIO()
+    plt.savefig(b_white, format="png", bbox_inches="tight", dpi=140, facecolor="white", edgecolor="none")
+    b_white.seek(0)
+    res["blanco"] = base64.b64encode(b_white.read()).decode("utf-8")
+    
+    # 3. Negro (Fondo oscuro elegante para dashboards y temas oscuros)
+    b_black = io.BytesIO()
+    plt.savefig(b_black, format="png", bbox_inches="tight", dpi=140, facecolor="#080c14", edgecolor="none")
+    b_black.seek(0)
+    res["negro"] = base64.b64encode(b_black.read()).decode("utf-8")
+    
     plt.clf()
     plt.close('all')
-    b.seek(0)
-    import base64
-    return base64.b64encode(b.read()).decode("utf-8")
+    return json.dumps(res)
+
+def __extraer_plot():
+    return __extraer_plots()
 
 def __obtener_datos_descargables():
     archivos = [f for f in os.listdir('.') if not f.startswith('.') and not f.startswith('__') and os.path.isfile(f)]
@@ -2029,7 +2107,13 @@ await micropip.install('${missingMod}')
       }
     }
 
-    const imgB64 = await pyodideInstance.runPythonAsync("__extraer_plot()");
+    const plotsJson = await pyodideInstance.runPythonAsync("__extraer_plots()");
+    try {
+      plotsBase64 = JSON.parse(plotsJson);
+    } catch(e) {
+      plotsBase64 = { transparente: "", blanco: "", negro: "" };
+    }
+
     const t1 = performance.now();
     tiempoLbl.innerText = `Ejecutado en ${((t1 - t0) / 1000).toFixed(2)}s`;
 
@@ -2044,12 +2128,15 @@ await micropip.install('${missingMod}')
       estadoCsv.innerHTML = "";
     }
 
-    if (imgB64 && imgB64.trim() !== "") {
-      currentPlotB64 = imgB64;
-      dragLayer.innerHTML = `<img id="rendered-plot" src="data:image/png;base64,${imgB64}" alt="Gráfico">`;
+    const b64Actual = (plotsBase64 && plotsBase64[fondoGraficoActual]) || plotsBase64.negro || plotsBase64.blanco || plotsBase64.transparente;
+
+    if (b64Actual && b64Actual.trim() !== "") {
+      currentPlotB64 = b64Actual;
+      dragLayer.innerHTML = `<img id="rendered-plot" src="data:image/png;base64,${b64Actual}" alt="Gráfico">`;
       resetZoomGrafico();
       dot.classList.remove("d-none");
       btnDlPlot.disabled = false;
+      cambiarFondoGrafico(fondoGraficoActual);
     } else {
       dragLayer.innerHTML = `<span class="text-secondary small">No hay gráficos generados.</span>`;
       dot.classList.add("d-none");
