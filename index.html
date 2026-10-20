@@ -550,8 +550,9 @@
     <!-- Acciones de Archivos y Plantillas -->
     <div class="d-flex align-items-center gap-2">
       <!-- Selector de Plantillas Rápidas -->
-      <select id="select-plantillas" class="form-select form-select-sm bg-dark text-info border-secondary py-1" style="width: auto; font-size: 11.5px; cursor: pointer;" onchange="cargarPlantilla(this.value)" title="Cargar código de ejemplo">
+      <select id="select-plantillas" class="form-select form-select-sm bg-dark text-info border-secondary py-1" style="width: auto; font-size: 11.5px; cursor: pointer;" onchange="manejarSeleccionPlantilla(this.value)" title="Cargar código de ejemplo o ver detección">
         <option value="" disabled selected>📂 Plantillas Rápidas...</option>
+        <option value="custom" disabled>⚡ Código Personalizado (Auto-Detectado)</option>
         <option value="titanic">🚢 Titanic (CSV Web + Matplotlib)</option>
         <option value="seaborn">📊 Seaborn (Heatmap & Correlación)</option>
         <option value="sklearn">🤖 Machine Learning (Scikit-Learn Regresión)</option>
@@ -584,11 +585,20 @@
       <div class="panel-header panel-toolbar">
         <div class="d-flex align-items-center gap-2">
           <i class="bi bi-file-earmark-code text-info"></i>
-          <span class="small fw-semibold text-light">titanic_analisis.py</span>
-          <span class="badge bg-dark text-info border border-info border-opacity-25" style="font-size: 10px;">Tab completa</span>
+          <span class="small fw-semibold text-light" id="archivo-actual-label">script.py</span>
+          <span id="badge-auto-detector" class="badge bg-dark border border-secondary text-secondary" style="font-size: 10.5px;">
+            <i class="bi bi-lightning-charge"></i> Auto-Detección Activa
+          </span>
         </div>
 
         <div class="d-flex align-items-center gap-2">
+          <button class="btn btn-sm btn-outline-info py-0 px-2 fw-semibold" onclick="activarLienzoVacio()" title="Dejar el editor vacío para pegar tu propio código" style="font-size: 11px;">
+            <i class="bi bi-file-earmark-plus"></i> Lienzo Vacío
+          </button>
+          <button class="btn btn-sm btn-dark text-info border border-secondary py-0 px-2" onclick="cargarEjemploPractica()" title="Cargar código de ejemplo para practicar" style="font-size: 11px;">
+            <i class="bi bi-play-circle"></i> Ejemplo Práctica
+          </button>
+
           <div class="zoom-toolbar">
             <button class="zoom-btn" onclick="ajustarZoomEditor(-1)" title="Reducir fuente"><i class="bi bi-dash"></i></button>
             <span id="editor-zoom-label" class="zoom-label">13px</span>
@@ -600,7 +610,7 @@
             <i class="bi bi-arrows-fullscreen"></i>
           </button>
           <button class="btn btn-sm btn-outline-secondary text-light py-0 px-2" onclick="limpiarEditor()" title="Limpiar código">
-            <i class="bi bi-file-earmark-x"></i> Vaciar
+            <i class="bi bi-trash3"></i>
           </button>
         </div>
       </div>
@@ -2011,42 +2021,128 @@ function ajustarZoomGrafico(delta) {
 }
 
 // =======================================================
-// MOTOR PYTHON WASM: CONEXIÓN ROBUSTA DE URLS & EXCEL
+// MOTOR PYTHON WASM: FAST-BOOT & SMART DEPENDENCY RESOLVER
 // =======================================================
+// Registro central de paquetes cargados en memoria
+const paquetesCargados = new Set(["pandas", "numpy", "matplotlib", "micropip"]);
+
+// Definición de dependencias y auto-activación inteligente
+const MAPA_DEPENDENCIAS = {
+  excel: {
+    match: /(openpyxl|xlsxwriter|\.to_excel|\.read_excel|ExcelWriter)/i,
+    pyodidePkg: null,
+    pypiPkg: ["openpyxl", "xlsxwriter"],
+    etiqueta: "Excel (.xlsx)"
+  },
+  seaborn: {
+    match: /(seaborn|sns\.)/i,
+    pyodidePkg: null,
+    pypiPkg: ["seaborn"],
+    etiqueta: "Seaborn"
+  },
+  requests: {
+    match: /(requests\.|pyodide_http)/i,
+    pyodidePkg: null,
+    pypiPkg: ["requests", "pyodide-http"],
+    postSetup: "import pyodide_http; pyodide_http.patch_all()",
+    etiqueta: "Requests HTTPS"
+  },
+  sklearn: {
+    match: /(sklearn|scikit-learn|LinearRegression|RandomForest|KMeans)/i,
+    pyodidePkg: "scikit-learn",
+    pypiPkg: null,
+    etiqueta: "Scikit-Learn"
+  },
+  scipy: {
+    match: /(scipy|curve_fit)/i,
+    pyodidePkg: "scipy",
+    pypiPkg: null,
+    etiqueta: "Scipy"
+  },
+  animacion: {
+    match: /(animation\.|PillowWriter|FuncAnimation|ArtistAnimation)/i,
+    pyodidePkg: "pillow",
+    pypiPkg: null,
+    etiqueta: "Animación (Pillow)"
+  },
+  imageio: {
+    match: /(imageio)/i,
+    pyodidePkg: null,
+    pypiPkg: ["imageio"],
+    etiqueta: "ImageIO"
+  },
+  tabulate: {
+    match: /(tabulate)/i,
+    pyodidePkg: null,
+    pypiPkg: ["tabulate"],
+    etiqueta: "Tabulate"
+  }
+};
+
+// Resolver inteligente: detecta y activa librerías necesarias para el código sin intervención manual
+async function autoResolverDependencias(code) {
+  if (!pyodideInstance || !code.trim()) return;
+
+  for (const [clave, dep] of Object.entries(MAPA_DEPENDENCIAS)) {
+    if (dep.match.test(code)) {
+      // 1. Paquete binario compilado de Pyodide
+      if (dep.pyodidePkg && !paquetesCargados.has(dep.pyodidePkg)) {
+        terminal.textContent += `\n⚙️ [Auto-Activación] Cargando '${dep.etiqueta}' en WebAssembly...\n`;
+        terminalContainer.scrollTop = terminalContainer.scrollHeight;
+        try {
+          await pyodideInstance.loadPackage(dep.pyodidePkg);
+          paquetesCargados.add(dep.pyodidePkg);
+        } catch(e) {
+          console.warn("Fallo carga pyodidePkg:", e);
+        }
+      }
+
+      // 2. Paquetes puros de PyPI
+      if (dep.pypiPkg) {
+        const faltantes = dep.pypiPkg.filter(p => !paquetesCargados.has(p));
+        if (faltantes.length > 0) {
+          terminal.textContent += `\n⚙️ [Auto-Activación] Activando soporte de '${dep.etiqueta}' (${faltantes.join(", ")})...\n`;
+          terminalContainer.scrollTop = terminalContainer.scrollHeight;
+          try {
+            pyodideInstance.globals.set("__faltantes_lista__", faltantes);
+            await pyodideInstance.runPythonAsync(`
+import micropip
+await micropip.install(list(__faltantes_lista__))
+`);
+            faltantes.forEach(p => paquetesCargados.add(p));
+            if (dep.postSetup) {
+              await pyodideInstance.runPythonAsync(dep.postSetup);
+            }
+          } catch(ePip) {
+            console.warn("Aviso micropip:", ePip);
+          }
+        }
+      }
+    }
+  }
+
+  // 3. Autocarga estándar de Pyodide para cualquier otro import
+  try {
+    await pyodideInstance.loadPackagesFromImports(code);
+  } catch(ePkg) {
+    console.warn("loadPackagesFromImports:", ePkg);
+  }
+}
+
+// Fast-Boot Ultrarrápido: arranca en ~2 segundos con la base y permite ejecución inmediata
 async function bootWasm() {
   const badge = document.getElementById("badge-estado");
   const btn = document.getElementById("btn-run");
 
   try {
-    badge.innerHTML = `<span class="spinner-border spinner-border-sm"></span> Cargando WebAssembly Core...`;
+    badge.innerHTML = `<span class="spinner-border spinner-border-sm"></span> Iniciando Wasm Core...`;
     pyodideInstance = await loadPyodide();
 
-    badge.innerHTML = `<span class="spinner-border spinner-border-sm"></span> Cargando NumPy, Pandas, Matplotlib & Scipy...`;
-    // Carga de paquetes pre-compilados en WebAssembly (Pyodide oficial)
-    await pyodideInstance.loadPackage(["pandas", "numpy", "matplotlib", "scipy", "pillow", "micropip"]);
+    badge.innerHTML = `<span class="spinner-border spinner-border-sm"></span> Cargando base científica...`;
+    // Carga inicial mínima y rápida: NumPy, Pandas, Matplotlib, Micropip
+    await pyodideInstance.loadPackage(["pandas", "numpy", "matplotlib", "micropip"]);
 
-    badge.innerHTML = `<span class="spinner-border spinner-border-sm"></span> Instalando Seaborn, Requests, Excel (OpenPyXL) & Conectores HTTPS...`;
-    try {
-      await pyodideInstance.runPythonAsync(`
-import micropip
-_paquetes_pypi = ["seaborn", "openpyxl", "xlsxwriter", "requests", "pyodide-http", "tabulate", "imageio"]
-for _p in _paquetes_pypi:
-    try:
-        await micropip.install(_p)
-    except Exception as _ex:
-        print(f"[Aviso] Precarga opcional de '{_p}': {_ex}")
-
-try:
-    import pyodide_http
-    pyodide_http.patch_all()
-except Exception as _ex:
-    pass
-      `);
-    } catch(e) {
-      console.warn("Aviso al configurar paquetes micropip:", e);
-    }
-
-    // Configuración central: Puente de terminal + Interceptores de URLs seguros (CSV, Excel, JSON)
+    // Configuración base de terminal y URL interceptors
     await pyodideInstance.runPythonAsync(`
 import sys
 import io
@@ -2059,16 +2155,12 @@ from pyodide.http import open_url
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-try:
-    import seaborn as sns
-except Exception:
-    sns = None
 import pandas as pd
 import numpy as np
 
 plt.show = lambda *args, **kwargs: None
 
-# 1. INTERCEPTORES ROBUSTOS DE PANDAS PARA URLs (CSV, JSON, EXCEL)
+# 1. INTERCEPTORES DE PANDAS PARA URLs
 _orig_read_csv = pd.read_csv
 def _safe_read_csv(filepath_or_buffer, *args, **kwargs):
     if isinstance(filepath_or_buffer, str) and (filepath_or_buffer.startswith("http://") or filepath_or_buffer.startswith("https://")):
@@ -2119,7 +2211,7 @@ async def __custom_async_input(prompt=""):
 
 builtins.input = __custom_async_input
 
-# 3. EJECUTOR CON TOP-LEVEL AWAIT Y TRANSFORMADOR DE INPUT
+# 3. EJECUTOR
 async def __ejecutar_codigo_usuario(code_str):
     tree = ast.parse(code_str)
     
@@ -2332,15 +2424,27 @@ def __exportar_df_csv(df_name):
     return ""
     `);
 
+    // Listo de inmediato
     badge.className = "badge bg-dark border border-success text-success px-3 py-1";
-    badge.innerHTML = `<i class="bi bi-check-circle-fill"></i> Motor Wasm Listo (Seaborn + Excel + Requests)`;
+    badge.innerHTML = `<i class="bi bi-check-circle-fill"></i> Motor Wasm Listo (Auto-Detección Activa)`;
     btn.disabled = false;
     
-    terminal.textContent = `# 🐍 JPV PyStudio Pro inicializado con éxito.
-# Librerías activas: Pandas, NumPy, Matplotlib, Seaborn, Scipy, OpenPyXL, XlsxWriter, Requests (HTTPS), Tabulate.
-# Auto-Instalador activo: Detecta librerías PyPI faltantes y las descarga en vivo.
-# Soporta lectura de archivos locales, URLs directas, APIs REST y exportación descargable.
-`;
+    terminal.textContent = `# 🐍 JPV PyStudio Pro inicializado con éxito.\n# ⚡ Motor Fast-Boot activo: Reconocimiento y auto-activación automática de librerías.\n# 📦 Puedes pegar cualquier script (Excel, Seaborn, ML, HTTPS, Animación) y ejecutar directamente.\n`;
+
+    // Calentamiento en segundo plano no bloqueante para requests & excel
+    setTimeout(async () => {
+      try {
+        await pyodideInstance.runPythonAsync(`
+import micropip
+await micropip.install(["pyodide-http", "openpyxl"])
+import pyodide_http
+pyodide_http.patch_all()
+`);
+        paquetesCargados.add("openpyxl");
+        paquetesCargados.add("pyodide-http");
+      } catch(eQuiet) {}
+    }, 100);
+
   } catch (err) {
     badge.className = "badge bg-dark border border-danger text-danger px-3 py-1";
     badge.innerHTML = `<i class="bi bi-exclamation-triangle-fill"></i> Fallo Wasm`;
@@ -2376,7 +2480,10 @@ async function ejecutarPython() {
   const t0 = performance.now();
 
   try {
-        // 1. Autocarga de paquetes compilados en WebAssembly (scikit-learn, scipy, sympy, etc.)
+    // Auto-detección y activación previa de cualquier librería requerida por el código
+    await autoResolverDependencias(code);
+
+    // 1. Autocarga de paquetes compilados en WebAssembly (scikit-learn, scipy, sympy, etc.)
     try {
       await pyodideInstance.loadPackagesFromImports(code);
     } catch(ePkg) {
@@ -2564,12 +2671,208 @@ function copiarConsola() {
   navigator.clipboard.writeText(terminal.textContent);
 }
 
-window.addEventListener("DOMContentLoaded", () => {
+
+// =======================================================
+// DETECTOR INTELIGENTE DE CÓDIGO & MODOS DE INICIO
+// =======================================================
+let timerDeteccion = null;
+
+function actualizarDeteccionCodigo() {
+  const code = editor.value;
+  const badgeDetector = document.getElementById("badge-auto-detector");
+  const selectPlantillas = document.getElementById("select-plantillas");
+  const labelArchivo = document.getElementById("archivo-actual-label");
+
+  if (!code.trim()) {
+    if (badgeDetector) {
+      badgeDetector.className = "badge bg-dark border border-secondary text-secondary";
+      badgeDetector.innerHTML = `<i class="bi bi-file-earmark"></i> Lienzo Vacío`;
+    }
+    if (selectPlantillas) selectPlantillas.value = "";
+    if (labelArchivo) labelArchivo.innerText = "nuevo_script.py";
+    return;
+  }
+
+  let detectados = [];
+  let contexto = "custom";
+
+  if (/(openpyxl|xlsxwriter|\.to_excel|\.read_excel|ExcelWriter)/i.test(code)) {
+    detectados.push("Excel");
+    contexto = "excel";
+  }
+  if (/(seaborn|sns\.)/i.test(code)) {
+    detectados.push("Seaborn");
+    if (contexto === "custom") contexto = "seaborn";
+  }
+  if (/(sklearn|LinearRegression|RandomForest|KMeans)/i.test(code)) {
+    detectados.push("Scikit-Learn");
+    if (contexto === "custom") contexto = "sklearn";
+  }
+  if (/(animation\.|PillowWriter|FuncAnimation)/i.test(code)) {
+    detectados.push("Animación");
+    if (contexto === "custom") contexto = "animacion";
+  }
+  if (/(requests\.|urllib)/i.test(code)) {
+    detectados.push("Requests HTTPS");
+    if (contexto === "custom") contexto = "requests";
+  }
+  if (/(scipy|curve_fit)/i.test(code)) {
+    detectados.push("Scipy");
+    if (contexto === "custom") contexto = "scipy";
+  }
+  if (/titanic\.csv/i.test(code)) {
+    if (contexto === "custom") contexto = "titanic";
+  }
+
+  if (detectados.length === 0) {
+    if (/pandas/i.test(code)) detectados.push("Pandas");
+    if (/numpy/i.test(code)) detectados.push("NumPy");
+    if (/matplotlib/i.test(code)) detectados.push("Matplotlib");
+  }
+
+  if (badgeDetector) {
+    if (detectados.length > 0) {
+      badgeDetector.className = "badge bg-dark border border-info text-info";
+      badgeDetector.innerHTML = `<i class="bi bi-lightning-charge-fill text-warning"></i> Auto: ${detectados.join(" • ")}`;
+    } else {
+      badgeDetector.className = "badge bg-dark border border-secondary text-secondary";
+      badgeDetector.innerHTML = `<i class="bi bi-code-slash"></i> Python Personalizado`;
+    }
+  }
+
+  if (selectPlantillas) {
+    if (contexto !== "custom" && PLANTILLAS[contexto]) {
+      selectPlantillas.value = contexto;
+      if (labelArchivo) labelArchivo.innerText = contexto + "_analisis.py";
+    } else {
+      selectPlantillas.value = "custom";
+      if (labelArchivo) labelArchivo.innerText = "mi_analisis.py";
+    }
+  }
+}
+
+editor.addEventListener("input", () => {
+  clearTimeout(timerDeteccion);
+  timerDeteccion = setTimeout(actualizarDeteccionCodigo, 300);
+});
+
+function manejarSeleccionPlantilla(tipo) {
+  if (!PLANTILLAS[tipo]) return;
+
+  const codigoActual = editor.value.trim();
+  if (codigoActual !== "" && codigoActual !== PLANTILLAS[tipo].trim()) {
+    const confirmar = confirm(`Tienes código en el editor.\n\n¿Deseas reemplazarlo con la plantilla '${tipo.toUpperCase()}'?\n(Se borrará el código que tienes actualmente)`);
+    if (!confirmar) {
+      actualizarDeteccionCodigo();
+      return;
+    }
+  }
+
+  cargarPlantilla(tipo);
+  actualizarDeteccionCodigo();
+}
+
+function activarLienzoVacio() {
+  const codigoActual = editor.value.trim();
+  if (codigoActual !== "") {
+    if (!confirm("¿Deseas vaciar el editor para comenzar con un lienzo limpio?\n(Podrás pegar tu propio código de inmediato)")) {
+      return;
+    }
+  }
+  editor.value = "";
   actualizarContador();
   sincronizarPrism();
+  actualizarDeteccionCodigo();
+  terminal.textContent = "# ✨ Lienzo limpio preparado.\n# Pega tu código Python con Ctrl+V y pulsa 'Ejecutar'.\n";
+  cambiarTab('terminal');
+}
+
+function cargarEjemploPractica() {
+  const select = document.getElementById("select-plantillas");
+  const actual = (select && select.value && select.value !== "custom") ? select.value : "titanic";
+  manejarSeleccionPlantilla(actual);
+}
+
+function elegirModoInicio(modo) {
+  const check = document.getElementById("checkRecordarInicio");
+  if (check && check.checked) {
+    localStorage.setItem("pystudio_inicio", modo);
+  }
+
+  if (modo === "vacio") {
+    editor.value = "";
+    actualizarContador();
+    sincronizarPrism();
+    actualizarDeteccionCodigo();
+    terminal.textContent = "# ✨ Lienzo vacío listo. Pega tu código Python con Ctrl+V y pulsa 'Ejecutar'.\n";
+  } else {
+    cargarPlantilla("titanic");
+    actualizarDeteccionCodigo();
+  }
+
+  const modalEl = document.getElementById('modalBienvenidaInicio');
+  const modal = bootstrap.Modal.getInstance(modalEl);
+  if (modal) modal.hide();
+}
+
+window.addEventListener("DOMContentLoaded", () => {
+  const pref = localStorage.getItem("pystudio_inicio");
+  if (pref === "vacio") {
+    editor.value = "";
+  } else if (pref === "practica") {
+    // Mantener la plantilla de práctica inicial
+  } else {
+    // Si es la primera visita, abrir modal de bienvenida
+    try {
+      const modalBienvenida = new bootstrap.Modal(document.getElementById('modalBienvenidaInicio'));
+      modalBienvenida.show();
+    } catch(eM) {}
+  }
+
+  actualizarContador();
+  sincronizarPrism();
+  actualizarDeteccionCodigo();
   bootWasm();
 });
 </script>
+
+
+<!-- Modal Bienvenida: ¿Lienzo Vacío o Práctica? -->
+<div class="modal fade" id="modalBienvenidaInicio" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content bg-dark border border-info shadow-lg text-light" style="background-color: #0b1120 !important; border-radius: 12px;">
+      <div class="modal-header border-secondary py-2">
+        <h6 class="modal-title fw-bold text-info"><i class="bi bi-stars"></i> Bienvenido a JPV PyStudio</h6>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body py-3">
+        <p class="small text-secondary mb-3">
+          ¿Cómo deseas iniciar tu espacio de trabajo hoy?
+        </p>
+        <div class="d-grid gap-2">
+          <button class="btn btn-outline-info text-start d-flex align-items-center gap-3 p-3 rounded-3" onclick="elegirModoInicio('vacio')">
+            <i class="bi bi-file-earmark-plus fs-2 text-info"></i>
+            <div>
+              <div class="fw-bold text-light">✨ Comenzar con Lienzo Vacío</div>
+              <div class="text-secondary small" style="font-size: 11.5px;">Editor 100% limpio listo para pegar tu código Python con Ctrl+V.</div>
+            </div>
+          </button>
+          <button class="btn btn-dark border border-secondary text-start d-flex align-items-center gap-3 p-3 rounded-3" onclick="elegirModoInicio('practica')">
+            <i class="bi bi-code-square text-success fs-2"></i>
+            <div>
+              <div class="fw-bold text-light">🚀 Cargar Código de Práctica (Titanic)</div>
+              <div class="text-secondary small" style="font-size: 11.5px;">Explorar ejemplos prediseñados de análisis, gráficos y datasets.</div>
+            </div>
+          </button>
+        </div>
+        <div class="form-check mt-3 small text-secondary">
+          <input class="form-check-input" type="checkbox" id="checkRecordarInicio">
+          <label class="form-check-label" for="checkRecordarInicio">Recordar mi elección para las próximas visitas</label>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
 </body>
 </html>
