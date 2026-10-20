@@ -4,10 +4,11 @@
   <meta charset="UTF-8">
   <link rel="icon" type="image/png" href="https://silentinstallhq.com/wp-content/uploads/2025/09/Python.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>JPV PyStudio // WebAssembly Panoramic Studio Pro</title>
+  <title>JPV PyStudio // WebAssembly Pro Studio (Seaborn • Excel • Requests HTTPS)</title>
   
-  <!-- Bootstrap 5 CSS -->
+  <!-- Bootstrap 5 CSS & JS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <!-- Bootstrap Icons -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
   <!-- Google Fonts -->
@@ -524,18 +525,30 @@
            class="rounded-circle border border-info" 
            style="width: 30px; height: 30px; object-fit: cover; box-shadow: 0 0 8px rgba(0, 242, 254, 0.35);">
       <span class="fw-bold fs-6">JPV <span class="text-info">PyStudio</span></span>
-      <span class="badge bg-dark border border-secondary text-secondary d-none d-md-inline ms-2">Lectura URLs + Carga Local</span>
+      <span class="badge bg-dark border border-info text-info d-none d-lg-inline ms-1" style="font-size: 11px;">
+        <i class="bi bi-graph-up text-info"></i> Seaborn • Matplotlib • Excel • Requests HTTPS
+      </span>
     </div>
 
-    <!-- Acciones de Archivos -->
+    <!-- Acciones de Archivos y Plantillas -->
     <div class="d-flex align-items-center gap-2">
-      <input type="file" id="input-archivo-local" accept=".csv, .xlsx, .xls, .json, .txt" style="display: none;" onchange="manejarSubidaArchivo(this)">
+      <!-- Selector de Plantillas Rápidas -->
+      <select id="select-plantillas" class="form-select form-select-sm bg-dark text-info border-secondary py-1" style="width: auto; font-size: 11.5px; cursor: pointer;" onchange="cargarPlantilla(this.value)" title="Cargar código de ejemplo">
+        <option value="" disabled selected>📂 Plantillas Rápidas...</option>
+        <option value="titanic">🚢 Titanic (CSV Web + Matplotlib)</option>
+        <option value="seaborn">📊 Seaborn (Heatmap & Correlación)</option>
+        <option value="requests">🌐 Requests HTTPS (API REST en vivo)</option>
+        <option value="excel">📑 Excel (.xlsx Lectura y Escritura)</option>
+        <option value="scipy">🔬 Scipy & Curvas Matemáticas</option>
+      </select>
+
+      <input type="file" id="input-archivo-local" accept=".csv, .xlsx, .xls, .json, .txt, .parquet" style="display: none;" onchange="manejarSubidaArchivo(this)">
       
       <button class="btn btn-sm btn-outline-info btn-action" onclick="document.getElementById('input-archivo-local').click()" title="Cargar archivo local desde la PC">
         <i class="bi bi-upload"></i> Subir CSV / Excel
       </button>
 
-      <button class="btn btn-sm btn-dark text-secondary btn-action" onclick="mostrarArchivosEnMemoria()" title="Ver archivos cargados en el disco virtual">
+      <button class="btn btn-sm btn-dark text-secondary btn-action" onclick="mostrarArchivosEnMemoria()" title="Ver y gestionar archivos en la memoria virtual">
         <i class="bi bi-folder2-open"></i> Archivos (VFS)
       </button>
 
@@ -712,6 +725,34 @@ print("\n💾 Archivo 'Reporte_Titanic_Descargado.csv' listo para descargar.")
   </main>
 </div>
 
+<!-- Modal VFS Archivos en Memoria Virtual -->
+<div class="modal fade" id="modalVfs" tabindex="-1" aria-labelledby="modalVfsLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content bg-dark border border-secondary text-light">
+      <div class="modal-header border-secondary py-2">
+        <h6 class="modal-title d-flex align-items-center gap-2" id="modalVfsLabel">
+          <i class="bi bi-folder2-open text-info"></i> Archivos en Disco Virtual (VFS Pyodide)
+        </h6>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body p-3">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <span class="text-secondary small">Archivos accesibles directamente por Python mediante <code>pd.read_csv()</code>, <code>open()</code>, etc.</span>
+          <button class="btn btn-sm btn-outline-info" onclick="document.getElementById('input-archivo-local').click()">
+            <i class="bi bi-upload"></i> Subir Archivo
+          </button>
+        </div>
+        <div id="vfs-tabla-archivos" class="table-responsive">
+          <div class="text-center text-secondary py-3">Cargando archivos...</div>
+        </div>
+      </div>
+      <div class="modal-footer border-secondary py-1">
+        <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Prism Scripts -->
 <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-python.min.js"></script>
@@ -807,20 +848,127 @@ window.addEventListener("drop", (e) => {
 });
 
 async function mostrarArchivosEnMemoria() {
-  if (!pyodideInstance) return;
+  if (!pyodideInstance) {
+    alert("El motor WebAssembly aún se está inicializando.");
+    return;
+  }
   try {
     const jsonStr = await pyodideInstance.runPythonAsync(`
 import os, json
-json.dumps([f for f in os.listdir('.') if not f.startswith('.')])
+archivos_info = []
+for f in os.listdir('.'):
+    if not f.startswith('.') and not f.startswith('__') and os.path.isfile(f):
+        try:
+            sz = os.path.getsize(f)
+            archivos_info.append({"nombre": f, "size": sz})
+        except:
+            archivos_info.append({"nombre": f, "size": 0})
+json.dumps(archivos_info)
     `);
     const archivos = JSON.parse(jsonStr);
+    const contenedor = document.getElementById("vfs-tabla-archivos");
+    
     if (archivos.length === 0) {
-      alert("No hay archivos en la memoria virtual aún.\nPuedes subir uno con el botón 'Subir CSV / Excel' o arrastrándolo aquí.");
+      contenedor.innerHTML = `
+        <div class="text-center text-secondary py-4">
+          <i class="bi bi-folder-x fs-1 text-muted d-block mb-2"></i>
+          No hay archivos creados ni cargados en la memoria virtual.<br>
+          <span class="small">Usa <b>'Subir CSV / Excel'</b> o arrastra un archivo al editor para comenzar.</span>
+        </div>`;
     } else {
-      alert("📁 Archivos en memoria virtual (VFS):\n\n" + archivos.map(a => "• " + a).join("\n"));
+      let html = `
+        <table class="table table-dark table-hover table-sm align-middle small mb-0">
+          <thead>
+            <tr class="text-secondary border-secondary">
+              <th>Archivo</th>
+              <th>Tamaño</th>
+              <th class="text-end">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>`;
+      
+      archivos.forEach(a => {
+        const kb = (a.size / 1024).toFixed(1);
+        const ext = a.nombre.split('.').pop().toLowerCase();
+        let icon = "bi-file-earmark";
+        if (ext === "csv" || ext === "xlsx" || ext === "xls") icon = "bi-file-earmark-excel text-success";
+        else if (ext === "json") icon = "bi-file-earmark-code text-warning";
+        else if (ext === "png" || ext === "jpg") icon = "bi-file-earmark-image text-info";
+        
+        html += `
+          <tr>
+            <td><i class="bi ${icon} me-1"></i> <span class="fw-semibold text-light">${a.nombre}</span></td>
+            <td class="text-muted">${kb} KB</td>
+            <td class="text-end">
+              <button class="btn btn-xs btn-outline-info py-0 px-2 me-1" onclick="descargarArchivoVFS('${a.nombre}')" title="Descargar a tu PC">
+                <i class="bi bi-download"></i>
+              </button>
+              <button class="btn btn-xs btn-outline-secondary py-0 px-2 me-1" onclick="copiarSnippetArchivo('${a.nombre}')" title="Copiar código para cargarlo en Python">
+                <i class="bi bi-code-slash"></i>
+              </button>
+              <button class="btn btn-xs btn-outline-danger py-0 px-2" onclick="eliminarArchivoVFS('${a.nombre}')" title="Eliminar del disco virtual">
+                <i class="bi bi-trash"></i>
+              </button>
+            </td>
+          </tr>`;
+      });
+      html += `</tbody></table>`;
+      contenedor.innerHTML = html;
     }
+
+    const modal = new bootstrap.Modal(document.getElementById('modalVfs'));
+    modal.show();
   } catch(e) {
-    console.error(e);
+    console.error("Error al explorar VFS:", e);
+    alert("Error al explorar VFS: " + e.message);
+  }
+}
+
+function copiarSnippetArchivo(nombre) {
+  const ext = nombre.split('.').pop().toLowerCase();
+  let snippet = "";
+  if (ext === "csv") snippet = `df = pd.read_csv("${nombre}")`;
+  else if (ext === "xlsx" || ext === "xls") snippet = `df = pd.read_excel("${nombre}")`;
+  else if (ext === "json") snippet = `df = pd.read_json("${nombre}")`;
+  else snippet = `with open("${nombre}", "r", encoding="utf-8") as f:\n    contenido = f.read()`;
+  navigator.clipboard.writeText(snippet);
+  alert("Snippet copiado al portapapeles:\n\n" + snippet);
+}
+
+function descargarArchivoVFS(nombreArchivo) {
+  if (!pyodideInstance) return;
+  try {
+    const data = pyodideInstance.FS.readFile(nombreArchivo);
+    const ext = nombreArchivo.split('.').pop().toLowerCase();
+    let mime = "application/octet-stream";
+    if (ext === "csv") mime = "text/csv;charset=utf-8;";
+    else if (ext === "xlsx") mime = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+    else if (ext === "xls") mime = "application/vnd.ms-excel";
+    else if (ext === "json") mime = "application/json";
+    else if (ext === "png") mime = "image/png";
+    else if (ext === "txt") mime = "text/plain;charset=utf-8;";
+
+    const blob = new Blob([data], { type: mime });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = nombreArchivo;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  } catch(e) {
+    alert("Error al descargar archivo: " + e.message);
+  }
+}
+
+async function eliminarArchivoVFS(nombreArchivo) {
+  if (!confirm(`¿Deseas eliminar '${nombreArchivo}' del disco virtual?`)) return;
+  try {
+    pyodideInstance.FS.unlink(nombreArchivo);
+    mostrarArchivosEnMemoria();
+  } catch(e) {
+    alert("Error al eliminar archivo: " + e.message);
   }
 }
 
@@ -869,7 +1017,7 @@ window.solicitarInputTerminal = function(promptText) {
 };
 
 // =======================================================
-// DESCARGA: GRÁFICO (PNG) & TABLA (CSV / EXCEL)
+// DESCARGA: GRÁFICO (PNG) & TABLA (CSV / EXCEL / JSON)
 // =======================================================
 function descargarGraficoPNG() {
   if (!currentPlotB64) {
@@ -891,46 +1039,283 @@ async function descargarTablaCSV() {
     const infoJson = await pyodideInstance.runPythonAsync("__obtener_datos_descargables()");
     const info = JSON.parse(infoJson);
 
-    let contenido = "";
-    let nombreArchivo = "datos_exportados.csv";
-
-    if (info.csvs && info.csvs.length > 0) {
-      const archivo = info.csvs[info.csvs.length - 1];
-      nombreArchivo = archivo;
-      contenido = await pyodideInstance.runPythonAsync(`__leer_archivo_csv('${archivo}')`);
-    } else if (info.dfs && info.dfs.length > 0) {
-      const nombreDf = info.dfs[info.dfs.length - 1];
-      nombreArchivo = `${nombreDf}.csv`;
-      contenido = await pyodideInstance.runPythonAsync(`__exportar_df_csv('${nombreDf}')`);
-    } else {
-      const textoConsola = terminal.textContent.trim();
-      if (!textoConsola) {
-        alert("No hay tablas ni salidas en consola para descargar.");
-        return;
-      }
-      nombreArchivo = "salida_consola.txt";
-      contenido = textoConsola;
-    }
-
-    if (!contenido) {
-      alert("No se pudo obtener el contenido.");
+    if (info.archivos && info.archivos.length > 0) {
+      // Descargar el archivo más reciente guardado
+      const archivo = info.archivos[info.archivos.length - 1];
+      descargarArchivoVFS(archivo);
       return;
     }
 
-    const blob = new Blob(["\uFEFF" + contenido], { 
-      type: nombreArchivo.endsWith('.csv') ? "text/csv;charset=utf-8;" : "text/plain;charset=utf-8;" 
-    });
+    if (info.dfs && info.dfs.length > 0) {
+      // Si hay DataFrames activos en memoria
+      const nombreDf = info.dfs[info.dfs.length - 1];
+      const csvData = await pyodideInstance.runPythonAsync(`__exportar_df_csv('${nombreDf}')`);
+      const blob = new Blob(["\uFEFF" + csvData], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const enlace = document.createElement("a");
+      enlace.href = url;
+      enlace.download = `${nombreDf}.csv`;
+      document.body.appendChild(enlace);
+      enlace.click();
+      document.body.removeChild(enlace);
+      URL.revokeObjectURL(url);
+      return;
+    }
 
+    const textoConsola = terminal.textContent.trim();
+    if (!textoConsola) {
+      alert("No hay tablas ni salidas en consola para descargar.");
+      return;
+    }
+    const blob = new Blob(["\uFEFF" + textoConsola], { type: "text/plain;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const enlace = document.createElement("a");
     enlace.href = url;
-    enlace.download = nombreArchivo;
+    enlace.download = "salida_consola.txt";
     document.body.appendChild(enlace);
     enlace.click();
     document.body.removeChild(enlace);
     URL.revokeObjectURL(url);
   } catch (err) {
     alert("Error al exportar tabla: " + err.message);
+  }
+}
+
+// =======================================================
+// CATÁLOGO DE PLANTILLAS MAESTRAS
+// =======================================================
+const PLANTILLAS = {
+  titanic: `import pandas as pd
+import matplotlib.pyplot as plt
+
+print("=============================================================")
+print("🌐 LECTURA DE ARCHIVO CSV DIRECTO DESDE LA WEB (URL)")
+print("=============================================================")
+
+# URL pública en GitHub (Dataset Titanic)
+url_web = "https://raw.githubusercontent.com/datasciencedojo/datasets/master/titanic.csv"
+
+print(f"Descargando y procesando: {url_web} ...")
+df_web = pd.read_csv(url_web)
+
+print(f"\\n✅ Datos descargados exitosamente: {len(df_web)} filas.")
+print(df_web[["PassengerId", "Name", "Sex", "Age", "Survived"]].head(8))
+
+# Análisis gráfico de los datos descargados
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(9, 3.8))
+
+# Gráfico 1: Supervivientes
+conteo_survived = df_web["Survived"].value_counts()
+ax1.pie(conteo_survived, labels=["Fallecidos", "Sobrevivientes"], autopct="%1.1f%%", colors=["#f87171", "#00f2fe"], startangle=90)
+ax1.set_title("Tasa de Supervivencia Titanic")
+
+# Gráfico 2: Pasajeros por Clase
+df_web["Pclass"].value_counts().sort_index().plot(kind='bar', ax=ax2, color="#38bdf8", edgecolor='black')
+ax2.set_title("Pasajeros por Clase de Boleto")
+ax2.set_xlabel("Clase (1ra, 2da, 3ra)")
+ax2.set_ylabel("Cantidad de Pasajeros")
+
+plt.tight_layout()
+plt.show()
+
+# Guardar reporte para descargar
+df_web.to_csv("Reporte_Titanic_Descargado.csv", index=False)
+print("\\n💾 Archivo 'Reporte_Titanic_Descargado.csv' listo para descargar.")`,
+
+  seaborn: `import pandas as pd
+import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+print("=============================================================")
+print("📊 ANÁLISIS ESTADÍSTICO CON SEABORN & CORRELACIÓN DE DATOS")
+print("=============================================================")
+
+# Configurar estilo visual moderno
+sns.set_theme(style="darkgrid")
+plt.style.use("dark_background")
+
+# Generar dataset financiero comercial simulado
+np.random.seed(42)
+n = 120
+data = {
+    "Ventas_RD": np.random.normal(50000, 14000, n),
+    "Costo_Adquisicion": np.random.normal(12000, 2500, n),
+    "Descuento_Pct": np.random.uniform(5, 20, n),
+    "Satisfaccion_Cliente": np.random.uniform(2, 10, n),
+}
+data["Margen_Bruto"] = data["Ventas_RD"] - data["Costo_Adquisicion"] - (data["Ventas_RD"] * data["Descuento_Pct"] / 100)
+
+df = pd.DataFrame(data)
+print(f"✅ Dataset financiero generado con {len(df)} transacciones.")
+print(df.head(5).round(2))
+
+# Matriz de Correlación
+corr = df.corr()
+print("\\n📈 Matriz de Correlación entre Indicadores:")
+print(corr.round(3))
+
+# Visualización dual con Seaborn
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 4.2))
+
+# 1. Mapa de Calor (Heatmap)
+sns.heatmap(corr, annot=True, fmt=".2f", cmap="coolwarm", cbar=True, ax=ax1, linewidths=0.5)
+ax1.set_title("Heatmap de Correlación Financiera")
+
+# 2. Regresión y dispersión (Regplot)
+sns.regplot(x="Ventas_RD", y="Margen_Bruto", data=df, ax=ax2,
+            scatter_kws={"color": "#00f2fe", "alpha": 0.6},
+            line_kws={"color": "#f43f5e", "linewidth": 2})
+ax2.set_title("Tendencia: Ventas vs Margen Bruto")
+ax2.set_xlabel("Ventas (RD$)")
+ax2.set_ylabel("Margen (RD$)")
+
+plt.tight_layout()
+plt.show()
+
+# Exportar a Excel y CSV
+df.to_csv("analisis_seaborn_reporte.csv", index=False)
+df.to_excel("analisis_seaborn_reporte.xlsx", index=False)
+print("\\n💾 Exportados: 'analisis_seaborn_reporte.csv' y '.xlsx'")`,
+
+  requests: `import requests
+import pandas as pd
+
+print("=============================================================")
+print("🌐 CONSULTA A API REST EXTERNA VÍA HTTPS CON REQUESTS")
+print("=============================================================")
+
+# API pública HTTPS con CORS habilitado (CoinGecko Markets)
+url = "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=10&page=1"
+
+print(f"Enviando solicitud GET a: {url} ...")
+try:
+    response = requests.get(url, timeout=10)
+    print(f"Código de respuesta HTTP: {response.status_code} ({response.reason})")
+    
+    if response.status_code == 200:
+        datos = response.json()
+        print(f"✅ Respuesta recibida: {len(datos)} criptomonedas obtenidas.\\n")
+        
+        # Procesar datos con pandas
+        df = pd.DataFrame(datos)[["name", "symbol", "current_price", "market_cap", "price_change_percentage_24h"]]
+        df.columns = ["Criptomoneda", "Símbolo", "Precio USD", "Market Cap USD", "Cambio 24h (%)"]
+        
+        print("🏆 Top 10 Criptoactivos:")
+        print(df.to_string(index=False))
+        
+        # Guardar en archivo local
+        df.to_csv("top_cripto_mercado.csv", index=False)
+        print("\\n💾 Guardado en disco virtual: 'top_cripto_mercado.csv'")
+    else:
+        print(f"Respuesta inesperada: {response.text[:200]}")
+
+except Exception as e:
+    print(f"❌ Error en la solicitud: {e}")
+    print("\\n💡 Recuerda que las solicitudes web en el navegador requieren que la API permita CORS.")`,
+
+  excel: `import pandas as pd
+import numpy as np
+
+print("=============================================================")
+print("📑 LECTURA, PROCESAMIENTO Y GENERACIÓN DE EXCEL (.XLSX)")
+print("=============================================================")
+
+# Crear dataset corporativo con cálculo de impuestos DGII (18% ITBIS)
+vendedores = ["Juancito Peña", "Carlos Gómez", "Mildre Morales", "Dulce Rosario", "Pedro Jiménez"]
+sucursales = ["Santo Domingo", "Santiago", "La Romana", "La Vega", "Azua"]
+productos = ["Laptop Pro 16", "Monitor UltraWide 34", "Teclado Mecánico RGB", "Mouse Ergonómico", "Dock USB-C"]
+
+np.random.seed(101)
+filas = 80
+data = {
+    "No_Factura": [f"B01{str(i).zfill(5)}" for i in range(1001, 1001 + filas)],
+    "Vendedor": np.random.choice(vendedores, filas),
+    "Sucursal": np.random.choice(sucursales, filas),
+    "Producto": np.random.choice(productos, filas),
+    "Cantidad": np.random.randint(1, 10, filas),
+    "Precio_Unitario": np.random.choice([1500, 3200, 7500, 18500, 45000], filas)
+}
+
+df_ventas = pd.DataFrame(data)
+df_ventas["Subtotal"] = df_ventas["Cantidad"] * df_ventas["Precio_Unitario"]
+df_ventas["ITBIS_18"] = (df_ventas["Subtotal"] * 0.18).round(2)
+df_ventas["Total_Factura"] = df_ventas["Subtotal"] + df_ventas["ITBIS_18"]
+
+print(f"✅ Dataset corporativo generado: {len(df_ventas)} facturas.")
+print(df_ventas.head(5))
+
+# Resumen agrupado por Sucursal
+resumen = df_ventas.groupby("Sucursal").agg({
+    "No_Factura": "count",
+    "Subtotal": "sum",
+    "ITBIS_18": "sum",
+    "Total_Factura": "sum"
+}).rename(columns={"No_Factura": "Cant_Facturas"}).reset_index()
+
+print("\\n📊 Resumen de Facturación por Sucursal:")
+print(resumen.to_string(index=False))
+
+# Guardar en Libro Excel (.xlsx) con múltiples hojas usando openpyxl
+archivo_excel = "Reporte_Facturacion_Corporativa.xlsx"
+with pd.ExcelWriter(archivo_excel, engine="openpyxl") as writer:
+    df_ventas.to_excel(writer, sheet_name="Detalle_Facturas", index=False)
+    resumen.to_excel(writer, sheet_name="Resumen_Sucursales", index=False)
+
+print(f"\\n💾 Libro Excel generado: '{archivo_excel}' con 2 hojas de cálculo.")
+print("👉 Descárgalo con el botón 'Descargar Excel / CSV' o en 'Archivos (VFS)'!")`,
+
+  scipy: `import numpy as np
+import matplotlib.pyplot as plt
+from scipy.optimize import curve_fit
+
+print("=============================================================")
+print("🔬 ANÁLISIS CIENTÍFICO Y AJUSTE DE MODELOS CON SCIPY")
+print("=============================================================")
+
+# Datos experimentales con ruido
+x_data = np.linspace(0, 10, 40)
+y_true = 2.5 * (x_data ** 1.5) + 5
+ruido = np.random.normal(0, 4, len(x_data))
+y_data = y_true + ruido
+
+# Definir función matemática para ajustar
+def modelo_potencia(x, a, b, c):
+    return a * (x ** b) + c
+
+# Ajuste con Scipy curve_fit
+params, cov = curve_fit(modelo_potencia, x_data, y_data, p0=[2, 1.5, 5])
+a_opt, b_opt, c_opt = params
+
+residuos = y_data - modelo_potencia(x_data, *params)
+r2 = 1 - (np.sum(residuos**2) / np.sum((y_data - np.mean(y_data))**2))
+
+print("✅ Parámetros optimizados con Scipy:")
+print(f"   a = {a_opt:.4f}, b = {b_opt:.4f}, c = {c_opt:.4f}")
+print(f"   Coeficiente de Determinación (R²): {r2:.4f}")
+
+# Graficar
+fig, ax = plt.subplots(figsize=(8, 4))
+ax.scatter(x_data, y_data, color="#00f2fe", label="Datos experimentales", alpha=0.8)
+x_curva = np.linspace(0, 10, 200)
+ax.plot(x_curva, modelo_potencia(x_curva, *params), color="#f43f5e", linewidth=2.5,
+        label=f"Ajuste Scipy: {a_opt:.2f}·x^{b_opt:.2f} + {c_opt:.2f} (R²={r2:.3f})")
+
+ax.set_title("Ajuste No Lineal de Curvas con Scipy Optimize")
+ax.set_xlabel("Variable X")
+ax.set_ylabel("Respuesta Y")
+ax.legend()
+plt.tight_layout()
+plt.show()`
+};
+
+function cargarPlantilla(tipo) {
+  if (PLANTILLAS[tipo]) {
+    editor.value = PLANTILLAS[tipo];
+    actualizarContador();
+    sincronizarPrism();
+    terminal.textContent = `# Plantilla cargada: ${tipo.toUpperCase()}\\nPresiona 'Ejecutar' para compilar el código.\\n`;
+    cambiarTab('terminal');
   }
 }
 
@@ -944,12 +1329,19 @@ const CATALOGO_SNIPPETS = [
   { trigger: "urlcsv", label: "pd.read_csv(url)", desc: "leer CSV desde internet (URL)", type: "pandas", text: 'df = pd.read_csv("$0")\nprint(df.head())' },
   { trigger: "readexcel", label: "pd.read_excel()", desc: "leer archivo Excel (.xlsx)", type: "pandas", text: 'df = pd.read_excel("$0.xlsx")\nprint(df.head())' },
   { trigger: "readcsv", label: "pd.read_csv()", desc: "cargar archivo CSV local", type: "pandas", text: 'pd.read_csv("$0.csv")' },
+  { trigger: "readjson", label: "pd.read_json()", desc: "leer JSON local o URL", type: "pandas", text: 'pd.read_json("$0")' },
   { trigger: "df", label: "pd.DataFrame()", desc: "crear DataFrame", type: "pandas", text: "df = pd.DataFrame({\n    \"col1\": [1, 2, 3],\n    \"col2\": [\"A\", \"B\", \"C\"]\n})\nprint(df)$0" },
-  { trigger: "plot", label: "plt.subplots()", desc: "crear gráfico", type: "matplotlib", text: "fig, ax = plt.subplots(figsize=(7, 3.5))\nax.plot([1, 2, 3], [10, 20, 15], color=\"#00f2fe\")\nplt.tight_layout()$0" },
+  { trigger: "reqget", label: "requests.get()", desc: "petición HTTP GET", type: "snippet", text: 'r = requests.get("$0")\ndatos = r.json()\nprint(datos)' },
+  { trigger: "reqpost", label: "requests.post()", desc: "petición HTTP POST", type: "snippet", text: 'r = requests.post("$0", json={})\nprint(r.status_code)' },
+  { trigger: "snsheat", label: "sns.heatmap()", desc: "mapa de calor Seaborn", type: "matplotlib", text: 'sns.heatmap(df.corr(), annot=True, cmap="coolwarm")\nplt.tight_layout()$0' },
+  { trigger: "snsreg", label: "sns.regplot()", desc: "gráfico regresión Seaborn", type: "matplotlib", text: 'sns.regplot(x="$1", y="$2", data=df)\nplt.tight_layout()$0' },
+  { trigger: "plot", label: "plt.subplots()", desc: "crear gráfico Matplotlib", type: "matplotlib", text: "fig, ax = plt.subplots(figsize=(7, 3.5))\nax.plot([1, 2, 3], [10, 20, 15], color=\"#00f2fe\")\nplt.tight_layout()$0" },
+  { trigger: "toexcel", label: ".to_excel()", desc: "exportar a Excel (.xlsx)", type: "pandas", text: 'to_excel("$0.xlsx", index=False)' },
+  { trigger: "tocsv", label: ".to_csv()", desc: "exportar a CSV", type: "pandas", text: 'to_csv("$0.csv", index=False)' },
+  { trigger: "curvefit", label: "curve_fit()", desc: "ajuste de curva Scipy", type: "snippet", text: 'params, cov = curve_fit(modelo, x_data, y_data)$0' },
   { trigger: "fori", label: "for i in range():", desc: "bucle de conteo", type: "snippet", text: "for i in range(10):\n    $0" },
   { trigger: "def", label: "def funcion():", desc: "definir función", type: "palabra clave", text: "def mi_funcion($0):\n    pass" },
   { trigger: "try", label: "try / except", desc: "control de excepciones", type: "snippet", text: "try:\n    $0\nexcept Exception as e:\n    print(f\"Error: {e}\")" },
-  { trigger: "tocsv", label: ".to_csv()", desc: "exportar a CSV", type: "pandas", text: 'to_csv("$0.csv", index=False)' },
   { trigger: "import", label: "import", desc: "importar módulo", type: "palabra clave", text: "import $0" }
 ];
 
@@ -1333,14 +1725,14 @@ async function bootWasm() {
     badge.innerHTML = `<span class="spinner-border spinner-border-sm"></span> Cargando WebAssembly...`;
     pyodideInstance = await loadPyodide();
 
-    badge.innerHTML = `<span class="spinner-border spinner-border-sm"></span> Instalando Pandas & Matplotlib...`;
-    await pyodideInstance.loadPackage(["pandas", "matplotlib", "micropip"]);
+    badge.innerHTML = `<span class="spinner-border spinner-border-sm"></span> Instalando Pandas, Seaborn, Matplotlib & Scipy...`;
+    await pyodideInstance.loadPackage(["pandas", "numpy", "matplotlib", "scipy", "seaborn", "micropip"]);
 
-    badge.innerHTML = `<span class="spinner-border spinner-border-sm"></span> Configurando Excel & Conectores Web...`;
+    badge.innerHTML = `<span class="spinner-border spinner-border-sm"></span> Configurando Requests, Excel & Conectores HTTPS...`;
     try {
       await pyodideInstance.runPythonAsync(`
 import micropip
-await micropip.install(["openpyxl", "pyodide-http"])
+await micropip.install(["requests", "openpyxl", "xlsxwriter", "pyodide-http"])
 import pyodide_http
 pyodide_http.patch_all()
       `);
@@ -1348,7 +1740,7 @@ pyodide_http.patch_all()
       console.warn("Aviso al configurar paquetes micropip:", e);
     }
 
-    // Configuración central: Puente de terminal + Interceptor de URLs seguro
+    // Configuración central: Puente de terminal + Interceptores de URLs seguros (CSV, Excel, JSON)
     await pyodideInstance.runPythonAsync(`
 import sys
 import io
@@ -1361,15 +1753,16 @@ from pyodide.http import open_url
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+import seaborn as sns
 import pandas as pd
+import numpy as np
 
 plt.show = lambda *args, **kwargs: None
 
-# 1. INTERCEPTOR ROBUSTO DE PANDAS PARA URLS (Sin fallo de headers)
+# 1. INTERCEPTORES ROBUSTOS DE PANDAS PARA URLs (CSV, JSON, EXCEL)
 _orig_read_csv = pd.read_csv
 def _safe_read_csv(filepath_or_buffer, *args, **kwargs):
     if isinstance(filepath_or_buffer, str) and (filepath_or_buffer.startswith("http://") or filepath_or_buffer.startswith("https://")):
-        # Descarga segura como buffer directo en memoria
         buf = open_url(filepath_or_buffer)
         return _orig_read_csv(buf, *args, **kwargs)
     return _orig_read_csv(filepath_or_buffer, *args, **kwargs)
@@ -1384,6 +1777,15 @@ def _safe_read_json(path_or_buf, *args, **kwargs):
     return _orig_read_json(path_or_buf, *args, **kwargs)
 
 pd.read_json = _safe_read_json
+
+_orig_read_excel = pd.read_excel
+def _safe_read_excel(io_or_url, *args, **kwargs):
+    if isinstance(io_or_url, str) and (io_or_url.startswith("http://") or io_or_url.startswith("https://")):
+        buf = open_url(io_or_url)
+        return _orig_read_excel(buf, *args, **kwargs)
+    return _orig_read_excel(io_or_url, *args, **kwargs)
+
+pd.read_excel = _safe_read_excel
 
 # 2. PUENTE DE TERMINAL EN VIVO
 class LiveStdout:
@@ -1438,12 +1840,13 @@ def __extraer_plot():
     return base64.b64encode(b.read()).decode("utf-8")
 
 def __obtener_datos_descargables():
-    archivos_csv = [f for f in os.listdir('.') if f.endswith('.csv')]
+    archivos = [f for f in os.listdir('.') if not f.startswith('.') and not f.startswith('__') and os.path.isfile(f)]
+    archivos_data = [f for f in archivos if f.endswith(('.csv', '.xlsx', '.xls', '.json', '.txt', '.png', '.parquet'))]
     dfs = []
     for k, v in list(globals().items()):
         if isinstance(v, pd.DataFrame) and not k.startswith('_'):
             dfs.append(k)
-    return json.dumps({"csvs": archivos_csv, "dfs": dfs})
+    return json.dumps({"archivos": archivos_data, "dfs": dfs})
 
 def __leer_archivo_csv(nombre):
     if os.path.exists(nombre):
@@ -1460,10 +1863,10 @@ def __exportar_df_csv(df_name):
     `);
 
     badge.className = "badge bg-dark border border-success text-success px-3 py-1";
-    badge.innerHTML = `<i class="bi bi-check-circle-fill"></i> Runtime Listo (URLs + Excel)`;
+    badge.innerHTML = `<i class="bi bi-check-circle-fill"></i> Motor Wasm Listo (Seaborn + Excel + Requests)`;
     btn.disabled = false;
     
-    terminal.textContent = "# Motor Python listo. Soporta lectura directa de URLs, archivos locales y Excel.\n";
+    terminal.textContent = "# 🐍 JPV PyStudio Pro inicializado con éxito.\\n# Librerías activas: Pandas, NumPy, Matplotlib, Seaborn, Scipy, OpenPyXL, XlsxWriter, Requests (HTTPS).\\n# Soporta lectura de archivos locales, URLs directas, APIs REST y exportación descargable.\\n";
   } catch (err) {
     badge.className = "badge bg-dark border border-danger text-danger px-3 py-1";
     badge.innerHTML = `<i class="bi bi-exclamation-triangle-fill"></i> Fallo Wasm`;
@@ -1499,6 +1902,13 @@ async function ejecutarPython() {
   const t0 = performance.now();
 
   try {
+    // Autocarga inteligente de cualquier paquete importado en el script
+    try {
+      await pyodideInstance.loadPackagesFromImports(code);
+    } catch(ePkg) {
+      console.warn("Aviso en autocarga de paquetes:", ePkg);
+    }
+
     pyodideInstance.globals.set("__user_code_raw__", code);
     await pyodideInstance.runPythonAsync("await __ejecutar_codigo_usuario(__user_code_raw__)");
 
@@ -1508,8 +1918,9 @@ async function ejecutarPython() {
 
     const infoJson = await pyodideInstance.runPythonAsync("__obtener_datos_descargables()");
     const info = JSON.parse(infoJson);
-    if (info.csvs && info.csvs.length > 0) {
-      estadoCsv.innerHTML = `<i class="bi bi-download"></i> Descargar: <b>${info.csvs[info.csvs.length - 1]}</b>`;
+    if (info.archivos && info.archivos.length > 0) {
+      const ult = info.archivos[info.archivos.length - 1];
+      estadoCsv.innerHTML = `<i class="bi bi-download"></i> Descargar: <b>${ult}</b>`;
     } else if (info.dfs && info.dfs.length > 0) {
       estadoCsv.innerHTML = `<i class="bi bi-file-earmark-excel"></i> Descargar DataFrame: <b>${info.dfs[info.dfs.length - 1]}</b>`;
     } else {
