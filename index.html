@@ -1214,7 +1214,8 @@ predicciones = modelo.predict(X)
 r2 = r2_score(y, predicciones)
 rmse = np.sqrt(mean_squared_error(y, predicciones))
 
-print(f"\n📈 Métricas del Modelo Scikit-Learn:")
+print()
+print("📈 Métricas del Modelo Scikit-Learn:")
 print(f"   • Pendiente (Coeficiente): {modelo.coef_[0]:.3f}")
 print(f"   • Intersección: {modelo.intercept_:.3f}")
 print(f"   • Coeficiente R²: {r2:.4f}")
@@ -1234,7 +1235,8 @@ plt.show()
 # Guardar predicciones en disco virtual
 df_ml["Ventas_Predichas_USD"] = predicciones.round(2)
 df_ml.to_csv("predicciones_ventas_ml.csv", index=False)
-print("\n💾 Predicciones guardadas en: 'predicciones_ventas_ml.csv'")`,
+print()
+print("💾 Predicciones guardadas en: 'predicciones_ventas_ml.csv'")`,
 
   requests: `import requests
 import pandas as pd
