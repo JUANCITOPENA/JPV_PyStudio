@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <link rel="icon" type="image/png" href="https://silentinstallhq.com/wp-content/uploads/2025/09/Python.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>JPV PyStudio // WebAssembly Pro Studio (Seaborn • Excel • Requests HTTPS)</title>
+  <title>JPV PyStudio // WebAssembly Pro Studio (Folium • Plotly • Seaborn • NetworkX • Excel)</title>
   
   <!-- Bootstrap 5 CSS & JS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -543,7 +543,7 @@
            style="width: 30px; height: 30px; object-fit: cover; box-shadow: 0 0 8px rgba(0, 242, 254, 0.35);">
       <span class="fw-bold fs-6">JPV <span class="text-info">PyStudio</span></span>
       <span class="badge bg-dark border border-info text-info d-none d-lg-inline ms-1" style="font-size: 11px;">
-        <i class="bi bi-graph-up text-info"></i> Seaborn • Matplotlib • Excel • Requests HTTPS
+        <i class="bi bi-globe-americas text-info"></i> Folium Maps • Plotly • Seaborn • NetworkX • WordCloud • Excel
       </span>
     </div>
 
@@ -558,6 +558,10 @@
         <option value="sklearn">🤖 Machine Learning (Scikit-Learn Regresión)</option>
         <option value="requests">🌐 Requests HTTPS (API REST en vivo)</option>
         <option value="excel">📑 Excel (.xlsx Lectura y Escritura)</option>
+        <option value="folium">🗺️ Folium & AntPath (Mapa Geoespacial Animado)</option>
+        <option value="plotly">📈 Plotly Express (Dashboard Interactivo HTML)</option>
+        <option value="networkx">🕸️ NetworkX (Grafo de Redes & Nodos)</option>
+        <option value="wordcloud">☁️ WordCloud (Nube de Palabras HD)</option>
         <option value="scipy">🔬 Scipy & Curvas Matemáticas</option>
         <option value="animacion">🎬 Animación Avanzada (Dashboard Titanic 8-en-1 GIF)</option>
       </select>
@@ -711,7 +715,7 @@ print("\n💾 Archivo 'Reporte_Titanic_Descargado.csv' listo para descargar.")
           <!-- Herramientas Gráficos -->
           <div id="tools-grafico" class="d-flex align-items-center gap-2 d-none">
             <!-- Selector de Fondo (Presentar / Descargar) -->
-            <div class="d-flex align-items-center gap-1 bg-dark border border-secondary rounded px-2 py-0" style="height: 28px;">
+            <div id="contenedor-selector-fondo" class="d-flex align-items-center gap-1 bg-dark border border-secondary rounded px-2 py-0" style="height: 28px;">
               <span class="text-secondary small" style="font-size: 11px;"><i class="bi bi-palette"></i> Fondo:</span>
               <select id="select-fondo-grafico" class="form-select form-select-sm bg-dark text-info border-0 p-0 shadow-none" style="font-size: 11px; width: auto; cursor: pointer;" onchange="cambiarFondoGrafico(this.value)" title="Elegir fondo para presentar y descargar el gráfico">
                 <option value="negro" selected>🌙 Negro</option>
@@ -720,10 +724,14 @@ print("\n💾 Archivo 'Reporte_Titanic_Descargado.csv' listo para descargar.")
               </select>
             </div>
 
-            <button id="btn-dl-plot" class="btn btn-outline-info btn-action" onclick="descargarGraficoPNG()" title="Guardar gráfico en PNG con el fondo seleccionado" disabled>
+            <button id="btn-open-html-tab" class="btn btn-outline-warning btn-action d-none" onclick="abrirVisualizacionEnPestana()" title="Abrir mapa o visualización interactiva en una pestaña nueva">
+              <i class="bi bi-box-arrow-up-right"></i> Abrir en Pestaña
+            </button>
+
+            <button id="btn-dl-plot" class="btn btn-outline-info btn-action" onclick="descargarGraficoPNG()" title="Guardar visualización generada" disabled>
               <i class="bi bi-download"></i> Guardar PNG
             </button>
-            <div class="zoom-toolbar">
+            <div id="zoom-toolbar-grafico" class="zoom-toolbar">
               <button class="zoom-btn" onclick="ajustarZoomGrafico(-0.15)" title="Alejar"><i class="bi bi-zoom-out"></i></button>
               <span id="grafico-zoom-label" class="zoom-label">100%</span>
               <button class="zoom-btn" onclick="ajustarZoomGrafico(0.15)" title="Acercar"><i class="bi bi-zoom-in"></i></button>
@@ -752,6 +760,7 @@ print("\n💾 Archivo 'Reporte_Titanic_Descargado.csv' listo para descargar.")
           <div id="chart-drag-layer">
             <span class="text-secondary small">Sin gráficos generados.</span>
           </div>
+          <iframe id="html-viz-frame" class="d-none" style="width: 100%; height: 100%; border: none; background: #ffffff;"></iframe>
         </div>
       </div>
 
@@ -1092,8 +1101,30 @@ function cambiarFondoGrafico(modo) {
 
 let currentPlotType = "png";
 let currentPlotFilename = "";
+let currentHtmlContent = "";
+let currentHtmlBlobUrl = "";
+
+function abrirVisualizacionEnPestana() {
+  if (!currentHtmlContent) return;
+  const blob = new Blob([currentHtmlContent], { type: "text/html;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  window.open(url, "_blank");
+}
 
 function descargarGraficoPNG() {
+  if (currentPlotType === "html" && currentHtmlContent) {
+    const blob = new Blob([currentHtmlContent], { type: "text/html;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const enlace = document.createElement("a");
+    enlace.href = url;
+    enlace.download = currentPlotFilename || "visualizacion_interactiva.html";
+    document.body.appendChild(enlace);
+    enlace.click();
+    document.body.removeChild(enlace);
+    URL.revokeObjectURL(url);
+    return;
+  }
+
   if (currentPlotType === "gif" && currentPlotB64) {
     const enlace = document.createElement("a");
     enlace.href = "data:image/gif;base64," + currentPlotB64;
@@ -1612,7 +1643,197 @@ ax.set_xlabel("Variable X")
 ax.set_ylabel("Respuesta Y")
 ax.legend()
 plt.tight_layout()
-plt.show()`
+plt.show()`,
+
+  folium: `import folium
+from folium.plugins import AntPath, MiniMap, Fullscreen
+
+print("=============================================================")
+print("🗺️ MAPA GEOESPACIAL INTERACTIVO CON FOLIUM & ANTPATH")
+print("=============================================================")
+
+# 1. Definir los datos detallados de la ruta (Coordenadas de ciudades reales en India)
+ciudades_ruta = [
+    {"nombre": "Delhi (Capital)", "coords": [28.6139, 77.2090], "rol": "Nodo Central Norte"},
+    {"nombre": "Jaipur (Ciudad Rosa)", "coords": [26.9124, 75.7873], "rol": "Hub Cultural & Turístico"},
+    {"nombre": "Ahmedabad", "coords": [23.0225, 72.5714], "rol": "Polo Industrial Oeste"},
+    {"nombre": "Mumbai (Centro Financiero)", "coords": [19.0760, 72.8777], "rol": "Puerto & Finanzas Globales"}
+]
+
+# Extraer solo las coordenadas en una lista para el camino animado
+coordenadas = [ciudad["coords"] for ciudad in ciudades_ruta]
+
+# 2. Inicializar el mapa centrado en la India con un estilo limpio
+m = folium.Map(location=[24.0, 75.5], zoom_start=6, tiles="CartoDB positron")
+
+# Controles profesionales de mapa
+MiniMap(toggle_display=True).add_to(m)
+Fullscreen(position="topright", title="Pantalla Completa").add_to(m)
+
+# 3. Añadir la ruta animada (AntPath) optimizada
+AntPath(
+    locations=coordenadas,
+    reverse=False,         # Dirección de la animación (hacia adelante)
+    dash_array=[10, 20],   # Longitud de las líneas de animación
+    delay=800,             # Velocidad de la animación (menor número = más rápido)
+    color="#00d2ff",       # Color principal cian brillante
+    pulse_color="#ffffff", # Color del pulso animado
+    weight=6,              # Grosor de la línea
+    opacity=0.85,
+    tooltip="Corredor Logístico Delhi -> Mumbai"
+).add_to(m)
+
+# 4. Añadir marcadores interactivos con iconos informativos para cada parada
+for idx, ciudad in enumerate(ciudades_ruta, start=1):
+    folium.Marker(
+        location=ciudad["coords"],
+        popup=folium.Popup(
+            f"<b>{idx}. {ciudad['nombre']}</b><br>"
+            f"<span style='color:#0284c7;'>{ciudad['rol']}</span><br>"
+            f"Coordenadas: {ciudad['coords']}",
+            max_width=240
+        ),
+        tooltip=f"Parada {idx}: {ciudad['nombre']}",
+        icon=folium.Icon(color="blue" if idx < len(ciudades_ruta) else "red", icon="info-sign")
+    ).add_to(m)
+
+# Guardar el mapa en un archivo HTML; JPV PyStudio lo renderiza en vivo automáticamente
+m.save("ruta_viaje_animada.html")
+print("✅ ¡Mapa interactivo generado con éxito!")
+print("👉 Visualizando 'ruta_viaje_animada.html' en vivo en el panel Gráfico.")`,
+
+  plotly: `import pandas as pd
+import numpy as np
+import plotly.express as px
+
+print("=============================================================")
+print("📈 DASHBOARD INTERACTIVO MULTIDIMENSIONAL CON PLOTLY EXPRESS")
+print("=============================================================")
+
+np.random.seed(42)
+regiones = ["Norteamérica", "Europa", "Asia-Pacífico", "Latinoamérica", "Medio Oriente"]
+datos = []
+for reg in regiones:
+    for i in range(8):
+        ingresos = np.random.uniform(120, 950)
+        margen = np.random.uniform(12, 42)
+        clientes = int(np.random.uniform(500, 12000))
+        datos.append({
+            "Región": reg,
+            "Unidad": f"{reg[:3].upper()}-0{i+1}",
+            "Ingresos_M_USD": round(ingresos, 2),
+            "Margen_Pct": round(margen, 2),
+            "Clientes_Activos": clientes
+        })
+
+df_kpi = pd.DataFrame(datos)
+print(df_kpi.head(8))
+
+fig = px.scatter(
+    df_kpi,
+    x="Ingresos_M_USD",
+    y="Margen_Pct",
+    size="Clientes_Activos",
+    color="Región",
+    hover_name="Unidad",
+    size_max=48,
+    template="plotly_dark",
+    title="Matriz Ejecutiva: Ingresos (M USD) vs Margen (%) y Volumen de Clientes",
+    labels={
+        "Ingresos_M_USD": "Ingresos Anuales (Millones USD)",
+        "Margen_Pct": "Margen Operativo (%)",
+        "Clientes_Activos": "Clientes Activos"
+    }
+)
+fig.update_layout(
+    paper_bgcolor="#080c14",
+    plot_bgcolor="#0f172a",
+    font=dict(family="Outfit, sans-serif", size=13, color="#f8fafc"),
+    margin=dict(l=40, r=30, t=60, b=40)
+)
+
+fig.write_html("dashboard_plotly_ejecutivo.html", include_plotlyjs="cdn")
+print("\n✅ Gráfico interactivo Plotly renderizado en el visor Gráfico.")`,
+
+  networkx: `import networkx as nx
+import matplotlib.pyplot as plt
+
+print("=============================================================")
+print("🕸️ TOPOLOGÍA DE RED Y RUTEO ÓPTIMO CON NETWORKX")
+print("=============================================================")
+
+G = nx.Graph()
+aristas = [
+    ("Core-SDQ", "Hub-Santiago", 12),
+    ("Core-SDQ", "Hub-LaRomana", 15),
+    ("Core-SDQ", "Hub-SanCristobal", 6),
+    ("Hub-Santiago", "Nodo-PuertoPlata", 8),
+    ("Hub-Santiago", "Nodo-LaVega", 7),
+    ("Nodo-LaVega", "Core-SDQ", 14),
+    ("Hub-LaRomana", "Nodo-PuntaCana", 10),
+    ("Hub-SanCristobal", "Nodo-Azua", 11),
+    ("Nodo-Azua", "Nodo-Barahona", 13),
+    ("Nodo-LaVega", "Nodo-SanFrancisco", 9)
+]
+G.add_weighted_edges_from(aristas)
+
+ruta_optima = nx.shortest_path(G, source="Nodo-Barahona", target="Nodo-PuntaCana", weight="weight")
+costo_total = nx.shortest_path_length(G, source="Nodo-Barahona", target="Nodo-PuntaCana", weight="weight")
+print(f"🚀 Ruta óptima Barahona -> Punta Cana: {' -> '.join(ruta_optima)}")
+print(f"⚡ Latencia total mínima: {costo_total} ms")
+
+fig, ax = plt.subplots(figsize=(9, 5.2))
+pos = nx.spring_layout(G, seed=42, k=0.85)
+
+colores_nodos = ["#00f2fe" if n in ruta_optima else "#334155" for n in G.nodes()]
+nx.draw_networkx_nodes(G, pos, ax=ax, node_color=colores_nodos, node_size=900, edgecolors="#ffffff", linewidths=1.5)
+nx.draw_networkx_edges(G, pos, ax=ax, edge_color="#64748b", width=1.8, alpha=0.7)
+
+# Resaltar aristas de la ruta óptima
+aristas_ruta = list(zip(ruta_optima[:-1], ruta_optima[1:]))
+nx.draw_networkx_edges(G, pos, edgelist=aristas_ruta, ax=ax, edge_color="#10b981", width=4.0)
+nx.draw_networkx_labels(G, pos, ax=ax, font_size=8.5, font_weight="bold", font_color="#0f172a")
+
+labels_peso = nx.get_edge_attributes(G, "weight")
+nx.draw_networkx_edge_labels(G, pos, edge_labels={k: f"{v}ms" for k, v in labels_peso.items()}, font_size=7.5, ax=ax)
+
+ax.set_title("Topología de Red Nacional & Camino Más Corto (Dijkstra)", fontweight="bold")
+ax.axis("off")
+plt.tight_layout()
+plt.show()`,
+
+  wordcloud: `import matplotlib.pyplot as plt
+from wordcloud import WordCloud
+
+print("=============================================================")
+print("☁️ NUBE DE PALABRAS DE ALTA DEFINICIÓN (WORDCLOUD)")
+print("=============================================================")
+
+frecuencias_tech = {
+    "Python": 100, "Data Science": 92, "Pyodide Wasm": 88, "Folium Maps": 85,
+    "Plotly": 82, "Machine Learning": 80, "Pandas": 78, "Seaborn": 75,
+    "Scikit-Learn": 72, "NetworkX": 70, "Inteligencia Artificial": 68,
+    "SQL Server": 65, "Power BI": 64, "Automatización": 60, "NumPy": 58,
+    "Scipy": 55, "Big Data": 52, "Geoespacial": 50, "Deep Learning": 48,
+    "Analytics": 46, "ETL Pipelines": 44, "FastAPI": 40, "Dashboards": 38
+}
+
+wc = WordCloud(
+    width=1100,
+    height=550,
+    background_color="#080c14",
+    colormap="cool",
+    max_words=50,
+    prefer_horizontal=0.85
+).generate_from_frequencies(frecuencias_tech)
+
+fig, ax = plt.subplots(figsize=(9.5, 4.8))
+ax.imshow(wc, interpolation="bilinear")
+ax.set_title("Ecosistema Analítico & Visualización en JPV PyStudio", fontsize=13, fontweight="bold", pad=12)
+ax.axis("off")
+plt.tight_layout()
+plt.show()
+print("✅ Nube de palabras generada con éxito.")`
 };
 
 function cargarPlantilla(tipo) {
@@ -1980,7 +2201,7 @@ const chartViewport = document.getElementById("tab-grafico");
 const dragLayer = document.getElementById("chart-drag-layer");
 
 chartViewport.addEventListener("mousedown", (e) => {
-  if (e.button !== 0) return;
+  if (currentPlotType === "html" || e.button !== 0) return;
   isPanning = true;
   startX = e.clientX - panX;
   startY = e.clientY - panY;
@@ -2000,6 +2221,7 @@ window.addEventListener("mouseup", () => {
 });
 
 chartViewport.addEventListener("wheel", (e) => {
+  if (currentPlotType === "html") return;
   e.preventDefault();
   scaleGrafico = Math.min(Math.max(scaleGrafico + (e.deltaY < 0 ? 0.12 : -0.12), 0.4), 4.0);
   dragLayer.style.transform = `translate(${panX}px, ${panY}px) scale(${scaleGrafico})`;
@@ -2026,8 +2248,76 @@ function ajustarZoomGrafico(delta) {
 // Registro central de paquetes cargados en memoria
 const paquetesCargados = new Set(["pandas", "numpy", "matplotlib", "micropip"]);
 
-// Definición de dependencias y auto-activación inteligente
+// Definición de dependencias y auto-activación inteligente ampliada
 const MAPA_DEPENDENCIAS = {
+  folium: {
+    match: /(folium|AntPath|HeatMap|MarkerCluster|MiniMap)/i,
+    pyodidePkg: ["ssl", "jinja2"],
+    pypiPkg: ["xyzservices", "branca", "requests", "pyodide-http", "folium"],
+    postSetup: "import pyodide_http; pyodide_http.patch_all()",
+    etiqueta: "Folium (Mapas Geoespaciales)"
+  },
+  plotly: {
+    match: /(plotly|px\.|go\.Figure|make_subplots)/i,
+    pyodidePkg: null,
+    pypiPkg: ["plotly"],
+    postSetup: `
+try:
+    import plotly.basedatatypes as _pbd
+    _pbd.BaseFigure.show = lambda self, *a, **k: __capturar_plotly_fig(self)
+except Exception:
+    pass
+`,
+    etiqueta: "Plotly Interactivo"
+  },
+  networkx: {
+    match: /(networkx|nx\.)/i,
+    pyodidePkg: ["networkx"],
+    pypiPkg: null,
+    etiqueta: "NetworkX (Grafos)"
+  },
+  wordcloud: {
+    match: /(wordcloud|WordCloud)/i,
+    pyodidePkg: ["pillow", "wordcloud"],
+    pypiPkg: null,
+    etiqueta: "WordCloud"
+  },
+  altair: {
+    match: /(altair|alt\.Chart)/i,
+    pyodidePkg: ["jinja2"],
+    pypiPkg: ["altair", "vega_datasets"],
+    etiqueta: "Altair (Vega-Lite)"
+  },
+  bokeh: {
+    match: /(bokeh)/i,
+    pyodidePkg: ["bokeh"],
+    pypiPkg: null,
+    etiqueta: "Bokeh Interactivo"
+  },
+  pyvis: {
+    match: /(pyvis)/i,
+    pyodidePkg: ["jinja2", "networkx"],
+    pypiPkg: ["pyvis"],
+    etiqueta: "Pyvis (Redes Interactivas)"
+  },
+  squarify: {
+    match: /(squarify)/i,
+    pyodidePkg: null,
+    pypiPkg: ["squarify"],
+    etiqueta: "Squarify (Treemaps)"
+  },
+  statsmodels: {
+    match: /(statsmodels|sm\.)/i,
+    pyodidePkg: ["scipy", "patsy", "statsmodels"],
+    pypiPkg: null,
+    etiqueta: "Statsmodels"
+  },
+  sympy: {
+    match: /(sympy)/i,
+    pyodidePkg: ["sympy"],
+    pypiPkg: null,
+    etiqueta: "SymPy"
+  },
   excel: {
     match: /(openpyxl|xlsxwriter|\.to_excel|\.read_excel|ExcelWriter)/i,
     pyodidePkg: null,
@@ -2036,38 +2326,38 @@ const MAPA_DEPENDENCIAS = {
   },
   seaborn: {
     match: /(seaborn|sns\.)/i,
-    pyodidePkg: null,
+    pyodidePkg: ["scipy"],
     pypiPkg: ["seaborn"],
     etiqueta: "Seaborn"
   },
   requests: {
     match: /(requests\.|pyodide_http)/i,
-    pyodidePkg: null,
+    pyodidePkg: ["ssl"],
     pypiPkg: ["requests", "pyodide-http"],
     postSetup: "import pyodide_http; pyodide_http.patch_all()",
     etiqueta: "Requests HTTPS"
   },
   sklearn: {
     match: /(sklearn|scikit-learn|LinearRegression|RandomForest|KMeans)/i,
-    pyodidePkg: "scikit-learn",
+    pyodidePkg: ["scipy", "scikit-learn"],
     pypiPkg: null,
     etiqueta: "Scikit-Learn"
   },
   scipy: {
     match: /(scipy|curve_fit)/i,
-    pyodidePkg: "scipy",
+    pyodidePkg: ["scipy"],
     pypiPkg: null,
     etiqueta: "Scipy"
   },
   animacion: {
     match: /(animation\.|PillowWriter|FuncAnimation|ArtistAnimation)/i,
-    pyodidePkg: "pillow",
+    pyodidePkg: ["pillow"],
     pypiPkg: null,
     etiqueta: "Animación (Pillow)"
   },
   imageio: {
     match: /(imageio)/i,
-    pyodidePkg: null,
+    pyodidePkg: ["pillow"],
     pypiPkg: ["imageio"],
     etiqueta: "ImageIO"
   },
@@ -2085,29 +2375,33 @@ async function autoResolverDependencias(code) {
 
   for (const [clave, dep] of Object.entries(MAPA_DEPENDENCIAS)) {
     if (dep.match.test(code)) {
-      // 1. Paquete binario compilado de Pyodide
-      if (dep.pyodidePkg && !paquetesCargados.has(dep.pyodidePkg)) {
-        terminal.textContent += `\n⚙️ [Auto-Activación] Cargando '${dep.etiqueta}' en WebAssembly...\n`;
-        terminalContainer.scrollTop = terminalContainer.scrollHeight;
-        try {
-          await pyodideInstance.loadPackage(dep.pyodidePkg);
-          paquetesCargados.add(dep.pyodidePkg);
-        } catch(e) {
-          console.warn("Fallo carga pyodidePkg:", e);
+      // 1. Paquetes binarios compilados de Pyodide
+      if (dep.pyodidePkg) {
+        const listaPyodide = Array.isArray(dep.pyodidePkg) ? dep.pyodidePkg : [dep.pyodidePkg];
+        const faltantesPyodide = listaPyodide.filter(p => !paquetesCargados.has(p));
+        if (faltantesPyodide.length > 0) {
+          terminal.textContent += `⚙️ [Auto-Activación] Cargando '${dep.etiqueta}' (${faltantesPyodide.join(", ")}) en WebAssembly...\n`;
+          terminalContainer.scrollTop = terminalContainer.scrollHeight;
+          try {
+            await pyodideInstance.loadPackage(faltantesPyodide);
+            faltantesPyodide.forEach(p => paquetesCargados.add(p));
+          } catch(e) {
+            console.warn("Fallo carga pyodidePkg:", e);
+          }
         }
       }
 
-      // 2. Paquetes puros de PyPI
+      // 2. Paquetes puros de PyPI vía micropip
       if (dep.pypiPkg) {
         const faltantes = dep.pypiPkg.filter(p => !paquetesCargados.has(p));
         if (faltantes.length > 0) {
-          terminal.textContent += `\n⚙️ [Auto-Activación] Activando soporte de '${dep.etiqueta}' (${faltantes.join(", ")})...\n`;
+          terminal.textContent += `📦 [Auto-Activación] Instalando '${dep.etiqueta}' (${faltantes.join(", ")})...\n`;
           terminalContainer.scrollTop = terminalContainer.scrollHeight;
           try {
             pyodideInstance.globals.set("__faltantes_lista__", faltantes);
             await pyodideInstance.runPythonAsync(`
 import micropip
-await micropip.install(list(__faltantes_lista__))
+await micropip.install(list(__faltantes_lista__), keep_going=True)
 `);
             faltantes.forEach(p => paquetesCargados.add(p));
             if (dep.postSetup) {
@@ -2121,7 +2415,7 @@ await micropip.install(list(__faltantes_lista__))
     }
   }
 
-  // 3. Autocarga estándar de Pyodide para cualquier otro import
+  // 3. Autocarga estándar de Pyodide para cualquier otro import nativo
   try {
     await pyodideInstance.loadPackagesFromImports(code);
   } catch(ePkg) {
@@ -2142,7 +2436,7 @@ async function bootWasm() {
     // Carga inicial mínima y rápida: NumPy, Pandas, Matplotlib, Micropip
     await pyodideInstance.loadPackage(["pandas", "numpy", "matplotlib", "micropip"]);
 
-    // Configuración base de terminal y URL interceptors
+    // Configuración base de terminal, interceptores, auto-instalador AST y motor multivisor
     await pyodideInstance.runPythonAsync(`
 import sys
 import io
@@ -2150,7 +2444,9 @@ import js
 import ast
 import json
 import os
+import time
 import builtins
+import importlib.util
 from pyodide.http import open_url
 import matplotlib
 matplotlib.use("Agg")
@@ -2159,6 +2455,28 @@ import pandas as pd
 import numpy as np
 
 plt.show = lambda *args, **kwargs: None
+
+# Registro de archivos generados o modificados durante la ejecución actual
+__archivos_escritos_en_ejecucion__ = set()
+__plotly_htmls_capturados__ = []
+__orig_open = builtins.open
+
+def __tracked_open(file, mode='r', *args, **kwargs):
+    if isinstance(file, str) and any(m in mode for m in ('w', 'a', 'x', '+')):
+        try:
+            __archivos_escritos_en_ejecucion__.add(os.path.basename(file))
+        except Exception:
+            pass
+    return __orig_open(file, mode, *args, **kwargs)
+
+builtins.open = __tracked_open
+
+def __capturar_plotly_fig(fig):
+    try:
+        html_str = fig.to_html(include_plotlyjs="cdn", full_html=True)
+        __plotly_htmls_capturados__.append(html_str)
+    except Exception:
+        pass
 
 # 1. INTERCEPTORES DE PANDAS PARA URLs
 _orig_read_csv = pd.read_csv
@@ -2211,10 +2529,60 @@ async def __custom_async_input(prompt=""):
 
 builtins.input = __custom_async_input
 
-# 3. EJECUTOR
+# Mapa de alias comunes de paquetes en PyPI
+__MAPA_ALIAS_PAQUETES__ = {
+    "sklearn": "scikit-learn",
+    "PIL": "pillow",
+    "cv2": "opencv-python",
+    "bs4": "beautifulsoup4",
+    "yaml": "pyyaml",
+    "dateutil": "python-dateutil"
+}
+
+async def __asegurar_imports_instalados(tree):
+    import micropip
+    modulos_requeridos = []
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            for alias in node.names:
+                raiz = alias.name.split('.')[0]
+                if raiz and raiz not in modulos_requeridos:
+                    modulos_requeridos.append(raiz)
+        elif isinstance(node, ast.ImportFrom) and node.module:
+            raiz = node.module.split('.')[0]
+            if raiz and raiz not in modulos_requeridos:
+                modulos_requeridos.append(raiz)
+
+    for mod in modulos_requeridos:
+        if mod in sys.builtin_module_names or mod in ("js", "pyodide", "micropip"):
+            continue
+        try:
+            spec = importlib.util.find_spec(mod)
+        except Exception:
+            spec = None
+        if spec is None:
+            pkg_name = __MAPA_ALIAS_PAQUETES__.get(mod, mod)
+            print(f"📦 [Auto-Instalador Wasm] Instalando librería '{pkg_name}' desde PyPI...")
+            try:
+                if pkg_name == "folium":
+                    await micropip.install(["xyzservices", "branca", "requests", "folium"], keep_going=True)
+                else:
+                    await micropip.install(pkg_name, keep_going=True)
+                importlib.invalidate_caches()
+                print(f"✅ [Auto-Instalador Wasm] '{pkg_name}' lista.")
+            except Exception as e_inst:
+                print(f"⚠️ Aviso al instalar '{pkg_name}': {e_inst}")
+
+# 3. EJECUTOR CON AUTO-RESOLUCIÓN NATIVA EN PYTHON
 async def __ejecutar_codigo_usuario(code_str):
+    import micropip
+    __archivos_escritos_en_ejecucion__.clear()
+    __plotly_htmls_capturados__.clear()
+    plt.close("all")
+
     tree = ast.parse(code_str)
-    
+    await __asegurar_imports_instalados(tree)
+
     class InputReplacer(ast.NodeTransformer):
         def visit_Call(self, node):
             self.generic_visit(node)
@@ -2225,14 +2593,29 @@ async def __ejecutar_codigo_usuario(code_str):
                     keywords=node.keywords
                 ))
             return node
-            
+
     tree = InputReplacer().visit(tree)
     ast.fix_missing_locations(tree)
-    
+
     code_obj = compile(tree, filename="<editor>", mode="exec", flags=ast.PyCF_ALLOW_TOP_LEVEL_AWAIT)
-    res = eval(code_obj, globals())
-    if hasattr(res, '__await__'):
-        await res
+
+    # Bucle de protección nativo ante cualquier submódulo dinámico faltante
+    for _intento in range(4):
+        try:
+            res = eval(code_obj, globals())
+            if hasattr(res, '__await__'):
+                await res
+            break
+        except ModuleNotFoundError as mnf:
+            faltante = getattr(mnf, "name", None) or ""
+            raiz_faltante = faltante.split('.')[0] if faltante else ""
+            if raiz_faltante and _intento < 3:
+                pkg = __MAPA_ALIAS_PAQUETES__.get(raiz_faltante, raiz_faltante)
+                print(f"📦 [Auto-Instalador Wasm] Descargando dependencia '{pkg}'...")
+                await micropip.install(pkg, keep_going=True)
+                importlib.invalidate_caches()
+                continue
+            raise
 
 def __get_luminance(color):
     try:
@@ -2351,24 +2734,109 @@ def __adaptar_figura_contraste(fig, modo):
 
 def __extraer_plots():
     import base64
-    res = {"tipo": "estatico", "transparente": "", "blanco": "", "negro": "", "gif_b64": "", "gif_nombre": ""}
-    
-    # 1. Detectar si se generó recientemente algún archivo .gif (animación)
-    gifs = [f for f in os.listdir('.') if f.endswith('.gif') and os.path.isfile(f)]
-    if gifs:
-        gifs.sort(key=lambda x: os.path.getmtime(x), reverse=True)
-        reciente_gif = gifs[0]
+    res = {
+        "tipo": "estatico",
+        "transparente": "",
+        "blanco": "",
+        "negro": "",
+        "gif_b64": "",
+        "gif_nombre": "",
+        "html_content": "",
+        "html_nombre": ""
+    }
+    code_raw = globals().get("__user_code_raw__", "") or ""
+
+    # 1. Detectar si se escribió algún archivo .html durante esta ejecución (Folium, Plotly, Pyvis, Altair, Bokeh)
+    htmls_escritos = [f for f in __archivos_escritos_en_ejecucion__ if f.lower().endswith(".html") and os.path.isfile(f)]
+    if htmls_escritos:
+        reciente_html = htmls_escritos[-1]
         try:
-            with open(reciente_gif, 'rb') as gf:
+            with __orig_open(reciente_html, "r", encoding="utf-8", errors="replace") as hf:
+                contenido_html = hf.read()
+            if contenido_html.strip():
+                res["tipo"] = "html"
+                res["html_nombre"] = reciente_html
+                res["html_content"] = contenido_html
+                return json.dumps(res)
+        except Exception:
+            pass
+
+    # 2. Detectar si se llamó fig.show() en Plotly durante esta ejecución
+    if __plotly_htmls_capturados__:
+        html_plotly = __plotly_htmls_capturados__[-1]
+        nombre_auto = "grafico_interactivo_plotly.html"
+        try:
+            with __orig_open(nombre_auto, "w", encoding="utf-8") as pf:
+                pf.write(html_plotly)
+        except Exception:
+            pass
+        res["tipo"] = "html"
+        res["html_nombre"] = nombre_auto
+        res["html_content"] = html_plotly
+        return json.dumps(res)
+
+    # 3. Detectar objetos interactivos en memoria (folium.Map, plotly Figure, altair Chart) si el usuario no llamó .save()
+    if "folium" in code_raw:
+        for k, v in reversed(list(globals().items())):
+            if not k.startswith("_") and type(v).__module__.startswith("folium") and hasattr(v, "get_root"):
+                try:
+                    html_folium = v.get_root().render()
+                    nombre_auto = "mapa_folium_interactivo.html"
+                    with __orig_open(nombre_auto, "w", encoding="utf-8") as mf:
+                        mf.write(html_folium)
+                    res["tipo"] = "html"
+                    res["html_nombre"] = nombre_auto
+                    res["html_content"] = html_folium
+                    return json.dumps(res)
+                except Exception:
+                    pass
+
+    if "plotly" in code_raw:
+        for k, v in reversed(list(globals().items())):
+            if not k.startswith("_") and hasattr(v, "to_html") and "plotly" in type(v).__module__:
+                try:
+                    html_p = v.to_html(include_plotlyjs="cdn", full_html=True)
+                    nombre_auto = "grafico_plotly.html"
+                    with __orig_open(nombre_auto, "w", encoding="utf-8") as pf:
+                        pf.write(html_p)
+                    res["tipo"] = "html"
+                    res["html_nombre"] = nombre_auto
+                    res["html_content"] = html_p
+                    return json.dumps(res)
+                except Exception:
+                    pass
+
+    if "altair" in code_raw:
+        for k, v in reversed(list(globals().items())):
+            if not k.startswith("_") and hasattr(v, "to_html") and "altair" in type(v).__module__:
+                try:
+                    html_a = v.to_html()
+                    nombre_auto = "grafico_altair.html"
+                    with __orig_open(nombre_auto, "w", encoding="utf-8") as af:
+                        af.write(html_a)
+                    res["tipo"] = "html"
+                    res["html_nombre"] = nombre_auto
+                    res["html_content"] = html_a
+                    return json.dumps(res)
+                except Exception:
+                    pass
+
+    # 4. Detectar si se generó un archivo .gif en esta ejecución
+    gifs_escritos = [f for f in __archivos_escritos_en_ejecucion__ if f.lower().endswith(".gif") and os.path.isfile(f)]
+    if gifs_escritos:
+        reciente_gif = gifs_escritos[-1]
+        try:
+            with __orig_open(reciente_gif, "rb") as gf:
                 gif_bytes = gf.read()
             if len(gif_bytes) > 0:
                 res["tipo"] = "gif"
                 res["gif_nombre"] = reciente_gif
                 res["gif_b64"] = base64.b64encode(gif_bytes).decode("utf-8")
+                return json.dumps(res)
         except Exception:
             pass
 
-    # 2. Si hay figuras estáticas abiertas en matplotlib:
+    # 5. Si hay figuras estáticas abiertas en matplotlib (Matplotlib, Seaborn, NetworkX, WordCloud, Scipy, Sklearn)
     if plt.get_fignums():
         fig = plt.gcf()
         
@@ -2395,6 +2863,20 @@ def __extraer_plots():
 
         plt.clf()
         plt.close("all")
+        return json.dumps(res)
+
+    # 6. Si el usuario guardó un .png directamente (ej. WordCloud.to_file("nube.png") o plt.savefig("..."))
+    pngs_escritos = [f for f in __archivos_escritos_en_ejecucion__ if f.lower().endswith(".png") and os.path.isfile(f)]
+    if pngs_escritos:
+        reciente_png = pngs_escritos[-1]
+        try:
+            with __orig_open(reciente_png, "rb") as pf:
+                b64_png = base64.b64encode(pf.read()).decode("utf-8")
+            res["blanco"] = b64_png
+            res["negro"] = b64_png
+            res["transparente"] = b64_png
+        except Exception:
+            pass
 
     return json.dumps(res)
 
@@ -2412,7 +2894,7 @@ def __obtener_datos_descargables():
 
 def __leer_archivo_csv(nombre):
     if os.path.exists(nombre):
-        with open(nombre, 'r', encoding='utf-8') as f:
+        with __orig_open(nombre, 'r', encoding='utf-8') as f:
             return f.read()
     return ""
 
@@ -2429,14 +2911,20 @@ def __exportar_df_csv(df_name):
     badge.innerHTML = `<i class="bi bi-check-circle-fill"></i> Motor Wasm Listo (Auto-Detección Activa)`;
     btn.disabled = false;
     
-    terminal.textContent = `# 🐍 JPV PyStudio Pro inicializado con éxito.\n# ⚡ Motor Fast-Boot activo: Reconocimiento y auto-activación automática de librerías.\n# 📦 Puedes pegar cualquier script (Excel, Seaborn, ML, HTTPS, Animación) y ejecutar directamente.\n`;
+    terminal.textContent = `# 🐍 JPV PyStudio Pro inicializado con éxito.
+# ⚡ Motor Fast-Boot activo: Auto-instalación y renderizado de Folium, Plotly, Seaborn, NetworkX, WordCloud, Excel y más.
+# 📦 Pega cualquier script Python y pulsa 'Ejecutar': las librerías y mapas/gráficos se activan solos.
+`;
 
-    // Calentamiento en segundo plano no bloqueante para requests & excel
+    // Calentamiento en segundo plano no bloqueante para requests, excel y ssl
     setTimeout(async () => {
       try {
+        await pyodideInstance.loadPackage(["ssl", "jinja2"]);
+        paquetesCargados.add("ssl");
+        paquetesCargados.add("jinja2");
         await pyodideInstance.runPythonAsync(`
 import micropip
-await micropip.install(["pyodide-http", "openpyxl"])
+await micropip.install(["pyodide-http", "openpyxl"], keep_going=True)
 import pyodide_http
 pyodide_http.patch_all()
 `);
@@ -2474,65 +2962,25 @@ async function ejecutarPython() {
   terminal.className = "";
   terminal.textContent = "";
   currentPlotB64 = "";
+  currentHtmlContent = "";
   btnDlPlot.disabled = true;
   cambiarTab('terminal');
 
   const t0 = performance.now();
 
   try {
-    // Auto-detección y activación previa de cualquier librería requerida por el código
+    // Auto-detección y activación previa de librerías conocidas
     await autoResolverDependencias(code);
 
-    // 1. Autocarga de paquetes compilados en WebAssembly (scikit-learn, scipy, sympy, etc.)
-    try {
-      await pyodideInstance.loadPackagesFromImports(code);
-    } catch(ePkg) {
-      console.warn("Aviso en autocarga de paquetes:", ePkg);
-    }
-
-    // 2. Ejecutor con auto-instalación inteligente de dependencias faltantes desde PyPI
-    let intento = 0;
-    while (intento < 2) {
-      try {
-        pyodideInstance.globals.set("__user_code_raw__", code);
-        await pyodideInstance.runPythonAsync("await __ejecutar_codigo_usuario(__user_code_raw__)");
-        break; // Éxito en ejecución
-      } catch (runErr) {
-        const msg = String(runErr && (runErr.message || runErr));
-        const match = msg.match(/No module named ['"]([^'"]+)['"]/);
-        if (match && intento === 0) {
-          const missingMod = match[1];
-          terminal.textContent += `
-📦 [Auto-Instalador Wasm] Módulo '${missingMod}' no encontrado. Descargando desde PyPI vía micropip...
-`;
-          terminalContainer.scrollTop = terminalContainer.scrollHeight;
-          try {
-            await pyodideInstance.runPythonAsync(`
-import micropip
-await micropip.install('${missingMod}')
-`);
-            terminal.textContent += `✅ [Auto-Instalador Wasm] '${missingMod}' instalado con éxito. Reanudando compilación...
-
-`;
-            terminalContainer.scrollTop = terminalContainer.scrollHeight;
-            intento++;
-            continue;
-          } catch(pipErr) {
-            terminal.textContent += `⚠️ No se pudo auto-instalar '${missingMod}': ${pipErr.message || pipErr}
-`;
-            throw runErr;
-          }
-        } else {
-          throw runErr;
-        }
-      }
-    }
+    // Ejecución con auto-instalador AST nativo en Python
+    pyodideInstance.globals.set("__user_code_raw__", code);
+    await pyodideInstance.runPythonAsync("await __ejecutar_codigo_usuario(__user_code_raw__)");
 
     const plotsJson = await pyodideInstance.runPythonAsync("__extraer_plots()");
     try {
       plotsBase64 = JSON.parse(plotsJson);
     } catch(e) {
-      plotsBase64 = { transparente: "", blanco: "", negro: "" };
+      plotsBase64 = { tipo: "estatico", transparente: "", blanco: "", negro: "" };
     }
 
     const t1 = performance.now();
@@ -2550,10 +2998,47 @@ await micropip.install('${missingMod}')
     }
 
     const btnDl = document.getElementById("btn-dl-plot");
-    if (plotsBase64 && plotsBase64.tipo === "gif" && plotsBase64.gif_b64) {
+    const btnOpenTab = document.getElementById("btn-open-html-tab");
+    const htmlFrame = document.getElementById("html-viz-frame");
+    const bgSelectorBox = document.getElementById("contenedor-selector-fondo");
+    const zoomBox = document.getElementById("zoom-toolbar-grafico");
+
+    if (plotsBase64 && plotsBase64.tipo === "html" && plotsBase64.html_content) {
+      currentPlotType = "html";
+      currentHtmlContent = plotsBase64.html_content;
+      currentPlotFilename = plotsBase64.html_nombre || "visualizacion_interactiva.html";
+
+      if (currentHtmlBlobUrl) {
+        try { URL.revokeObjectURL(currentHtmlBlobUrl); } catch(e) {}
+      }
+      const htmlBlob = new Blob([currentHtmlContent], { type: "text/html;charset=utf-8" });
+      currentHtmlBlobUrl = URL.createObjectURL(htmlBlob);
+
+      dragLayer.classList.add("d-none");
+      htmlFrame.classList.remove("d-none");
+      htmlFrame.src = currentHtmlBlobUrl;
+
+      if (bgSelectorBox) bgSelectorBox.classList.add("d-none");
+      if (zoomBox) zoomBox.classList.add("d-none");
+      if (btnOpenTab) btnOpenTab.classList.remove("d-none");
+
+      dot.classList.remove("d-none");
+      btnDl.disabled = false;
+      btnDl.innerHTML = `<i class="bi bi-filetype-html"></i> Guardar HTML`;
+      btnDl.title = `Descargar visualización interactiva (${currentPlotFilename})`;
+      cambiarTab('grafico');
+
+    } else if (plotsBase64 && plotsBase64.tipo === "gif" && plotsBase64.gif_b64) {
       currentPlotB64 = plotsBase64.gif_b64;
       currentPlotType = "gif";
       currentPlotFilename = plotsBase64.gif_nombre || "animacion.gif";
+
+      htmlFrame.classList.add("d-none");
+      htmlFrame.src = "about:blank";
+      dragLayer.classList.remove("d-none");
+      if (bgSelectorBox) bgSelectorBox.classList.add("d-none");
+      if (zoomBox) zoomBox.classList.remove("d-none");
+      if (btnOpenTab) btnOpenTab.classList.add("d-none");
 
       dragLayer.innerHTML = `<img id="rendered-plot" src="data:image/gif;base64,${plotsBase64.gif_b64}" alt="Animación GIF" style="border-radius: 6px; box-shadow: 0 4px 20px rgba(0,0,0,0.6);">`;
       resetZoomGrafico();
@@ -2562,8 +3047,16 @@ await micropip.install('${missingMod}')
       btnDl.innerHTML = `<i class="bi bi-film"></i> Guardar GIF`;
       btnDl.title = `Descargar animación ${currentPlotFilename}`;
       cambiarTab('grafico');
+
     } else {
       currentPlotType = "png";
+      htmlFrame.classList.add("d-none");
+      htmlFrame.src = "about:blank";
+      dragLayer.classList.remove("d-none");
+      if (bgSelectorBox) bgSelectorBox.classList.remove("d-none");
+      if (zoomBox) zoomBox.classList.remove("d-none");
+      if (btnOpenTab) btnOpenTab.classList.add("d-none");
+
       btnDl.innerHTML = `<i class="bi bi-download"></i> Guardar PNG`;
       btnDl.title = "Guardar gráfico en PNG con el fondo seleccionado";
 
@@ -2696,9 +3189,34 @@ function actualizarDeteccionCodigo() {
   let detectados = [];
   let contexto = "custom";
 
+  if (/(folium|AntPath|HeatMap|MarkerCluster)/i.test(code)) {
+    detectados.push("Folium Maps");
+    contexto = "folium";
+  }
+  if (/(plotly|px\.|go\.Figure)/i.test(code)) {
+    detectados.push("Plotly");
+    if (contexto === "custom") contexto = "plotly";
+  }
+  if (/(networkx|nx\.)/i.test(code)) {
+    detectados.push("NetworkX");
+    if (contexto === "custom") contexto = "networkx";
+  }
+  if (/(wordcloud|WordCloud)/i.test(code)) {
+    detectados.push("WordCloud");
+    if (contexto === "custom") contexto = "wordcloud";
+  }
+  if (/(altair|alt\.Chart)/i.test(code)) {
+    detectados.push("Altair");
+  }
+  if (/(bokeh)/i.test(code)) {
+    detectados.push("Bokeh");
+  }
+  if (/(pyvis)/i.test(code)) {
+    detectados.push("Pyvis");
+  }
   if (/(openpyxl|xlsxwriter|\.to_excel|\.read_excel|ExcelWriter)/i.test(code)) {
     detectados.push("Excel");
-    contexto = "excel";
+    if (contexto === "custom") contexto = "excel";
   }
   if (/(seaborn|sns\.)/i.test(code)) {
     detectados.push("Seaborn");
