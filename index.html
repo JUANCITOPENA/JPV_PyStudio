@@ -19,6 +19,9 @@
   <!-- Prism.js Tema Okaidia -->
   <link href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-okaidia.min.css" rel="stylesheet">
 
+  <!-- html2canvas para Captura de Código Completo en PNG HD -->
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
   <!-- Pyodide Wasm -->
   <script src="https://cdn.jsdelivr.net/pyodide/v0.26.1/full/pyodide.js"></script>
 
@@ -601,6 +604,9 @@
           </button>
           <button class="btn btn-sm btn-dark text-info border border-secondary py-0 px-2" onclick="cargarEjemploPractica()" title="Cargar código de ejemplo para practicar" style="font-size: 11px;">
             <i class="bi bi-play-circle"></i> Ejemplo Práctica
+          </button>
+          <button id="btn-capturar-codigo-png" class="btn btn-sm btn-outline-warning py-0 px-2 fw-semibold d-flex align-items-center gap-1" onclick="abrirModalCapturaCodigo()" title="Capturar el código completo en una imagen PNG descargable" style="font-size: 11px;">
+            <i class="bi bi-camera-fill"></i> <span>Capturar en PNG</span>
           </button>
 
           <div class="zoom-toolbar">
@@ -3492,6 +3498,394 @@ function copiarConsola() {
 
 
 // =======================================================
+// MOTOR MAESTRO DE CAPTURA DEL CÓDIGO EN IMAGEN PNG HD
+// =======================================================
+let capturaCodigoDataUrl = "";
+
+function abrirModalCapturaCodigo() {
+  const code = editor ? editor.value : "";
+  if (!code || !code.trim()) {
+    alert("El editor está vacío. Escribe o carga un código para capturar su imagen.");
+    return;
+  }
+
+  const modalEl = document.getElementById("modalCapturaCodigo");
+  if (!modalEl) return;
+
+  const numLineas = code.split("\n").length;
+  const metaEl = document.getElementById("captura-codigo-meta");
+  if (metaEl) {
+    const labelArchivo = document.getElementById("archivo-actual-label") ? document.getElementById("archivo-actual-label").innerText : "script.py";
+    metaEl.innerText = `${labelArchivo} • ${numLineas} líneas de código • Renderizado HD`;
+  }
+
+  const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+  modal.show();
+
+  setTimeout(() => {
+    generarCapturaCodigoImagen();
+  }, 250);
+}
+
+async function generarCapturaCodigoImagen() {
+  const code = editor ? editor.value : "";
+  if (!code || !code.trim()) return;
+
+  const loadingEl = document.getElementById("captura-codigo-loading");
+  const containerEl = document.getElementById("captura-codigo-preview-container");
+  const imgEl = document.getElementById("img-captura-codigo-preview");
+  const badgeRes = document.getElementById("captura-resolucion-badge");
+
+  if (loadingEl) loadingEl.classList.remove("d-none");
+  if (containerEl) containerEl.classList.add("d-none");
+
+  const tema = document.getElementById("captura-select-tema") ? document.getElementById("captura-select-tema").value : "degradado-neon";
+  const conLineas = document.getElementById("captura-check-lineas") ? document.getElementById("captura-check-lineas").checked : true;
+  const conMac = document.getElementById("captura-check-mac") ? document.getElementById("captura-check-mac").checked : true;
+  const conMarca = document.getElementById("captura-check-marca") ? document.getElementById("captura-check-marca").checked : true;
+
+  const labelArchivo = document.getElementById("archivo-actual-label") ? document.getElementById("archivo-actual-label").innerText : "script.py";
+  const lineasArray = code.split("\n");
+  const totalLineas = lineasArray.length;
+
+  try {
+    if (typeof html2canvas === "function") {
+      const renderContainer = document.createElement("div");
+      renderContainer.id = "captura-render-temp-container";
+      renderContainer.style.position = "fixed";
+      renderContainer.style.left = "-99999px";
+      renderContainer.style.top = "0";
+      renderContainer.style.zIndex = "-9999";
+      renderContainer.style.width = "max-content";
+      renderContainer.style.boxSizing = "border-box";
+
+      let paddingWrapper = "32px 36px";
+      let bgWrapper = "linear-gradient(135deg, #091223 0%, #0f172a 50%, #080c14 100%)";
+      if (tema === "degradado-cyan") {
+        bgWrapper = "linear-gradient(135deg, #022031 0%, #082f49 50%, #031522 100%)";
+      } else if (tema === "oscuro-puro") {
+        bgWrapper = "#06090f";
+      } else if (tema === "blanco-elegante") {
+        bgWrapper = "linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%)";
+      } else if (tema === "transparente") {
+        bgWrapper = "transparent";
+        paddingWrapper = "0px";
+      }
+
+      renderContainer.style.background = bgWrapper;
+      renderContainer.style.padding = paddingWrapper;
+
+      const windowCard = document.createElement("div");
+      windowCard.style.borderRadius = "12px";
+      windowCard.style.overflow = "hidden";
+      windowCard.style.backgroundColor = (tema === "blanco-elegante") ? "#ffffff" : "#080c14";
+      windowCard.style.border = (tema === "blanco-elegante") ? "1px solid #cbd5e1" : "1px solid rgba(255, 255, 255, 0.12)";
+      windowCard.style.boxShadow = "0 25px 60px -15px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255,255,255,0.04)";
+      windowCard.style.minWidth = "680px";
+      windowCard.style.maxWidth = "1400px";
+      windowCard.style.width = "max-content";
+      windowCard.style.fontFamily = "'JetBrains Mono', monospace";
+
+      if (conMac) {
+        const topBar = document.createElement("div");
+        topBar.style.display = "flex";
+        topBar.style.alignItems = "center";
+        topBar.style.justifyContent = "space-between";
+        topBar.style.padding = "12px 18px";
+        topBar.style.backgroundColor = (tema === "blanco-elegante") ? "#f1f5f9" : "#0f172a";
+        topBar.style.borderBottom = (tema === "blanco-elegante") ? "1px solid #e2e8f0" : "1px solid rgba(255, 255, 255, 0.08)";
+
+        const macDots = `
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="display:inline-block; width:12px; height:12px; border-radius:50%; background:#ff5f56; box-shadow: 0 0 4px rgba(255,95,86,0.4);"></span>
+            <span style="display:inline-block; width:12px; height:12px; border-radius:50%; background:#ffbd2e; box-shadow: 0 0 4px rgba(255,189,46,0.4);"></span>
+            <span style="display:inline-block; width:12px; height:12px; border-radius:50%; background:#27c93f; box-shadow: 0 0 4px rgba(39,201,63,0.4);"></span>
+          </div>
+        `;
+
+        const titleCenter = `
+          <div style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: ${tema === 'blanco-elegante' ? '#334155' : '#94a3b8'};"><span style="color: #00f2fe;">🐍</span><span>${labelArchivo}</span></div>
+        `;
+
+        const tagRight = `
+          <div style="font-size: 11px; color: ${tema === 'blanco-elegante' ? '#64748b' : '#475569'};">Python 3.12 • Pyodide Wasm</div>
+        `;
+
+        topBar.innerHTML = `${macDots}${titleCenter}${tagRight}`;
+        windowCard.appendChild(topBar);
+      }
+
+      const codeBody = document.createElement("div");
+      codeBody.style.display = "flex";
+      codeBody.style.padding = "16px 0";
+      codeBody.style.backgroundColor = (tema === "blanco-elegante") ? "#f8fafc" : "#06090f";
+      codeBody.style.overflow = "hidden";
+
+      if (conLineas) {
+        const lineasCol = document.createElement("div");
+        lineasCol.style.width = totalLineas > 999 ? "56px" : totalLineas > 99 ? "46px" : "38px";
+        lineasCol.style.flexShrink = "0";
+        lineasCol.style.textAlign = "right";
+        lineasCol.style.padding = "0 12px 0 0";
+        lineasCol.style.borderRight = (tema === "blanco-elegante") ? "1px solid #e2e8f0" : "1px solid #1e293b";
+        lineasCol.style.color = (tema === "blanco-elegante") ? "#94a3b8" : "#3b4d66";
+        lineasCol.style.fontSize = "13px";
+        lineasCol.style.lineHeight = "1.55";
+        lineasCol.style.userSelect = "none";
+        
+        let lineNums = [];
+        for (let i = 1; i <= totalLineas; i++) lineNums.push(i);
+        lineasCol.innerHTML = lineNums.join("<br>");
+        codeBody.appendChild(lineasCol);
+      }
+
+      const codeCol = document.createElement("div");
+      codeCol.style.flex = "1";
+      codeCol.style.padding = "0 18px";
+      codeCol.style.whiteSpace = "pre";
+      codeCol.style.fontFamily = "'JetBrains Mono', monospace";
+      codeCol.style.fontSize = "13px";
+      codeCol.style.lineHeight = "1.55";
+      codeCol.style.color = (tema === "blanco-elegante") ? "#0f172a" : "#f8fafc";
+      codeCol.style.tabSize = "4";
+
+      let highlighted = "";
+      if (typeof Prism !== "undefined" && Prism.languages && Prism.languages.python) {
+        highlighted = Prism.highlight(code, Prism.languages.python, "python");
+      } else {
+        highlighted = code.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      }
+      codeCol.innerHTML = `<pre style="margin: 0; background: transparent; padding: 0; font-family: inherit; font-size: inherit; line-height: inherit; white-space: pre !important;"><code class="language-python" style="font-family: inherit; font-size: inherit; line-height: inherit; background: transparent;">${highlighted}</code></pre>`;
+      codeBody.appendChild(codeCol);
+      windowCard.appendChild(codeBody);
+
+      if (conMarca) {
+        const foot = document.createElement("div");
+        foot.style.display = "flex";
+        foot.style.justifyContent = "space-between";
+        foot.style.alignItems = "center";
+        foot.style.padding = "8px 18px";
+        foot.style.backgroundColor = (tema === "blanco-elegante") ? "#f1f5f9" : "#0a0f1d";
+        foot.style.borderTop = (tema === "blanco-elegante") ? "1px solid #e2e8f0" : "1px solid #1e293b";
+        foot.style.fontSize = "11px";
+        foot.style.color = "#64748b";
+        foot.style.fontFamily = "'Outfit', sans-serif";
+
+        const now = new Date();
+        const fechaStr = now.toLocaleDateString("es-DO", { year: "numeric", month: "short", day: "numeric" });
+        foot.innerHTML = `<div><strong style="color: ${tema === 'blanco-elegante' ? '#0f172a' : '#00f2fe'};"><i class="bi bi-lightning-charge"></i> JPV PyStudio Pro</strong> • Ing. Juancito Peña</div><div>${totalLineas} líneas • ${fechaStr}</div>`;
+        windowCard.appendChild(foot);
+      }
+
+      renderContainer.appendChild(windowCard);
+      document.body.appendChild(renderContainer);
+
+      const canvas = await html2canvas(renderContainer, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: (tema === "transparente") ? null : undefined,
+        logging: false
+      });
+
+      document.body.removeChild(renderContainer);
+
+      capturaCodigoDataUrl = canvas.toDataURL("image/png");
+
+      if (imgEl) imgEl.src = capturaCodigoDataUrl;
+      if (badgeRes) {
+        badgeRes.innerHTML = `<i class="bi bi-aspect-ratio"></i> ${canvas.width} × ${canvas.height} px • PNG HD (2x)`;
+      }
+
+      if (loadingEl) loadingEl.classList.add("d-none");
+      if (containerEl) containerEl.classList.remove("d-none");
+      return;
+    }
+
+    generarCapturaFallbackCanvas(code, { tema, conLineas, conMac, conMarca, labelArchivo, totalLineas });
+
+  } catch (err) {
+    console.error("Error renderizando con html2canvas, usando fallback:", err);
+    generarCapturaFallbackCanvas(code, { tema, conLineas, conMac, conMarca, labelArchivo, totalLineas });
+  }
+}
+
+function generarCapturaFallbackCanvas(code, opts) {
+  const loadingEl = document.getElementById("captura-codigo-loading");
+  const containerEl = document.getElementById("captura-codigo-preview-container");
+  const imgEl = document.getElementById("img-captura-codigo-preview");
+  const badgeRes = document.getElementById("captura-resolucion-badge");
+
+  const lines = code.split("\n");
+  const totalLines = lines.length;
+  const lineHeight = 22;
+  const paddingX = 40;
+  const paddingY = 40;
+  const headerHeight = opts.conMac ? 46 : 0;
+  const footerHeight = opts.conMarca ? 36 : 0;
+
+  let maxChar = 60;
+  for (const l of lines) {
+    if (l.length > maxChar) maxChar = l.length;
+  }
+
+  const charWidth = 8.8;
+  const gutterWidth = opts.conLineas ? 50 : 0;
+  const cardWidth = Math.max(700, Math.round(gutterWidth + (maxChar * charWidth) + 60));
+  const cardHeight = headerHeight + (totalLines * lineHeight) + 32 + footerHeight;
+
+  const totalWidth = opts.tema === "transparente" ? cardWidth : cardWidth + (paddingX * 2);
+  const totalHeight = opts.tema === "transparente" ? cardHeight : cardHeight + (paddingY * 2);
+
+  const canvas = document.createElement("canvas");
+  canvas.width = totalWidth * 2;
+  canvas.height = totalHeight * 2;
+  const ctx = canvas.getContext("2d");
+  ctx.scale(2, 2);
+
+  if (opts.tema !== "transparente") {
+    let grad = ctx.createLinearGradient(0, 0, totalWidth, totalHeight);
+    if (opts.tema === "degradado-cyan") {
+      grad.addColorStop(0, "#022031");
+      grad.addColorStop(1, "#031522");
+    } else if (opts.tema === "oscuro-puro") {
+      grad.addColorStop(0, "#06090f");
+      grad.addColorStop(1, "#06090f");
+    } else if (opts.tema === "blanco-elegante") {
+      grad.addColorStop(0, "#e2e8f0");
+      grad.addColorStop(1, "#cbd5e1");
+    } else {
+      grad.addColorStop(0, "#091223");
+      grad.addColorStop(0.5, "#0f172a");
+      grad.addColorStop(1, "#080c14");
+    }
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, totalWidth, totalHeight);
+  }
+
+  const ox = opts.tema === "transparente" ? 0 : paddingX;
+  const oy = opts.tema === "transparente" ? 0 : paddingY;
+
+  ctx.fillStyle = (opts.tema === "blanco-elegante") ? "#ffffff" : "#080c14";
+  ctx.strokeStyle = (opts.tema === "blanco-elegante") ? "#cbd5e1" : "rgba(255, 255, 255, 0.12)";
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.roundRect(ox, oy, cardWidth, cardHeight, 12);
+  ctx.fill();
+  ctx.stroke();
+
+  let curY = oy;
+
+  if (opts.conMac) {
+    ctx.fillStyle = (opts.tema === "blanco-elegante") ? "#f1f5f9" : "#0f172a";
+    ctx.beginPath();
+    ctx.roundRect(ox, oy, cardWidth, headerHeight, [12, 12, 0, 0]);
+    ctx.fill();
+
+    const dotY = oy + 23;
+    ctx.fillStyle = "#ff5f56";
+    ctx.beginPath(); ctx.arc(ox + 20, dotY, 6, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = "#ffbd2e";
+    ctx.beginPath(); ctx.arc(ox + 38, dotY, 6, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = "#27c93f";
+    ctx.beginPath(); ctx.arc(ox + 56, dotY, 6, 0, Math.PI * 2); ctx.fill();
+
+    ctx.font = "bold 13px 'JetBrains Mono', monospace";
+    ctx.fillStyle = (opts.tema === "blanco-elegante") ? "#334155" : "#94a3b8";
+    ctx.textAlign = "center";
+    ctx.fillText(`🐍 ${opts.labelArchivo}`, ox + (cardWidth / 2), dotY + 4);
+
+    curY += headerHeight;
+  }
+
+  curY += 20;
+  ctx.font = "13px 'JetBrains Mono', monospace";
+  ctx.textBaseline = "middle";
+
+  lines.forEach((l, idx) => {
+    const lineY = curY + (idx * lineHeight);
+    if (opts.conLineas) {
+      ctx.textAlign = "right";
+      ctx.fillStyle = (opts.tema === "blanco-elegante") ? "#94a3b8" : "#3b4d66";
+      ctx.fillText(String(idx + 1), ox + gutterWidth - 12, lineY);
+    }
+    ctx.textAlign = "left";
+    if (l.trim().startsWith("#")) {
+      ctx.fillStyle = "#6b7280";
+    } else {
+      ctx.fillStyle = (opts.tema === "blanco-elegante") ? "#0f172a" : "#f8fafc";
+    }
+    ctx.fillText(l, ox + gutterWidth + 12, lineY);
+  });
+
+  if (opts.conMarca) {
+    const footY = oy + cardHeight - footerHeight;
+    ctx.fillStyle = (opts.tema === "blanco-elegante") ? "#f1f5f9" : "#0a0f1d";
+    ctx.beginPath();
+    ctx.roundRect(ox, footY, cardWidth, footerHeight, [0, 0, 12, 12]);
+    ctx.fill();
+
+    ctx.font = "11px 'Outfit', sans-serif";
+    ctx.textAlign = "left";
+    ctx.fillStyle = (opts.tema === "blanco-elegante") ? "#0f172a" : "#00f2fe";
+    ctx.fillText("JPV PyStudio Pro • Ing. Juancito Peña", ox + 18, footY + 18);
+
+    ctx.textAlign = "right";
+    ctx.fillStyle = "#64748b";
+    ctx.fillText(`${totalLines} líneas • Python Wasm`, ox + cardWidth - 18, footY + 18);
+  }
+
+  capturaCodigoDataUrl = canvas.toDataURL("image/png");
+  if (imgEl) imgEl.src = capturaCodigoDataUrl;
+  if (badgeRes) {
+    badgeRes.innerHTML = `<i class="bi bi-aspect-ratio"></i> ${canvas.width} × ${canvas.height} px • PNG HD (Canvas 2D)`;
+  }
+  if (loadingEl) loadingEl.classList.add("d-none");
+  if (containerEl) containerEl.classList.remove("d-none");
+}
+
+function descargarImagenCapturaCodigo() {
+  if (!capturaCodigoDataUrl) {
+    alert("Primero genera la imagen del código.");
+    return;
+  }
+  const labelArchivo = document.getElementById("archivo-actual-label") ? document.getElementById("archivo-actual-label").innerText.replace(/\.[^/.]+$/, "") : "codigo";
+  const timestamp = new Date().toISOString().slice(0, 19).replace(/[-:T]/g, "_");
+  const link = document.createElement("a");
+  link.download = `${labelArchivo}_captura_${timestamp}.png`;
+  link.href = capturaCodigoDataUrl;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+async function copiarImagenCapturaPortapapeles() {
+  if (!capturaCodigoDataUrl) {
+    alert("No hay imagen disponible para copiar.");
+    return;
+  }
+  const btn = document.getElementById("btn-copiar-captura");
+  try {
+    const res = await fetch(capturaCodigoDataUrl);
+    const blob = await res.blob();
+    await navigator.clipboard.write([
+      new ClipboardItem({ "image/png": blob })
+    ]);
+    if (btn) {
+      const origHtml = btn.innerHTML;
+      btn.innerHTML = `<i class="bi bi-check2-circle text-success"></i> ¡Copiada con éxito!`;
+      btn.classList.replace("btn-outline-info", "btn-success");
+      setTimeout(() => {
+        btn.innerHTML = origHtml;
+        btn.classList.replace("btn-success", "btn-outline-info");
+      }, 2500);
+    }
+  } catch (err) {
+    console.error("Error al copiar imagen al portapapeles:", err);
+    alert("No se pudo copiar directamente al portapapeles en este navegador. Usa el botón 'Descargar Imagen PNG'.");
+  }
+}
+
+// =======================================================
 // DETECTOR INTELIGENTE DE CÓDIGO & MODOS DE INICIO
 // =======================================================
 let timerDeteccion = null;
@@ -3680,6 +4074,110 @@ window.addEventListener("DOMContentLoaded", () => {
 });
 </script>
 
+
+<!-- ======================================================= -->
+<!-- MODAL GLOBAL: CAPTURA COMPLETA DEL CÓDIGO EN IMAGEN PNG -->
+<!-- ======================================================= -->
+<div class="modal fade" id="modalCapturaCodigo" tabindex="-1" aria-labelledby="modalCapturaCodigoLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-xl modal-dialog-scrollable">
+    <div class="modal-content bg-dark text-light border border-secondary shadow-lg" style="background-color: #0b1120 !important; border-radius: 14px;">
+      
+      <!-- Cabecera del Modal -->
+      <div class="modal-header border-secondary py-2 px-3">
+        <div class="d-flex align-items-center gap-2">
+          <div class="p-1 px-2 rounded bg-warning text-dark fw-bold d-flex align-items-center gap-1" style="font-size: 12px;">
+            <i class="bi bi-camera-fill"></i> PNG HD
+          </div>
+          <div>
+            <h6 class="modal-title fw-bold text-light mb-0" id="modalCapturaCodigoLabel">
+              Captura Global del Código en Imagen
+            </h6>
+            <span class="small text-secondary" id="captura-codigo-meta" style="font-size: 11px;">
+              Snapshot completo de alta resolución con sintaxis Okaidia
+            </span>
+          </div>
+        </div>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+
+      <!-- Barra de Personalización -->
+      <div class="bg-black bg-opacity-40 border-bottom border-secondary px-3 py-2 d-flex flex-wrap align-items-center justify-content-between gap-2" style="font-size: 12px;">
+        <div class="d-flex flex-wrap align-items-center gap-3">
+          <div class="d-flex align-items-center gap-1">
+            <span class="text-secondary"><i class="bi bi-palette"></i> Marco / Fondo:</span>
+            <select id="captura-select-tema" class="form-select form-select-sm bg-dark text-info border-secondary py-0 px-2" style="font-size: 11px; width: auto;" onchange="generarCapturaCodigoImagen()">
+              <option value="degradado-neon" selected>🌌 Neón Nocturno (Gradiente)</option>
+              <option value="degradado-cyan">🔷 Cyan Studio (Gradiente)</option>
+              <option value="oscuro-puro">⬛ Dark Studio Puro</option>
+              <option value="blanco-elegante">☀️ Blanco Limpio</option>
+              <option value="transparente">🏁 Sin Marco (Transparente)</option>
+            </select>
+          </div>
+
+          <div class="form-check form-switch m-0 d-flex align-items-center gap-1">
+            <input class="form-check-input" type="checkbox" id="captura-check-lineas" checked onchange="generarCapturaCodigoImagen()">
+            <label class="form-check-label text-secondary small" for="captura-check-lineas" style="font-size: 11px; cursor: pointer;">Números de línea</label>
+          </div>
+
+          <div class="form-check form-switch m-0 d-flex align-items-center gap-1">
+            <input class="form-check-input" type="checkbox" id="captura-check-mac" checked onchange="generarCapturaCodigoImagen()">
+            <label class="form-check-label text-secondary small" for="captura-check-mac" style="font-size: 11px; cursor: pointer;">Barra Ventana Mac</label>
+          </div>
+
+          <div class="form-check form-switch m-0 d-flex align-items-center gap-1">
+            <input class="form-check-input" type="checkbox" id="captura-check-marca" checked onchange="generarCapturaCodigoImagen()">
+            <label class="form-check-label text-secondary small" for="captura-check-marca" style="font-size: 11px; cursor: pointer;">Firma JPV</label>
+          </div>
+        </div>
+
+        <div class="d-flex align-items-center gap-2">
+          <span id="captura-resolucion-badge" class="badge bg-dark border border-secondary text-info fw-normal" style="font-size: 11px;">
+            <i class="bi bi-aspect-ratio"></i> Listo para procesar
+          </span>
+          <button class="btn btn-sm btn-outline-secondary py-0 px-2 text-light" onclick="generarCapturaCodigoImagen()" title="Volver a generar imagen">
+            <i class="bi bi-arrow-repeat"></i> Regenerar
+          </button>
+        </div>
+      </div>
+
+      <!-- Cuerpo del Modal: Visor de la Imagen Generada -->
+      <div class="modal-body p-3 text-center" style="background-color: #06090f; min-height: 400px;">
+        <!-- Spinner mientras genera -->
+        <div id="captura-codigo-loading" class="py-5">
+          <div class="spinner-border text-warning mb-3" style="width: 2.5rem; height: 2.5rem;" role="status"></div>
+          <div class="text-light fw-semibold">Procesando y renderizando el código completo...</div>
+          <div class="text-secondary small mt-1">Generando imagen HD en formato PNG con sintaxis Okaidia completa.</div>
+        </div>
+
+        <!-- Contenedor de la Imagen -->
+        <div id="captura-codigo-preview-container" class="d-none">
+          <div class="p-2 rounded border border-secondary shadow-sm" style="background: repeating-conic-gradient(#111827 0% 25%, #0f172a 0% 50%) 50% / 20px 20px; overflow: auto; max-height: 65vh;">
+            <img id="img-captura-codigo-preview" alt="Captura Global del Código" class="img-fluid rounded shadow-lg mx-auto d-block" style="display: block; max-height: 60vh; object-fit: contain;">
+          </div>
+        </div>
+      </div>
+
+      <!-- Pie del Modal -->
+      <div class="modal-footer border-secondary py-2 px-3 d-flex flex-wrap justify-content-between align-items-center">
+        <div class="small text-secondary" style="font-size: 11px;">
+          <i class="bi bi-check2-circle text-success"></i> Captura del 100% de las líneas del editor sin cortes de scroll.
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          <button type="button" class="btn btn-sm btn-dark text-secondary border-secondary" data-bs-dismiss="modal">
+            Cerrar
+          </button>
+          <button type="button" id="btn-copiar-captura" class="btn btn-sm btn-outline-info d-flex align-items-center gap-1" onclick="copiarImagenCapturaPortapapeles()">
+            <i class="bi bi-clipboard2-check"></i> <span>Copiar Imagen</span>
+          </button>
+          <button type="button" id="btn-descargar-captura" class="btn btn-sm btn-warning text-dark fw-bold px-3 shadow d-flex align-items-center gap-1" onclick="descargarImagenCapturaCodigo()">
+            <i class="bi bi-download"></i> <span>Descargar Imagen PNG</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
 
 <!-- Modal Bienvenida: ¿Lienzo Vacío o Práctica? -->
 <div class="modal fade" id="modalBienvenidaInicio" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
