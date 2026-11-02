@@ -1078,6 +1078,113 @@ let plotsBase64 = {
 };
 let fondoGraficoActual = "negro";
 
+let currentPlotType = "png";
+let currentPlotFilename = "";
+let currentHtmlContent = "";
+let currentHtmlBlobUrl = "";
+
+function construirCSSFondoHTML(modo) {
+  if (modo === "negro") {
+    return `
+      html, body { background: #080c14 !important; color: #f8fafc !important; }
+      .folium-map, .leaflet-container { background: #080c14 !important; }
+      .leaflet-tile-pane { filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%) !important; opacity: 1 !important; }
+      .bk-root, .vega-embed { background: #080c14 !important; color: #f8fafc !important; }
+    `;
+  } else if (modo === "blanco") {
+    return `
+      html, body { background: #ffffff !important; color: #0f172a !important; }
+      .folium-map, .leaflet-container { background: #ffffff !important; }
+      .leaflet-tile-pane { filter: none !important; opacity: 1 !important; }
+      .bk-root, .vega-embed { background: #ffffff !important; color: #0f172a !important; }
+    `;
+  } else {
+    return `
+      html, body { background: transparent !important; color: #ffffff !important; }
+      .folium-map, .leaflet-container { background: transparent !important; }
+      .leaflet-tile-pane { filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%) !important; opacity: 0.35 !important; }
+      .bk-root, .vega-embed { background: transparent !important; color: #ffffff !important; }
+    `;
+  }
+}
+
+function aplicarFondoEnIframeHTML(modo) {
+  const htmlFrame = document.getElementById("html-viz-frame");
+  if (!htmlFrame || htmlFrame.classList.contains("d-none")) return;
+
+  if (modo === "negro") htmlFrame.style.background = "#080c14";
+  else if (modo === "blanco") htmlFrame.style.background = "#ffffff";
+  else htmlFrame.style.background = "transparent";
+
+  try {
+    const doc = htmlFrame.contentDocument || (htmlFrame.contentWindow && htmlFrame.contentWindow.document);
+    const win = htmlFrame.contentWindow;
+    if (!doc) return;
+
+    let styleEl = doc.getElementById("jpv-dynamic-bg-style");
+    if (!styleEl && doc.head) {
+      styleEl = doc.createElement("style");
+      styleEl.id = "jpv-dynamic-bg-style";
+      doc.head.appendChild(styleEl);
+    }
+    if (styleEl) {
+      styleEl.textContent = construirCSSFondoHTML(modo);
+    }
+
+    // Si es un gráfico interactivo de Plotly, actualizar su layout en vivo
+    if (win && win.Plotly) {
+      const plots = doc.querySelectorAll(".js-plotly-plot");
+      plots.forEach(gd => {
+        if (modo === "negro") {
+          win.Plotly.relayout(gd, {
+            paper_bgcolor: "#080c14",
+            plot_bgcolor: "#0f172a",
+            "font.color": "#f8fafc",
+            "title.font.color": "#f8fafc",
+            "xaxis.gridcolor": "#1e293b",
+            "yaxis.gridcolor": "#1e293b",
+            "xaxis.tickfont.color": "#cbd5e1",
+            "yaxis.tickfont.color": "#cbd5e1",
+            "xaxis.title.font.color": "#f8fafc",
+            "yaxis.title.font.color": "#f8fafc",
+            "legend.font.color": "#f8fafc"
+          });
+        } else if (modo === "blanco") {
+          win.Plotly.relayout(gd, {
+            paper_bgcolor: "#ffffff",
+            plot_bgcolor: "#f8fafc",
+            "font.color": "#0f172a",
+            "title.font.color": "#0f172a",
+            "xaxis.gridcolor": "#e2e8f0",
+            "yaxis.gridcolor": "#e2e8f0",
+            "xaxis.tickfont.color": "#334155",
+            "yaxis.tickfont.color": "#334155",
+            "xaxis.title.font.color": "#0f172a",
+            "yaxis.title.font.color": "#0f172a",
+            "legend.font.color": "#0f172a"
+          });
+        } else {
+          win.Plotly.relayout(gd, {
+            paper_bgcolor: "rgba(0,0,0,0)",
+            plot_bgcolor: "rgba(0,0,0,0)",
+            "font.color": "#ffffff",
+            "title.font.color": "#ffffff",
+            "xaxis.gridcolor": "rgba(148,163,184,0.22)",
+            "yaxis.gridcolor": "rgba(148,163,184,0.22)",
+            "xaxis.tickfont.color": "#f8fafc",
+            "yaxis.tickfont.color": "#f8fafc",
+            "xaxis.title.font.color": "#ffffff",
+            "yaxis.title.font.color": "#ffffff",
+            "legend.font.color": "#ffffff"
+          });
+        }
+      });
+    }
+  } catch (e) {
+    console.warn("Aviso al aplicar fondo en iframe:", e);
+  }
+}
+
 function cambiarFondoGrafico(modo) {
   fondoGraficoActual = modo;
   const select = document.getElementById("select-fondo-grafico");
@@ -1089,35 +1196,48 @@ function cambiarFondoGrafico(modo) {
     chartViewport.classList.add("bg-modo-" + modo);
   }
 
+  if (currentPlotType === "html") {
+    aplicarFondoEnIframeHTML(modo);
+    return;
+  }
+
   const imgElement = document.getElementById("rendered-plot");
   if (imgElement && plotsBase64) {
-    const b64 = plotsBase64[modo] || plotsBase64.negro || plotsBase64.blanco || plotsBase64.transparente;
+    const b64 = plotsBase64[modo] || plotsBase64.negro || plotsBase64.blanco || plotsBase64.transparente || plotsBase64.gif_b64;
     if (b64) {
-      imgElement.src = "data:image/png;base64," + b64;
+      const mime = currentPlotType === "gif" ? "image/gif" : "image/png";
+      imgElement.src = `data:${mime};base64,` + b64;
       currentPlotB64 = b64;
     }
   }
 }
 
-let currentPlotType = "png";
-let currentPlotFilename = "";
-let currentHtmlContent = "";
-let currentHtmlBlobUrl = "";
+function obtenerHTMLConFondoActual() {
+  if (!currentHtmlContent) return "";
+  const css = `<style id="jpv-exported-bg">${construirCSSFondoHTML(fondoGraficoActual)}</style>`;
+  if (currentHtmlContent.includes("</head>")) {
+    return currentHtmlContent.replace("</head>", css + "</head>");
+  }
+  return css + currentHtmlContent;
+}
 
 function abrirVisualizacionEnPestana() {
   if (!currentHtmlContent) return;
-  const blob = new Blob([currentHtmlContent], { type: "text/html;charset=utf-8" });
+  const htmlExport = obtenerHTMLConFondoActual();
+  const blob = new Blob([htmlExport], { type: "text/html;charset=utf-8" });
   const url = URL.createObjectURL(blob);
   window.open(url, "_blank");
 }
 
 function descargarGraficoPNG() {
   if (currentPlotType === "html" && currentHtmlContent) {
-    const blob = new Blob([currentHtmlContent], { type: "text/html;charset=utf-8" });
+    const htmlExport = obtenerHTMLConFondoActual();
+    const blob = new Blob([htmlExport], { type: "text/html;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const enlace = document.createElement("a");
     enlace.href = url;
-    enlace.download = currentPlotFilename || "visualizacion_interactiva.html";
+    const baseName = (currentPlotFilename || "visualizacion").replace(/\.html$/i, "");
+    enlace.download = `${baseName}_${fondoGraficoActual}.html`;
     document.body.appendChild(enlace);
     enlace.click();
     document.body.removeChild(enlace);
@@ -1125,10 +1245,13 @@ function descargarGraficoPNG() {
     return;
   }
 
-  if (currentPlotType === "gif" && currentPlotB64) {
+  if (currentPlotType === "gif") {
+    const b64Gif = (plotsBase64 && plotsBase64[fondoGraficoActual]) || currentPlotB64 || (plotsBase64 && plotsBase64.gif_b64);
+    if (!b64Gif) return;
     const enlace = document.createElement("a");
-    enlace.href = "data:image/gif;base64," + currentPlotB64;
-    enlace.download = currentPlotFilename || "animacion_pystudio.gif";
+    enlace.href = "data:image/gif;base64," + b64Gif;
+    const baseName = (currentPlotFilename || "animacion_pystudio").replace(/\.gif$/i, "");
+    enlace.download = `${baseName}_${fondoGraficoActual}.gif`;
     document.body.appendChild(enlace);
     enlace.click();
     document.body.removeChild(enlace);
@@ -1380,6 +1503,21 @@ try:
         print("🏆 Top 10 Criptoactivos:")
         print(df.to_string(index=False))
         
+        # Visualizar Top 10 Criptomonedas por Precio / Cambio 24h
+        import matplotlib.pyplot as plt
+        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(9.5, 4.0))
+        colores_bar = ["#00f2fe" if v >= 0 else "#f43f5e" for v in df["Cambio 24h (%)"]]
+        ax1.barh(df["Símbolo"].str.upper()[::-1], (df["Market Cap USD"] / 1e9)[::-1], color="#38bdf8", edgecolor="black")
+        ax1.set_title("Top 10 Market Cap (Miles de Millones USD)")
+        ax1.set_xlabel("Billones USD")
+
+        ax2.barh(df["Símbolo"].str.upper()[::-1], df["Cambio 24h (%)"][::-1], color=colores_bar[::-1], edgecolor="black")
+        ax2.axvline(0, color="#94a3b8", linewidth=1, linestyle="--")
+        ax2.set_title("Variación en 24 Horas (%)")
+        ax2.set_xlabel("Cambio (%)")
+        plt.tight_layout()
+        plt.show()
+
         # Guardar en archivo local
         df.to_csv("top_cripto_mercado.csv", index=False)
         print("\\n💾 Guardado en disco virtual: 'top_cripto_mercado.csv'")
@@ -1437,6 +1575,20 @@ archivo_excel = "Reporte_Facturacion_Corporativa.xlsx"
 with pd.ExcelWriter(archivo_excel, engine="openpyxl") as writer:
     df_ventas.to_excel(writer, sheet_name="Detalle_Facturas", index=False)
     resumen.to_excel(writer, sheet_name="Resumen_Sucursales", index=False)
+
+# Visualización Ejecutiva de Facturación por Sucursal
+import matplotlib.pyplot as plt
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(9.5, 4.0))
+ax1.bar(resumen["Sucursal"], resumen["Total_Factura"] / 1000, color="#00f2fe", edgecolor="black")
+ax1.set_title("Facturación Total por Sucursal (Miles RD$)")
+ax1.set_ylabel("Miles RD$")
+ax1.tick_params(axis="x", rotation=20)
+
+ax2.pie(resumen["Total_Factura"], labels=resumen["Sucursal"], autopct="%1.1f%%",
+        colors=["#00f2fe", "#38bdf8", "#818cf8", "#f43f5e", "#10b981"], startangle=90)
+ax2.set_title("Participación por Sucursal (%)")
+plt.tight_layout()
+plt.show()
 
 print(f"\\n💾 Libro Excel generado: '{archivo_excel}' con 2 hojas de cálculo.")
 print("👉 Descárgalo con el botón 'Descargar Excel / CSV' o en 'Archivos (VFS)'!")`,
@@ -2663,16 +2815,59 @@ def __adaptar_figura_contraste(fig, modo):
         else:
             ax.patch.set_facecolor(bg_ax)
             ax.patch.set_alpha(1.0)
+
+        # Adaptar imágenes embebidas con fondo sólido (ej. WordCloud) a Blanco, Negro y Transparente
+        for im in ax.images:
+            try:
+                if not hasattr(im, "_orig_rgba"):
+                    arr_raw = np.array(im.get_array())
+                    if arr_raw.ndim == 3 and arr_raw.shape[2] in (3, 4):
+                        if arr_raw.dtype != np.uint8:
+                            arr_raw = (np.clip(arr_raw, 0, 1) * 255).astype(np.uint8) if arr_raw.max() <= 1.0 else arr_raw.astype(np.uint8)
+                        if arr_raw.shape[2] == 3:
+                            alpha_ch = np.full((arr_raw.shape[0], arr_raw.shape[1], 1), 255, dtype=np.uint8)
+                            arr_rgba = np.concatenate([arr_raw, alpha_ch], axis=2)
+                        else:
+                            arr_rgba = arr_raw.copy()
+                        # Verificar si las esquinas comparten un color de fondo uniforme
+                        c1, c2, c3, c4 = arr_rgba[0, 0, :3].astype(int), arr_rgba[0, -1, :3].astype(int), arr_rgba[-1, 0, :3].astype(int), arr_rgba[-1, -1, :3].astype(int)
+                        if max(np.max(np.abs(c1 - c2)), np.max(np.abs(c1 - c3)), np.max(np.abs(c1 - c4))) <= 15:
+                            im._orig_rgba = arr_rgba
+                            im._orig_bg_rgb = c1
+                        else:
+                            im._orig_rgba = None
+                    else:
+                        im._orig_rgba = None
+
+                if getattr(im, "_orig_rgba", None) is not None:
+                    base_rgba = im._orig_rgba.copy()
+                    bg_c = im._orig_bg_rgb
+                    mask_bg = np.max(np.abs(base_rgba[:, :, :3].astype(int) - bg_c), axis=-1) <= 22
+                    if modo == "blanco":
+                        base_rgba[mask_bg] = [255, 255, 255, 255]
+                    elif modo == "negro":
+                        base_rgba[mask_bg] = [8, 12, 20, 255]
+                    else:
+                        base_rgba[mask_bg] = [0, 0, 0, 0]
+                    im.set_data(base_rgba)
+            except Exception:
+                pass
             
+        for gl in ax.get_xgridlines() + ax.get_ygridlines():
+            if modo == "blanco":
+                gl.set_color("#e2e8f0")
+            elif modo == "negro":
+                gl.set_color("#1e293b")
+            else:
+                gl.set_color("#475569")
+
         for item in [ax.title, ax.xaxis.label, ax.yaxis.label]:
             if item:
                 if modo == "blanco":
-                    if __get_luminance(item.get_color()) > 0.55:
-                        item.set_color(fg_target)
+                    item.set_color("#0f172a")
                     item.set_path_effects([])
                 elif modo == "negro":
-                    if __get_luminance(item.get_color()) < 0.45:
-                        item.set_color(fg_target)
+                    item.set_color("#f8fafc")
                     item.set_path_effects([])
                 else:
                     item.set_color("#ffffff")
@@ -2680,12 +2875,10 @@ def __adaptar_figura_contraste(fig, modo):
 
         for lbl in ax.get_xticklabels() + ax.get_yticklabels():
             if modo == "blanco":
-                if __get_luminance(lbl.get_color()) > 0.55:
-                    lbl.set_color(fg_target)
+                lbl.set_color("#0f172a")
                 lbl.set_path_effects([])
             elif modo == "negro":
-                if __get_luminance(lbl.get_color()) < 0.45:
-                    lbl.set_color(fg_target)
+                lbl.set_color("#f8fafc")
                 lbl.set_path_effects([])
             else:
                 lbl.set_color("#ffffff")
@@ -2721,16 +2914,114 @@ def __adaptar_figura_contraste(fig, modo):
         is_heatmap = any("QuadMesh" in type(c).__name__ for c in ax.collections)
         if not is_heatmap:
             for t in ax.texts:
-                if modo == "blanco":
-                    if __get_luminance(t.get_color()) > 0.55:
-                        t.set_color(fg_target)
-                    t.set_path_effects([])
-                elif modo == "negro":
-                    if __get_luminance(t.get_color()) < 0.45:
-                        t.set_color(fg_target)
-                    t.set_path_effects([])
+                bbox_p = t.get_bbox_patch()
+                if bbox_p is not None:
+                    if modo == "blanco":
+                        bbox_p.set_facecolor("#ffffff")
+                        bbox_p.set_edgecolor("#cbd5e1")
+                        bbox_p.set_alpha(0.9)
+                        t.set_color("#0f172a")
+                        t.set_path_effects([])
+                    elif modo == "negro":
+                        bbox_p.set_facecolor("#0f172a")
+                        bbox_p.set_edgecolor("#334155")
+                        bbox_p.set_alpha(0.9)
+                        t.set_color("#f8fafc")
+                        t.set_path_effects([])
+                    else:
+                        bbox_p.set_facecolor("#0f172a")
+                        bbox_p.set_edgecolor("#475569")
+                        bbox_p.set_alpha(0.75)
+                        t.set_color("#ffffff")
+                        t.set_path_effects([])
                 else:
-                    t.set_path_effects([pe.withStroke(linewidth=2.0, foreground="#000000")])
+                    if modo == "blanco":
+                        t.set_color("#0f172a")
+                        t.set_path_effects([pe.withStroke(linewidth=2.2, foreground="#ffffff")])
+                    elif modo == "negro":
+                        t.set_color("#f8fafc")
+                        t.set_path_effects([pe.withStroke(linewidth=2.2, foreground="#080c14")])
+                    else:
+                        t.set_color("#ffffff")
+                        t.set_path_effects([pe.withStroke(linewidth=2.2, foreground="#000000")])
+
+def __generar_variantes_gif(gif_bytes):
+    import base64
+    variantes = {"negro": "", "blanco": "", "transparente": ""}
+    b64_orig = base64.b64encode(gif_bytes).decode("utf-8")
+    variantes["negro"] = b64_orig
+    try:
+        from PIL import Image, ImageSequence
+        im = Image.open(io.BytesIO(gif_bytes))
+        duracion = im.info.get("duration", 80)
+        loop = im.info.get("loop", 0)
+        frames_rgba = [np.array(f.convert("RGBA")) for f in ImageSequence.Iterator(im)]
+        if not frames_rgba:
+            variantes["blanco"] = b64_orig
+            variantes["transparente"] = b64_orig
+            return variantes
+
+        f0 = frames_rgba[0]
+        bg_rgb = f0[0, 0, :3].astype(np.int16)
+        lum_bg = (0.299 * bg_rgb[0] + 0.587 * bg_rgb[1] + 0.114 * bg_rgb[2]) / 255.0
+        es_oscuro_orig = lum_bg < 0.45
+
+        frames_blanco = []
+        frames_negro = []
+        frames_trans = []
+
+        for arr in frames_rgba:
+            rgb = arr[:, :, :3].astype(np.int16)
+            diff_bg = np.max(np.abs(rgb - bg_rgb), axis=-1)
+            mask_bg = diff_bg <= 28
+
+            c_max = np.max(rgb, axis=-1)
+            c_min = np.min(rgb, axis=-1)
+            es_gris = (c_max - c_min) <= 35
+
+            if es_oscuro_orig:
+                arr_w = arr.copy()
+                for c in range(3):
+                    canal = arr_w[:, :, c].astype(np.int16)
+                    arr_w[:, :, c] = np.where(es_gris, 255 - canal, canal).astype(np.uint8)
+                arr_w[mask_bg, :3] = 255
+                frames_blanco.append(Image.fromarray(arr_w, "RGBA").convert("P", palette=Image.ADAPTIVE))
+
+                arr_t = arr.copy()
+                arr_t[mask_bg, 3] = 0
+                frames_trans.append(Image.fromarray(arr_t, "RGBA"))
+            else:
+                arr_b = arr.copy()
+                for c in range(3):
+                    canal = arr_b[:, :, c].astype(np.int16)
+                    arr_b[:, :, c] = np.where(es_gris, 255 - canal, canal).astype(np.uint8)
+                arr_b[mask_bg, 0] = 8
+                arr_b[mask_bg, 1] = 12
+                arr_b[mask_bg, 2] = 20
+                frames_negro.append(Image.fromarray(arr_b, "RGBA").convert("P", palette=Image.ADAPTIVE))
+
+                arr_t = arr_b.copy()
+                arr_t[mask_bg, 3] = 0
+                frames_trans.append(Image.fromarray(arr_t, "RGBA"))
+
+        if es_oscuro_orig:
+            variantes["negro"] = b64_orig
+            buf_w = io.BytesIO()
+            frames_blanco[0].save(buf_w, format="GIF", save_all=True, append_images=frames_blanco[1:], duration=duracion, loop=loop)
+            variantes["blanco"] = base64.b64encode(buf_w.getvalue()).decode("utf-8")
+        else:
+            variantes["blanco"] = b64_orig
+            buf_b = io.BytesIO()
+            frames_negro[0].save(buf_b, format="GIF", save_all=True, append_images=frames_negro[1:], duration=duracion, loop=loop)
+            variantes["negro"] = base64.b64encode(buf_b.getvalue()).decode("utf-8")
+
+        buf_t = io.BytesIO()
+        frames_trans[0].save(buf_t, format="GIF", save_all=True, append_images=frames_trans[1:], duration=duracion, loop=loop, disposal=2)
+        variantes["transparente"] = base64.b64encode(buf_t.getvalue()).decode("utf-8")
+    except Exception:
+        if not variantes["blanco"]: variantes["blanco"] = b64_orig
+        if not variantes["transparente"]: variantes["transparente"] = b64_orig
+    return variantes
 
 def __extraer_plots():
     import base64
@@ -2821,7 +3112,7 @@ def __extraer_plots():
                 except Exception:
                     pass
 
-    # 4. Detectar si se generó un archivo .gif en esta ejecución
+    # 4. Detectar si se generó un archivo .gif en esta ejecución y crear sus 3 modos de fondo
     gifs_escritos = [f for f in __archivos_escritos_en_ejecucion__ if f.lower().endswith(".gif") and os.path.isfile(f)]
     if gifs_escritos:
         reciente_gif = gifs_escritos[-1]
@@ -2831,7 +3122,13 @@ def __extraer_plots():
             if len(gif_bytes) > 0:
                 res["tipo"] = "gif"
                 res["gif_nombre"] = reciente_gif
-                res["gif_b64"] = base64.b64encode(gif_bytes).decode("utf-8")
+                variantes_gif = __generar_variantes_gif(gif_bytes)
+                res["negro"] = variantes_gif["negro"]
+                res["blanco"] = variantes_gif["blanco"]
+                res["transparente"] = variantes_gif["transparente"]
+                res["gif_b64"] = variantes_gif["negro"]
+                plt.clf()
+                plt.close("all")
                 return json.dumps(res)
         except Exception:
             pass
@@ -2865,7 +3162,7 @@ def __extraer_plots():
         plt.close("all")
         return json.dumps(res)
 
-    # 6. Si el usuario guardó un .png directamente (ej. WordCloud.to_file("nube.png") o plt.savefig("..."))
+    # 6. Si el usuario guardó un .png directamente
     pngs_escritos = [f for f in __archivos_escritos_en_ejecucion__ if f.lower().endswith(".png") and os.path.isfile(f)]
     if pngs_escritos:
         reciente_png = pngs_escritos[-1]
@@ -3016,9 +3313,15 @@ async function ejecutarPython() {
 
       dragLayer.classList.add("d-none");
       htmlFrame.classList.remove("d-none");
+      htmlFrame.onload = () => {
+        aplicarFondoEnIframeHTML(fondoGraficoActual);
+        setTimeout(() => aplicarFondoEnIframeHTML(fondoGraficoActual), 180);
+        setTimeout(() => aplicarFondoEnIframeHTML(fondoGraficoActual), 500);
+      };
       htmlFrame.src = currentHtmlBlobUrl;
 
-      if (bgSelectorBox) bgSelectorBox.classList.add("d-none");
+      // Mantener siempre visible el selector de fondo (Negro / Blanco / Transparente) para TODAS las modalidades
+      if (bgSelectorBox) bgSelectorBox.classList.remove("d-none");
       if (zoomBox) zoomBox.classList.add("d-none");
       if (btnOpenTab) btnOpenTab.classList.remove("d-none");
 
@@ -3026,26 +3329,29 @@ async function ejecutarPython() {
       btnDl.disabled = false;
       btnDl.innerHTML = `<i class="bi bi-filetype-html"></i> Guardar HTML`;
       btnDl.title = `Descargar visualización interactiva (${currentPlotFilename})`;
+      cambiarFondoGrafico(fondoGraficoActual);
       cambiarTab('grafico');
 
-    } else if (plotsBase64 && plotsBase64.tipo === "gif" && plotsBase64.gif_b64) {
-      currentPlotB64 = plotsBase64.gif_b64;
+    } else if (plotsBase64 && plotsBase64.tipo === "gif" && (plotsBase64.gif_b64 || plotsBase64.negro)) {
       currentPlotType = "gif";
       currentPlotFilename = plotsBase64.gif_nombre || "animacion.gif";
+      const gifInicial = plotsBase64[fondoGraficoActual] || plotsBase64.negro || plotsBase64.gif_b64;
+      currentPlotB64 = gifInicial;
 
       htmlFrame.classList.add("d-none");
       htmlFrame.src = "about:blank";
       dragLayer.classList.remove("d-none");
-      if (bgSelectorBox) bgSelectorBox.classList.add("d-none");
+      if (bgSelectorBox) bgSelectorBox.classList.remove("d-none");
       if (zoomBox) zoomBox.classList.remove("d-none");
       if (btnOpenTab) btnOpenTab.classList.add("d-none");
 
-      dragLayer.innerHTML = `<img id="rendered-plot" src="data:image/gif;base64,${plotsBase64.gif_b64}" alt="Animación GIF" style="border-radius: 6px; box-shadow: 0 4px 20px rgba(0,0,0,0.6);">`;
+      dragLayer.innerHTML = `<img id="rendered-plot" src="data:image/gif;base64,${gifInicial}" alt="Animación GIF" style="border-radius: 6px; box-shadow: 0 4px 20px rgba(0,0,0,0.6);">`;
       resetZoomGrafico();
       dot.classList.remove("d-none");
       btnDl.disabled = false;
       btnDl.innerHTML = `<i class="bi bi-film"></i> Guardar GIF`;
-      btnDl.title = `Descargar animación ${currentPlotFilename}`;
+      btnDl.title = `Descargar animación ${currentPlotFilename} con el fondo elegido`;
+      cambiarFondoGrafico(fondoGraficoActual);
       cambiarTab('grafico');
 
     } else {
