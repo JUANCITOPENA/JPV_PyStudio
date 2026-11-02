@@ -12,16 +12,21 @@ Entorno de desarrollo interactivo (IDE) y estudio analítico de datos de alto re
 
 ## 🚀 Capacidades y Características Principales
 
-- **📊 Stack Analítico Completo:**
-  - `pandas` y `numpy` para manipulación vectorial de datos.
-  - `seaborn` y `matplotlib` para visualización estadística avanzada (Heatmaps, Regresiones, Dispersión, Gráficos de barras).
-  - `scipy` para optimización y curvas científicas.
+- **📊 Stack Analítico y de Visualización Avanzada:**
+  - `folium` y `folium.plugins` (`AntPath`, `MiniMap`, `Fullscreen`, `HeatMap`, `MarkerCluster`) para mapas geoespaciales interactivos en vivo.
+  - `plotly` (`plotly.express`, `plotly.graph_objects`) para dashboards interactivos HTML y gráficos multidimensionales.
+  - `seaborn` y `matplotlib` para visualización estadística avanzada y animaciones GIF (`PillowWriter`, `FuncAnimation`).
+  - `networkx`, `pyvis` y `wordcloud` para grafos de redes, topologías, rutas óptimas (Dijkstra) y nubes de palabras HD.
+  - `altair`, `bokeh` y `squarify` para gráficos declarativos interactivos y Treemaps.
+  - `pandas`, `numpy`, `scipy`, `statsmodels` y `sympy` para ciencia de datos, estadística y matemática simbólica.
   - `openpyxl` y `xlsxwriter` para lectura y generación de libros Excel multicapa (`.xlsx`).
   - `requests` con conectores HTTPS parcheados (`pyodide-http`) para consumo de APIs REST en vivo.
 - **🤖 Machine Learning Integrado:**
   - Compatible con `scikit-learn` (`sklearn`) para modelos de regresión, clasificación y clustering.
-- **⚡ Auto-Instalador Inteligente de Dependencias:**
-  - Si un script requiere cualquier paquete puro de PyPI (ej. `tabulate`, `wordcloud`, `faker`), el compilador lo detecta automáticamente, lo descarga vía `micropip` en vivo y reanuda la ejecución sin fricción.
+- **⚡ Auto-Instalador AST Nativo de Dependencias:**
+  - Antes de ejecutar el código, el motor inspecciona el árbol sintáctico (`ast.walk`) de todos los `import` y descarga automáticamente cualquier librería requerida desde PyPI / Pyodide (`micropip`) sin intervención manual.
+- **🖥️ Visor Multiformato en Vivo (HTML Interactivo, GIF Animado y PNG Adaptativo):**
+  - Renderiza automáticamente mapas interactivos (`folium`), dashboards (`plotly`/`altair`/`bokeh`), animaciones (`.gif`) y gráficos estáticos (`.png` con modos de fondo Negro, Blanco y Transparente), con opción de abrir en pestaña completa o descargar en 1 clic.
 - **📁 Sistema de Archivos Virtual (VFS) & Drag & Drop:**
   - Arrastra archivos `.csv`, `.xlsx` o `.json` directo al editor para procesarlos de inmediato.
   - Explorador y gestor de archivos en memoria con descarga a la PC en un clic.

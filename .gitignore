@@ -1,5 +1,6 @@
 *.bak
 *_backup*
+.backup/
 __*
 .DS_Store
 Thumbs.db
