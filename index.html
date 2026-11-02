@@ -561,7 +561,7 @@
         <option value="sklearn">🤖 Machine Learning (Scikit-Learn Regresión)</option>
         <option value="requests">🌐 Requests HTTPS (API REST en vivo)</option>
         <option value="excel">📑 Excel (.xlsx Lectura y Escritura)</option>
-        <option value="folium">🗺️ Folium & AntPath (Mapa Geoespacial Animado)</option>
+        <option value="folium">🗺️ Folium Geointeligencia (HeatMap • MarkerCluster • AntPath)</option>
         <option value="plotly">📈 Plotly Express (Dashboard Interactivo HTML)</option>
         <option value="networkx">🕸️ NetworkX (Grafo de Redes & Nodos)</option>
         <option value="wordcloud">☁️ WordCloud (Nube de Palabras HD)</option>
@@ -1811,61 +1811,103 @@ plt.tight_layout()
 plt.show()`,
 
   folium: `import folium
-from folium.plugins import AntPath, MiniMap, Fullscreen
+from folium.plugins import AntPath, HeatMap, MarkerCluster, MiniMap, Fullscreen
 
 print("=============================================================")
-print("🗺️ MAPA GEOESPACIAL INTERACTIVO CON FOLIUM & ANTPATH")
+print("🗺️ GEOINTELIGENCIA & ANÁLISIS ESPACIAL 360° CON FOLIUM")
+print("   • Mapas Base Conmutables (OpenStreetMap / CartoDB)")
+print("   • Clústeres Inteligentes de Sucursales (MarkerCluster)")
+print("   • Mapa de Calor de Densidad Comercial (HeatMap)")
+print("   • Corredor Logístico y Trazas en Movimiento (AntPath)")
 print("=============================================================")
 
-# 1. Definir los datos detallados de la ruta (Coordenadas de ciudades reales en India)
-ciudades_ruta = [
-    {"nombre": "Delhi (Capital)", "coords": [28.6139, 77.2090], "rol": "Nodo Central Norte"},
-    {"nombre": "Jaipur (Ciudad Rosa)", "coords": [26.9124, 75.7873], "rol": "Hub Cultural & Turístico"},
-    {"nombre": "Ahmedabad", "coords": [23.0225, 72.5714], "rol": "Polo Industrial Oeste"},
-    {"nombre": "Mumbai (Centro Financiero)", "coords": [19.0760, 72.8777], "rol": "Puerto & Finanzas Globales"}
+# 1. Inicializar mapa centrado (Coordenadas estratégicas de red metropolitana)
+lat_centro, lon_centro = 18.4861, -69.9312
+m = folium.Map(location=[lat_centro, lon_centro], zoom_start=12, tiles=None)
+
+# 2. Capas Base de Mapa Seleccionables
+folium.TileLayer("OpenStreetMap", name="🗺️ OpenStreetMap (Estándar)").add_to(m)
+folium.TileLayer("CartoDB positron", name="☀️ CartoDB Positron (Luz)").add_to(m)
+folium.TileLayer("CartoDB dark_matter", name="🌙 CartoDB Dark Matter (Oscuro)").add_to(m)
+
+# 3. Clúster de Sucursales y Nodos Operativos (MarkerCluster)
+# Los marcadores se agrupan automáticamente al alejar el zoom
+cluster = MarkerCluster(name="📍 Clúster de Sucursales & Hubs").add_to(m)
+
+sucursales = [
+    {"nombre": "Sede Central JPV", "coords": [18.4861, -69.9312], "tipo": "Dirección General", "color": "red"},
+    {"nombre": "Hub Zona Colonial", "coords": [18.4720, -69.9120], "tipo": "Centro Histórico", "color": "blue"},
+    {"nombre": "Terminal Puerto Marítimo", "coords": [18.4550, -69.9450], "tipo": "Carga & Aduanas", "color": "green"},
+    {"nombre": "Centro Logístico Oeste", "coords": [18.4900, -69.9800], "tipo": "Almacén Central", "color": "orange"},
+    {"nombre": "Terminal Aérea / Norte", "coords": [18.5200, -69.9500], "tipo": "Hub Aéreo Express", "color": "purple"},
+    {"nombre": "Sucursal Piantini", "coords": [18.4780, -69.9360], "tipo": "Atención Corporativa", "color": "blue"},
+    {"nombre": "Sucursal Naco", "coords": [18.4750, -69.9280], "tipo": "Ventas & Distribución", "color": "blue"},
+    {"nombre": "Sucursal Bella Vista", "coords": [18.4590, -69.9480], "tipo": "Punto Express", "color": "blue"}
 ]
 
-# Extraer solo las coordenadas en una lista para el camino animado
-coordenadas = [ciudad["coords"] for ciudad in ciudades_ruta]
+for suc in sucursales:
+    folium.Marker(
+        location=suc["coords"],
+        popup=folium.Popup(
+            f"<b>{suc['nombre']}</b><br>"
+            f"<b>Rol:</b> {suc['tipo']}<br>"
+            f"<b>Coordenadas:</b> {suc['coords']}",
+            max_width=250
+        ),
+        tooltip=f"{suc['nombre']} ({suc['tipo']})",
+        icon=folium.Icon(color=suc["color"], icon="info-sign")
+    ).add_to(cluster)
 
-# 2. Inicializar el mapa centrado en la India con un estilo limpio
-m = folium.Map(location=[24.0, 75.5], zoom_start=6, tiles="CartoDB positron")
+# 4. Mapa de Calor (HeatMap): Densidad de Pedidos y Envíos
+datos_calor = [
+    [18.4861, -69.9312, 1.0], [18.4870, -69.9320, 0.85], [18.4850, -69.9300, 0.75],
+    [18.4720, -69.9120, 0.9], [18.4730, -69.9140, 0.7], [18.4550, -69.9450, 0.95],
+    [18.4560, -69.9460, 0.8], [18.4900, -69.9800, 0.8], [18.5200, -69.9500, 0.75],
+    [18.4780, -69.9360, 0.92], [18.4750, -69.9280, 0.88], [18.4590, -69.9480, 0.82]
+]
 
-# Controles profesionales de mapa
-MiniMap(toggle_display=True).add_to(m)
-Fullscreen(position="topright", title="Pantalla Completa").add_to(m)
-
-# 3. Añadir la ruta animada (AntPath) optimizada
-AntPath(
-    locations=coordenadas,
-    reverse=False,         # Dirección de la animación (hacia adelante)
-    dash_array=[10, 20],   # Longitud de las líneas de animación
-    delay=800,             # Velocidad de la animación (menor número = más rápido)
-    color="#00d2ff",       # Color principal cian brillante
-    pulse_color="#ffffff", # Color del pulso animado
-    weight=6,              # Grosor de la línea
-    opacity=0.85,
-    tooltip="Corredor Logístico Delhi -> Mumbai"
+HeatMap(
+    data=datos_calor,
+    name="🔥 Mapa de Calor (Densidad de Entregas)",
+    radius=20,
+    blur=15,
+    max_zoom=14
 ).add_to(m)
 
-# 4. Añadir marcadores interactivos con iconos informativos para cada parada
-for idx, ciudad in enumerate(ciudades_ruta, start=1):
-    folium.Marker(
-        location=ciudad["coords"],
-        popup=folium.Popup(
-            f"<b>{idx}. {ciudad['nombre']}</b><br>"
-            f"<span style='color:#0284c7;'>{ciudad['rol']}</span><br>"
-            f"Coordenadas: {ciudad['coords']}",
-            max_width=240
-        ),
-        tooltip=f"Parada {idx}: {ciudad['nombre']}",
-        icon=folium.Icon(color="blue" if idx < len(ciudades_ruta) else "red", icon="info-sign")
-    ).add_to(m)
+# 5. Ruta Logística Animada con AntPath
+ruta_animada = [
+    [18.4861, -69.9312], # Sede Central
+    [18.4780, -69.9360], # Piantini
+    [18.4720, -69.9120], # Zona Colonial
+    [18.4550, -69.9450], # Puerto Marítimo
+    [18.4900, -69.9800], # Hub Oeste
+    [18.5200, -69.9500], # Terminal Norte
+    [18.4861, -69.9312]  # Retorno a Sede
+]
 
-# Guardar el mapa en un archivo HTML; JPV PyStudio lo renderiza en vivo automáticamente
-m.save("ruta_viaje_animada.html")
-print("✅ ¡Mapa interactivo generado con éxito!")
-print("👉 Visualizando 'ruta_viaje_animada.html' en vivo en el panel Gráfico.")`,
+AntPath(
+    locations=ruta_animada,
+    name="🚀 Corredor Logístico Animado (AntPath)",
+    delay=800,
+    dash_array=[10, 20],
+    color="#00f2fe",
+    pulse_color="#ffffff",
+    weight=5,
+    opacity=0.9,
+    tooltip="Ruta de Reparto Inter-Hubs en Tiempo Real"
+).add_to(m)
+
+# 6. Herramientas Avanzadas & Control de Capas
+MiniMap(toggle_display=True).add_to(m)
+Fullscreen(position="topright", title="Pantalla Completa").add_to(m)
+folium.LayerControl(collapsed=False).add_to(m)
+
+# 7. Guardar el mapa interactivo (JPV PyStudio lo detecta y renderiza en vivo)
+m.save("mapa_geointeligencia_completo.html")
+
+print("✅ ¡Mapa de Geointeligencia generado exitosamente!")
+print("👉 Visualizando en vivo en la pestaña 'Gráfico'.")
+print("💡 TIP PRO: Usa el botón 'Abrir en Pestaña' arriba a la derecha para pantalla completa.")`,
 
   plotly: `import pandas as pd
 import numpy as np
