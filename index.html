@@ -608,6 +608,9 @@
           <button id="btn-capturar-codigo-png" class="btn btn-sm btn-outline-warning py-0 px-2 fw-semibold d-flex align-items-center gap-1" onclick="abrirModalCapturaCodigo()" title="Capturar el código completo en una imagen PNG descargable" style="font-size: 11px;">
             <i class="bi bi-camera-fill"></i> <span>Capturar en PNG</span>
           </button>
+          <button id="btn-descargar-script-py" class="btn btn-sm btn-outline-success py-0 px-2 fw-semibold d-flex align-items-center gap-1" onclick="descargarScriptPython()" title="Descargar código fuente actual (.py)" style="font-size: 11px;">
+            <i class="bi bi-download"></i> <span>Descargar .py</span>
+          </button>
 
           <div class="zoom-toolbar">
             <button class="zoom-btn" onclick="ajustarZoomEditor(-1)" title="Reducir fuente"><i class="bi bi-dash"></i></button>
@@ -3883,6 +3886,54 @@ async function copiarImagenCapturaPortapapeles() {
     console.error("Error al copiar imagen al portapapeles:", err);
     alert("No se pudo copiar directamente al portapapeles en este navegador. Usa el botón 'Descargar Imagen PNG'.");
   }
+}
+
+function descargarScriptPython() {
+  const code = editor ? editor.value : "";
+  if (!code || !code.trim()) {
+    alert("El editor está vacío. Escribe o carga un código para descargarlo.");
+    return;
+  }
+
+  // Nombre sugerido: el que tenga el script actualmente o de la plantilla
+  const labelEl = document.getElementById("archivo-actual-label");
+  let nombreSugerido = labelEl ? labelEl.innerText.trim() : "script.py";
+  if (!nombreSugerido || nombreSugerido === "nuevo_script.py") {
+    nombreSugerido = "mi_script.py";
+  }
+
+  // Solicitar o confirmar el nombre al usuario
+  let nombreArchivo = prompt("Escribe o confirma el nombre con el que deseas descargar el archivo Python (.py):", nombreSugerido);
+  if (nombreArchivo === null) {
+    // Si cancela, no descarga
+    return;
+  }
+
+  nombreArchivo = nombreArchivo.trim();
+  if (!nombreArchivo) {
+    nombreArchivo = nombreSugerido;
+  }
+
+  // Asegurar extensión .py
+  if (!nombreArchivo.toLowerCase().endsWith(".py")) {
+    nombreArchivo += ".py";
+  }
+
+  // Actualizar el label visualmente si el usuario puso uno nuevo
+  if (labelEl) {
+    labelEl.innerText = nombreArchivo;
+  }
+
+  // Crear Blob y disparar descarga
+  const blob = new Blob([code], { type: "text/x-python;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = nombreArchivo;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }
 
 // =======================================================
