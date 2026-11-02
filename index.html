@@ -561,7 +561,7 @@
         <option value="sklearn">🤖 Machine Learning (Scikit-Learn Regresión)</option>
         <option value="requests">🌐 Requests HTTPS (API REST en vivo)</option>
         <option value="excel">📑 Excel (.xlsx Lectura y Escritura)</option>
-        <option value="folium">🗺️ Folium Geointeligencia (HeatMap • MarkerCluster • AntPath)</option>
+        <option value="folium">🗺️ Folium (Mapa Real • Satélite • AntPath • Sin API Key)</option>
         <option value="plotly">📈 Plotly Express (Dashboard Interactivo HTML)</option>
         <option value="networkx">🕸️ NetworkX (Grafo de Redes & Nodos)</option>
         <option value="wordcloud">☁️ WordCloud (Nube de Palabras HD)</option>
@@ -1811,103 +1811,82 @@ plt.tight_layout()
 plt.show()`,
 
   folium: `import folium
-from folium.plugins import AntPath, HeatMap, MarkerCluster, MiniMap, Fullscreen
+from folium.plugins import AntPath, MarkerCluster, MiniMap, Fullscreen
 
 print("=============================================================")
-print("🗺️ GEOINTELIGENCIA & ANÁLISIS ESPACIAL 360° CON FOLIUM")
-print("   • Mapas Base Conmutables (OpenStreetMap / CartoDB)")
-print("   • Clústeres Inteligentes de Sucursales (MarkerCluster)")
-print("   • Mapa de Calor de Densidad Comercial (HeatMap)")
-print("   • Corredor Logístico y Trazas en Movimiento (AntPath)")
+print("🗺️ MAPA GEOESPACIAL INTERACTIVO EN VIVO (100% LIBRE / SIN API KEY)")
+print("   • Mapa Base Real: OpenStreetMap (Calles & Avenidas)")
+print("   • Vista Satelital: Esri World Imagery (Imágenes Aéreas)")
+print("   • Clúster de Sucursales Interactivo (MarkerCluster)")
+print("   • Ruta Logística Animada en Tiempo Real (AntPath)")
 print("=============================================================")
 
-# 1. Inicializar mapa centrado (Coordenadas estratégicas de red metropolitana)
+# 1. Coordenadas estratégicas (Red metropolitana central)
 lat_centro, lon_centro = 18.4861, -69.9312
-m = folium.Map(location=[lat_centro, lon_centro], zoom_start=12, tiles=None)
 
-# 2. Capas Base de Mapa Seleccionables
-folium.TileLayer("OpenStreetMap", name="🗺️ OpenStreetMap (Estándar)").add_to(m)
-folium.TileLayer("CartoDB positron", name="☀️ CartoDB Positron (Luz)").add_to(m)
-folium.TileLayer("CartoDB dark_matter", name="🌙 CartoDB Dark Matter (Oscuro)").add_to(m)
+# 2. Inicializar mapa con OpenStreetMap (Cero API Key, 100% libre)
+m = folium.Map(location=[lat_centro, lon_centro], zoom_start=13, tiles="OpenStreetMap")
 
-# 3. Clúster de Sucursales y Nodos Operativos (MarkerCluster)
-# Los marcadores se agrupan automáticamente al alejar el zoom
+# 3. Capa adicional: Vista Satelital Real de alta resolución (Libre de API Key)
+folium.TileLayer(
+    tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+    attr="Esri World Imagery",
+    name="🛰️ Vista Satelital Real"
+).add_to(m)
+
+# 4. Clúster de Sucursales y Puntos de Interés (MarkerCluster)
+# Al alejar el mapa se agrupan en burbujas con números; al acercar se expanden
 cluster = MarkerCluster(name="📍 Clúster de Sucursales & Hubs").add_to(m)
 
-sucursales = [
-    {"nombre": "Sede Central JPV", "coords": [18.4861, -69.9312], "tipo": "Dirección General", "color": "red"},
-    {"nombre": "Hub Zona Colonial", "coords": [18.4720, -69.9120], "tipo": "Centro Histórico", "color": "blue"},
-    {"nombre": "Terminal Puerto Marítimo", "coords": [18.4550, -69.9450], "tipo": "Carga & Aduanas", "color": "green"},
-    {"nombre": "Centro Logístico Oeste", "coords": [18.4900, -69.9800], "tipo": "Almacén Central", "color": "orange"},
-    {"nombre": "Terminal Aérea / Norte", "coords": [18.5200, -69.9500], "tipo": "Hub Aéreo Express", "color": "purple"},
-    {"nombre": "Sucursal Piantini", "coords": [18.4780, -69.9360], "tipo": "Atención Corporativa", "color": "blue"},
-    {"nombre": "Sucursal Naco", "coords": [18.4750, -69.9280], "tipo": "Ventas & Distribución", "color": "blue"},
-    {"nombre": "Sucursal Bella Vista", "coords": [18.4590, -69.9480], "tipo": "Punto Express", "color": "blue"}
+puntos = [
+    {"nombre": "Sede Central JPV", "coords": [18.4861, -69.9312], "rol": "Dirección General", "color": "red", "icon": "star"},
+    {"nombre": "Sucursal Norte", "coords": [18.5020, -69.9250], "rol": "Atención al Cliente", "color": "blue", "icon": "home"},
+    {"nombre": "Hub Zona Colonial", "coords": [18.4720, -69.9120], "rol": "Centro de Distribución", "color": "green", "icon": "flag"},
+    {"nombre": "Terminal Puerto", "coords": [18.4550, -69.9450], "rol": "Carga y Aduanas", "color": "purple", "icon": "plane"},
+    {"nombre": "Centro Logístico Oeste", "coords": [18.4780, -69.9550], "rol": "Almacén Principal", "color": "orange", "icon": "briefcase"}
 ]
 
-for suc in sucursales:
+for p in puntos:
     folium.Marker(
-        location=suc["coords"],
+        location=p["coords"],
         popup=folium.Popup(
-            f"<b>{suc['nombre']}</b><br>"
-            f"<b>Rol:</b> {suc['tipo']}<br>"
-            f"<b>Coordenadas:</b> {suc['coords']}",
+            f"<b>{p['nombre']}</b><br>"
+            f"<b>Función:</b> {p['rol']}<br>"
+            f"<b>Coordenadas:</b> {p['coords']}",
             max_width=250
         ),
-        tooltip=f"{suc['nombre']} ({suc['tipo']})",
-        icon=folium.Icon(color=suc["color"], icon="info-sign")
+        tooltip=f"{p['nombre']} ({p['rol']})",
+        icon=folium.Icon(color=p["color"], icon=p["icon"])
     ).add_to(cluster)
 
-# 4. Mapa de Calor (HeatMap): Densidad de Pedidos y Envíos
-datos_calor = [
-    [18.4861, -69.9312, 1.0], [18.4870, -69.9320, 0.85], [18.4850, -69.9300, 0.75],
-    [18.4720, -69.9120, 0.9], [18.4730, -69.9140, 0.7], [18.4550, -69.9450, 0.95],
-    [18.4560, -69.9460, 0.8], [18.4900, -69.9800, 0.8], [18.5200, -69.9500, 0.75],
-    [18.4780, -69.9360, 0.92], [18.4750, -69.9280, 0.88], [18.4590, -69.9480, 0.82]
-]
-
-HeatMap(
-    data=datos_calor,
-    name="🔥 Mapa de Calor (Densidad de Entregas)",
-    radius=20,
-    blur=15,
-    max_zoom=14
-).add_to(m)
-
-# 5. Ruta Logística Animada con AntPath
-ruta_animada = [
-    [18.4861, -69.9312], # Sede Central
-    [18.4780, -69.9360], # Piantini
-    [18.4720, -69.9120], # Zona Colonial
-    [18.4550, -69.9450], # Puerto Marítimo
-    [18.4900, -69.9800], # Hub Oeste
-    [18.5200, -69.9500], # Terminal Norte
-    [18.4861, -69.9312]  # Retorno a Sede
-]
+# 5. Ruta Logística Animada Continua (AntPath)
+ruta_coordenadas = [p["coords"] for p in puntos]
+ruta_coordenadas.append(puntos[0]["coords"])  # Retorno a la Sede Central
 
 AntPath(
-    locations=ruta_animada,
+    locations=ruta_coordenadas,
     name="🚀 Corredor Logístico Animado (AntPath)",
-    delay=800,
-    dash_array=[10, 20],
-    color="#00f2fe",
-    pulse_color="#ffffff",
-    weight=5,
+    delay=800,             # Velocidad del pulso
+    dash_array=[10, 20],   # Tamaño de los segmentos
+    color="#00f2fe",       # Color cian neón principal
+    pulse_color="#ffffff", # Pulso animado blanco
+    weight=5,              # Grosor de la línea
     opacity=0.9,
-    tooltip="Ruta de Reparto Inter-Hubs en Tiempo Real"
+    tooltip="Ruta de Reparto Activa en Vivo"
 ).add_to(m)
 
-# 6. Herramientas Avanzadas & Control de Capas
+# 6. Herramientas de Interacción: MiniMapa, Pantalla Completa y Control de Capas
 MiniMap(toggle_display=True).add_to(m)
-Fullscreen(position="topright", title="Pantalla Completa").add_to(m)
+Fullscreen(position="topright", title="Ver a Pantalla Completa").add_to(m)
 folium.LayerControl(collapsed=False).add_to(m)
 
-# 7. Guardar el mapa interactivo (JPV PyStudio lo detecta y renderiza en vivo)
-m.save("mapa_geointeligencia_completo.html")
+# 7. Guardar el archivo HTML
+# JPV PyStudio lo detecta automáticamente y lo visualiza en la pestaña 'Gráfico'
+m.save("mapa_interactivo.html")
 
-print("✅ ¡Mapa de Geointeligencia generado exitosamente!")
-print("👉 Visualizando en vivo en la pestaña 'Gráfico'.")
-print("💡 TIP PRO: Usa el botón 'Abrir en Pestaña' arriba a la derecha para pantalla completa.")`,
+print("✅ ¡Mapa interactivo generado exitosamente!")
+print("👉 El mapa se está visualizando en vivo en la pestaña 'Gráfico'.")
+print("💡 TIP: Usa el botón 'Abrir en Pestaña' (arriba a la derecha) para desplegarlo a pantalla completa.")`,
 
   plotly: `import pandas as pd
 import numpy as np
