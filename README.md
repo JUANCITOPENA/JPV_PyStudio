@@ -11,7 +11,7 @@
 
 **Cero instalaciones • Cero configuraciones • Cero servidores backend • 100% Privacidad en el Cliente**
 
-[🌐 Probar JPV PyStudio en Vivo](https://juancitopena.github.io/JPV_PyStudio/) • [📖 Documentación y Guía](#-por-qu%C3%A9-jpv-pystudio-para-estudiantes-y-practicantes) • [⭐ Dar una Estrella](https://github.com/JUANCITOPENA/JPV_PyStudio) • [👨‍💻 Sobre el Autor](#-autor--arquitectura-institucional-neo-brutalista)
+[🌐 Probar JPV PyStudio en Vivo](https://juancitopena.github.io/JPV_PyStudio/) • [🎯 ¿Qué Puedes Lograr?](#-qué-puedes-lograr-con-jpv-pystudio-casos-de-uso--alcance-real) • [📸 Para Creadores de Contenido](#-el-aliado-definitivo-para-creadores-de-contenido-docentes-y-divulgadores) • [⭐ Dar una Estrella](https://github.com/JUANCITOPENA/JPV_PyStudio) • [👨‍💻 Sobre el Autor](#-autor--arquitectura-institucional-neo-brutalista)
 
 </div>
 
@@ -34,11 +34,106 @@ El mayor obstáculo que enfrenta un estudiante, docente o profesional al aprende
 2. **Escribes tu código Python** o seleccionas plantillas preconstruidas (*Pandas, Folium, Plotly, Seaborn, NetworkX, WordCloud, Excel*).
 3. **Pulsas `Ejecutar` (`Ctrl + Enter`)**: el motor compila y procesa los datos en la memoria RAM de tu propio equipo.
 4. **Visualizas resultados**: tablas interactivas, consolas de salida, mapas geoespaciales y gráficos estadísticos sincronizados.
-5. **Exportas tu trabajo**: descarga datasets limpios en CSV/Excel, imágenes gráficas y **capturas fotográficas completas del código en PNG HD** para tareas, investigaciones o redes.
+5. **Exportas tu trabajo**: descarga datasets limpios en CSV/Excel, el archivo fuente `.py`, imágenes de gráficos y **capturas fotográficas completas del código en PNG HD** para tareas, investigaciones o redes sociales.
 
 ---
 
-## 🚀 Capacidades y Características Principales
+## 🎯 ¿Qué Puedes Lograr con JPV PyStudio? (Casos de Uso & Alcance Real)
+
+Con **JPV PyStudio** tienes en una sola pestaña del navegador el poder equivalente a un entorno de desarrollo local configurado con las principales librerías científicas de Python:
+
+```
+┌─────────────────────────────────────────────────────────────────────────────────────────┐
+│                          ALCANCE TÉCNICO EN UNA SOLA PESTAÑA                            │
+├──────────────────────────┬─────────────────────────────┬────────────────────────────────┤
+│   CIENCIA DE DATOS & EDA │   VISUALIZACIÓN AVANZADA    │   AUTOMATIZACIÓN & ARCHIVOS    │
+│   • Pandas & NumPy       │   • Folium (Mapas & Rutas)  │   • Excel (.xlsx con openpyxl) │
+│   • SciPy & SymPy        │   • Plotly Express (HTML5)  │   • CSV & JSON bidireccional   │
+│   • Scikit-Learn (ML)    │   • Seaborn & Matplotlib    │   • Drag & Drop directo a RAM  │
+│   • Statsmodels          │   • NetworkX & WordCloud    │   • Descarga del script .py    │
+└──────────────────────────┴─────────────────────────────┴────────────────────────────────┘
+```
+
+### 1. 📊 Análisis Exploratorio de Datos (EDA) en Segundos
+- Descarga y procesamiento de datasets desde URLs públicas (por ejemplo, el dataset Titanic o repositorios de GitHub) directamente con `pd.read_csv(url)`.
+- Limpieza de datos, imputación de nulos, agregaciones (`groupby`), tablas pivote y cálculo de matrices de correlación estadística sin instalar paquetes en la máquina física.
+
+### 2. 🗺️ Geointeligencia y Mapas Interactivos en Vivo (Folium)
+- Renderizado de mapas interactivos completos con zoom, capas satelitales OpenStreetMap, mapas de calor (`HeatMap`) y clústeres de marcadores (`MarkerCluster`).
+- Visualización de trazas de movimiento y logística animada con `AntPath`.
+- Botón **"Abrir en Pestaña"** para desplegar el mapa interactivo a pantalla completa o exportarlo para presentaciones.
+
+### 3. 📈 Dashboards Interactivos en HTML (Plotly Express & Bokeh)
+- Gráficos interactivos de dispersión, líneas multieje, diagramas de caja (*Box Plots*), histogramas y gráficos solares (*Sunburst*).
+- Tooltips flotantes, zoom rectangular, aislamiento de series mediante clics en la leyenda y renderizado fluido sin latencia de red.
+
+### 4. 🕸️ Modelado de Redes Complejas y Topología de Grafos (NetworkX)
+- Construcción de grafos dirigidos y no dirigidos, análisis de centralidad, cálculo del camino más corto (Algoritmo de Dijkstra) y diagramas de topología visual.
+
+### 5. ☁️ Minería de Texto & Procesamiento de Lenguaje Natural (WordCloud)
+- Análisis de frecuencia de palabras y generación de nubes de términos en alta definición para resumir discursos, encuestas o artículos académicos.
+
+### 6. 📑 Automatización Contable y Ofimática Multicapa (Excel .xlsx)
+- Generación de libros de cálculo de Microsoft Excel con múltiples hojas, estilos de celda, formatos contables y fórmulas dinámicas mediante `openpyxl` y `xlsxwriter`.
+- Lectura y extracción automática de datos desde archivos Excel arrastrados al navegador.
+
+### 7. 🤖 Machine Learning Clásico & Modelado Predictivo (Scikit-Learn)
+- Entrenamiento en memoria de algoritmos supervisados y no supervisados: Regresión Lineal, Regresión Logística, Árboles de Decisión, Random Forest y agrupamiento K-Means.
+- Evaluación de métricas de precisión, matrices de confusión y curvas ROC de forma instantánea.
+
+### 8. 🌐 Consumo Seguro de APIs REST Públicas
+- Ejecución de peticiones HTTPS a servicios web y APIs abiertas en vivo (`requests` parcheado con conectividad WebAssembly) para analizar datos meteorológicos, cotizaciones financieras o indicadores económicos oficiales.
+
+---
+
+## 🎨 El Aliado Definitivo para Creadores de Contenido, Docentes y Divulgadores
+
+¿Publicas contenido técnico en **LinkedIn, Twitter/X, Instagram, YouTube, TikTok o blogs de Medium/Dev.to**? ¿Eres docente y preparas diapositivas o guías para tus alumnos?
+
+**JPV PyStudio** fue diseñado para erradicar las capturas de pantalla feas, pixeladas y desordenadas, ofreciendo un flujo de trabajo de publicación profesional en menos de 2 minutos:
+
+```
+                  EL FLUJO DE ORO DEL CREADOR DE CONTENIDO (2 MINUTOS)
+┌────────────────────┐      ┌─────────────────────────┐      ┌─────────────────────────┐
+│ 1. Escribe / Prueba│      │ 2. Captura Código en    │      │ 3. Exporta Gráfico      │
+│    tu código en    │ ───► │    PNG HD (Mac Style)   │ ───► │    (Fondo Transparente  │
+│    JPV PyStudio    │      │    (Copiar al Portapap.)│      │    o Modo Oscuro)       │
+└────────────────────┘      └─────────────────────────┘      └─────────────────────────┘
+                                                                          │
+                                                                          ▼
+                                                             ┌─────────────────────────┐
+                                                             │ 4. ¡Publica tu Post /   │
+                                                             │    Carrusel de Impacto! │
+                                                             └─────────────────────────┘
+```
+
+### 📸 1. Captura Fotográfica del Código en Imagen PNG HD (2x Retina)
+- **Adiós a los recortes manuales de pantalla con Snipping Tool:** no más capturas borrosas con fuentes pixeladas que se ven mal en dispositivos móviles.
+- **Tarjeta de Ventana Estilo macOS:** Marco premium con los tres botones circulares (rojo, amarillo, verde), título del archivo, números de línea perfectamente alineados y coloreado de sintaxis **Prism Okaidia** de alto contraste.
+- **Captura Integral del 100% de las Líneas:** El motor toma el código completo de arriba a abajo, sin importar que tenga 20, 50 o 200 líneas y esté oculto por el scroll del editor.
+- **Selector de Fondos para Cada Estilo de Contenido:**
+  - 🌌 **Neón Nocturno (Gradiente):** Ideal para posts llamativos en LinkedIn y Twitter/X que detienen el scroll.
+  - 🔷 **Cyan Studio:** Look moderno de ingeniería y ciencia de datos.
+  - ⬛ **Dark Studio Puro:** Estética minimalista hacker y sobria.
+  - ☀️ **Blanco Limpio:** Diseñado para manuales impresos, libros, tesis universitarias o artículos de blog técnicos.
+  - 🏁 **Transparente (Sin Marco):** Para diseñadores que desean incrustar el código en plantillas de Canva, Figma, PowerPoint o Keynote sin bordes molestos.
+- **Botón `Copiar Imagen` al Portapapeles:** Olvídate de guardar archivos temporales en el disco. Pulsa *Copiar Imagen* y dale `Ctrl + V` directamente en el compositor de LinkedIn, Twitter/X, Discord o Notion.
+
+### 🖼️ 2. Exportación de Resultados y Gráficos con Fondo Adaptativo
+- **Fondo Transparente:** Exporta gráficos de Matplotlib o Seaborn sin fondo para superponerlos directamente sobre cualquier diapositiva o infografía manteniendo un diseño limpio.
+- **Fondo Negro:** Optimizado para lectores en modo oscuro (*Dark Mode*) en redes sociales.
+- **Fondo Blanco:** Conforme a los estándares editoriales para artículos científicos, publicaciones en PDF o entregas académicas.
+
+### 📱 3. La Estructura del "Carrusel Técnico Perfecto" en Redes Sociales
+Con **JPV PyStudio** construyes carruseles educativos de alto alcance con cero fricción:
+- **Slide 1 (El Reto):** Planteamiento del problema analítico o de negocio.
+- **Slide 2 (El Código):** La captura en PNG HD del script Python generada con JPV PyStudio.
+- **Slide 3 (El Resultado):** La imagen PNG del gráfico o mapa interactivo exportado en 1 clic.
+- **Slide 4 (El Entregable):** El archivo `.py` y el `.xlsx` descargados listos para que tu comunidad practique.
+
+---
+
+## 🚀 Capacidades y Características Principales de la Plataforma
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
@@ -49,6 +144,7 @@ El mayor obstáculo que enfrenta un estudiante, docente o profesional al aprende
 │  │  • Autocompletado inteligente │  │  • Tablas paginadas CSV/Excel      │  │
 │  │  • Auto-detección AST         │  │  • Visor Gráfico (Pan & Zoom)      │  │
 │  │  • 📸 Captura Global PNG HD   │  │  • Mapas Folium & Dashboards HTML  │  │
+│  │  • 📥 Descargar Script .py    │  │  • Descarga CSV / Excel / PNG      │  │
 │  └───────────────────────────────┘  └────────────────────────────────────┘  │
 │         ▲                                         ▲                         │
 │         └─────────── Motor WebAssembly (Pyodide) ─┘                         │
@@ -56,34 +152,18 @@ El mayor obstáculo que enfrenta un estudiante, docente o profesional al aprende
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
-### 1. 📊 Stack Científico y Analítico de Clase Mundial
-Ejecuta directamente las librerías estándar de la industria científica:
-- **Manipulación de Datos:** `pandas`, `numpy`, `scipy`, `statsmodels`, `sympy`.
-- **Visualización Estadística:** `matplotlib` y `seaborn` con renderizado adaptativo (fondos Negro, Blanco y Transparente) y animaciones GIF (`FuncAnimation`).
-- **Dashboards Interactivos:** `plotly` (`plotly.express`, `plotly.graph_objects`), `altair`, `bokeh`.
-- **Geointeligencia & Mapas:** `folium` y plugins (`AntPath`, `HeatMap`, `MarkerCluster`, `MiniMap`).
-- **Grafos & Topología de Redes:** `networkx`, `pyvis` (rutas mínimas, centralidad, algoritmos de Dijkstra).
-- **Procesamiento de Lenguaje Natural:** `wordcloud` para nubes de palabras de alta definición.
-- **Machine Learning Integrado:** `scikit-learn` (`sklearn`) para regresión, clasificación y agrupamiento (*clustering*).
-- **Ofimática Empresarial:** `openpyxl` y `xlsxwriter` para lectura y escritura de libros Excel multicapa (`.xlsx`).
+### 1. 📥 Descarga del Script Python (`.py`) Personalizado
+- Descarga el código fuente en un archivo `.py` en cualquier momento.
+- Sugiere automáticamente el nombre según la plantilla activa (`folium_analisis.py`, `titanic_analisis.py`, etc.) o permite al usuario definir un nombre personalizado con extensión garantizada.
 
 ### 2. ⚡ Auto-Instalador Inteligente de Dependencias (AST)
 El motor incorpora un analizador sintáctico en Python (`ast.walk`) que escanea en milisegundos las declaraciones `import` y `from ... import` del código escrito por el usuario. Si detecta librerías requeridas que aún no están en memoria, **las descarga e instala automáticamente desde PyPI/Pyodide (`micropip`)** sin que el usuario tenga que ejecutar comandos de terminal manuales.
 
-### 3. 📸 Captura Global del Código en Imagen PNG HD (Nueva Función)
-Exporta tu código completo en una **imagen fotográfica de alta resolución (2x Retina)** lista para presentar en tareas académicas, artículos técnicos, diapositivas o redes sociales:
-- **Ventana de Estilo macOS:** Marco elegante con botones circulares de control, título del script e insignia Python Wasm.
-- **100% de Líneas Incluidas:** Captura la totalidad del código fuente, incluso las líneas ocultas por el scroll del editor.
-- **Personalización Visual:**
-  - *Fondos/Marcos:* Neón Nocturno (Gradiente), Cyan Studio, Dark Studio Puro, Blanco Limpio o Transparente.
-  - *Interruptores:* Números de línea, barra de ventana macOS y pie de firma institucional JPV.
-- **Exportación Dual:** Descarga directa en `.png` o botón de *Copiar al Portapapeles* (`Ctrl + V`) en un solo clic.
-
-### 4. 📁 Sistema de Archivos Virtual (VFS) & Drag & Drop
+### 3. 📁 Sistema de Archivos Virtual (VFS) & Drag & Drop
 - Arrastra archivos locales (`.csv`, `.xlsx`, `.json`, `.parquet`, `.txt`) directamente desde tu PC a la ventana del editor; el sistema los inyecta en el disco virtual de Pyodide para leerlos de inmediato con `pd.read_csv("archivo.csv")`.
 - Administrador gráfico de archivos en memoria con descarga inmediata de vuelta a la PC.
 
-### 5. 🛡️ Privacidad Absoluta (Zero-Knowledge Architecture)
+### 4. 🛡️ Privacidad Absoluta (Zero-Knowledge Architecture)
 Al no existir ningún servidor backend procesando el código:
 - Tus datos, contraseñas, tokens de API y datasets confidenciales **nunca salen de tu navegador**.
 - No hay almacenamiento en servidores de terceros ni riesgo de fuga de datos (GDPR / DGII Compliance).
@@ -102,13 +182,13 @@ Al no existir ningún servidor backend procesando el código:
 
 ### ⚖️ Comparativa: JPV PyStudio frente a otras opciones
 
-| Solución | Servidor Requerido | Soporte Pandas/NumPy | Tiempo de Inicio | Requiere Registro | Ideal para Practicar Rápido | Captura de Código PNG |
-| :--- | :---: | :---: | :---: | :---: | :---: | :---: |
-| **🐍 JPV PyStudio (Pyodide)** | ❌ **No (100% Cliente)** | ✅ **Completo (Wasm)** | ⚡ **1-2 segundos** | ❌ **No** | 🌟 **Óptimo (IDE Clásico)** | ✅ **Sí (Nativo HD)** |
-| **JupyterLite** | ❌ No (Cliente) | ✅ Completo | ⏳ 8-15 segundos | ❌ No | ⚠️ Complejo (Notebooks) | ❌ Requiere plugins |
-| **Brython / Skulpt** | ❌ No (Cliente) | ❌ Muy limitado (Sin C) | ⚡ Instantáneo | ❌ No | ❌ No apto para Data Science | ❌ No |
-| **Google Colab** | ✅ Sí (Cloud VM) | ✅ Completo | ⏳ 15-30 segundos | ✅ Sí (Cuenta Google) | ⚠️ Lento / Desconexiones | ❌ Extensiones ajenas |
-| **Python Local (VS Code)** | ❌ No (Local) | ✅ Completo | ⏳ Horas de setup | ❌ No | ⚠️ Alto soporte técnico | ❌ Manual |
+| Solución | Servidor Requerido | Soporte Pandas/NumPy | Tiempo de Inicio | Requiere Registro | Ideal para Practicar Rápido | Captura de Código PNG | Descarga .py Directa |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **🐍 JPV PyStudio (Pyodide)** | ❌ **No (100% Cliente)** | ✅ **Completo (Wasm)** | ⚡ **1-2 segundos** | ❌ **No** | 🌟 **Óptimo (IDE Clásico)** | ✅ **Sí (Nativo HD 2x)** | ✅ **Sí (1 Clic)** |
+| **JupyterLite** | ❌ No (Cliente) | ✅ Completo | ⏳ 8-15 segundos | ❌ No | ⚠️ Complejo (Notebooks) | ❌ Requiere plugins | ⚠️ Menú anidado |
+| **Brython / Skulpt** | ❌ No (Cliente) | ❌ Muy limitado (Sin C) | ⚡ Instantáneo | ❌ No | ❌ No apto para Data Science | ❌ No | ❌ No |
+| **Google Colab** | ✅ Sí (Cloud VM) | ✅ Completo | ⏳ 15-30 segundos | ✅ Sí (Cuenta Google) | ⚠️ Lento / Desconexiones | ❌ Extensiones ajenas | ⚠️ Exportación lenta |
+| **Python Local (VS Code)** | ❌ No (Local) | ✅ Completo | ⏳ Horas de setup | ❌ No | ⚠️ Alto soporte técnico | ❌ Requiere Polacode | ✅ Local |
 
 ---
 
@@ -131,7 +211,8 @@ En una era donde las herramientas web sufren de hipertrofia (*overengineering*) 
 - [x] Auto-detección sintáctica de dependencias vía AST.
 - [x] Visor de gráficos unificado con fondos transparente/blanco/negro y descarga PNG.
 - [x] Sistema de Archivos Virtual (VFS) con drag & drop de archivos CSV/Excel.
-- [x] **Captura Global del Código en Imagen PNG HD (2x Retina con temas y marcos).**
+- [x] **Captura Global del Código en Imagen PNG HD (2x Retina con temas, números de línea y marcos).**
+- [x] **Botón de Descarga Directa del Script Python (`.py`) con selector de nombre.**
 - [ ] **Soporte PWA Offline-First:** Almacenamiento en caché de paquetes WebAssembly mediante Service Workers para programar en aviones o zonas sin internet.
 - [ ] **Integración de DuckDB-Wasm:** Consultas SQL analíticas ultrarrápidas sobre archivos Parquet y CSV de gigabytes en la RAM del navegador.
 - [ ] **Soporte de WebGPU:** Inferencia de modelos pequeños de lenguaje (LLMs / SLMs locales) para autocompletado y tutoría de código asistida por IA local.
