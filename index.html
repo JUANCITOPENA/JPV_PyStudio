@@ -1084,8 +1084,10 @@ let currentHtmlContent = "";
 let currentHtmlBlobUrl = "";
 
 function construirCSSFondoHTML(modo) {
+  const basePlotlyLayout = "html, body { height: 100%; width: 100%; margin: 0; padding: 0; overflow: hidden; } body > div, .plotly-graph-div { height: 100% !important; width: 100% !important; }";
   if (modo === "negro") {
     return `
+      ${basePlotlyLayout}
       html, body { background: #080c14 !important; color: #f8fafc !important; }
       .folium-map, .leaflet-container { background: #080c14 !important; }
       .leaflet-tile-pane { filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%) !important; opacity: 1 !important; }
@@ -1093,6 +1095,7 @@ function construirCSSFondoHTML(modo) {
     `;
   } else if (modo === "blanco") {
     return `
+      ${basePlotlyLayout}
       html, body { background: #ffffff !important; color: #0f172a !important; }
       .folium-map, .leaflet-container { background: #ffffff !important; }
       .leaflet-tile-pane { filter: none !important; opacity: 1 !important; }
@@ -1100,6 +1103,7 @@ function construirCSSFondoHTML(modo) {
     `;
   } else {
     return `
+      ${basePlotlyLayout}
       html, body { background: transparent !important; color: #ffffff !important; }
       .folium-map, .leaflet-container { background: transparent !important; }
       .leaflet-tile-pane { filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%) !important; opacity: 0.35 !important; }
@@ -1862,9 +1866,11 @@ print("=============================================================")
 print("📈 DASHBOARD INTERACTIVO MULTIDIMENSIONAL CON PLOTLY EXPRESS")
 print("=============================================================")
 
+# Configuración de datos aleatorios
 np.random.seed(42)
 regiones = ["Norteamérica", "Europa", "Asia-Pacífico", "Latinoamérica", "Medio Oriente"]
 datos = []
+
 for reg in regiones:
     for i in range(8):
         ingresos = np.random.uniform(120, 950)
@@ -1881,6 +1887,7 @@ for reg in regiones:
 df_kpi = pd.DataFrame(datos)
 print(df_kpi.head(8))
 
+# Generación del gráfico interactivo con Plotly Express
 fig = px.scatter(
     df_kpi,
     x="Ingresos_M_USD",
@@ -1897,6 +1904,8 @@ fig = px.scatter(
         "Clientes_Activos": "Clientes Activos"
     }
 )
+
+# Ajustes de diseño estético del dashboard
 fig.update_layout(
     paper_bgcolor="#080c14",
     plot_bgcolor="#0f172a",
@@ -1904,8 +1913,9 @@ fig.update_layout(
     margin=dict(l=40, r=30, t=60, b=40)
 )
 
+# Guardar y renderizar el archivo HTML interactivo
 fig.write_html("dashboard_plotly_ejecutivo.html", include_plotlyjs="cdn")
-print("\n✅ Gráfico interactivo Plotly renderizado en el visor Gráfico.")`,
+print("✅ Gráfico interactivo Plotly renderizado en el visor Gráfico.")`,
 
   networkx: `import networkx as nx
 import matplotlib.pyplot as plt
@@ -2622,6 +2632,16 @@ def __tracked_open(file, mode='r', *args, **kwargs):
     return __orig_open(file, mode, *args, **kwargs)
 
 builtins.open = __tracked_open
+io.open = __tracked_open
+import pathlib
+__orig_write_text = pathlib.Path.write_text
+def __tracked_write_text(self, data, encoding=None, errors=None, newline=None):
+    try:
+        __archivos_escritos_en_ejecucion__.add(self.name)
+    except Exception:
+        pass
+    return __orig_write_text(self, data, encoding=encoding, errors=errors, newline=newline)
+pathlib.Path.write_text = __tracked_write_text
 
 def __capturar_plotly_fig(fig):
     try:
