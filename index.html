@@ -85,14 +85,14 @@
       flex-direction: column;
       height: 100%;
       min-height: 0;
-      min-width: 260px;
+      min-width: 70px; /* Permite disminuir lo mínimo a ambos lados */
       overflow: hidden;
       user-select: text;
       position: relative;
     }
 
-    #panel-editor { width: 50%; }
-    #panel-output { flex: 1; min-width: 260px; }
+    #panel-editor { width: 50%; min-width: 70px; }
+    #panel-output { flex: 1; min-width: 70px; }
 
     .gutter-col {
       width: 10px;
@@ -459,32 +459,38 @@
     .zoom-toolbar {
       display: inline-flex;
       align-items: center;
-      background: #090e17;
-      border: 1px solid var(--panel-border);
+      background: #0b1329;
+      border: 1px solid #38bdf8;
       border-radius: 6px;
-      padding: 2px;
+      padding: 2px 4px;
+      box-shadow: 0 0 8px rgba(0, 242, 254, 0.2);
     }
     .zoom-btn {
       background: transparent;
       border: none;
-      color: #94a3b8;
-      font-size: 11px;
-      padding: 2px 7px;
+      color: #facc15; /* Amarillo brillante visible */
+      font-size: 13px;
+      font-weight: 700;
+      padding: 2px 8px;
       border-radius: 4px;
       display: flex;
       align-items: center;
       justify-content: center;
+      cursor: pointer;
+      transition: all 0.15s ease-in-out;
     }
     .zoom-btn:hover {
-      background: #1e293b;
-      color: #fff;
+      background: #facc15;
+      color: #000000 !important;
+      box-shadow: 0 0 8px rgba(250, 204, 21, 0.5);
     }
     .zoom-label {
       font-family: var(--code-font);
-      font-size: 11px;
-      color: #64748b;
-      padding: 0 4px;
-      min-width: 38px;
+      font-size: 12px;
+      font-weight: 700;
+      color: #ffffff; /* Blanco nítido */
+      padding: 0 6px;
+      min-width: 44px;
       text-align: center;
       user-select: none;
     }
@@ -575,7 +581,7 @@
         <i class="bi bi-upload"></i> Subir CSV / Excel
       </button>
 
-      <button class="btn btn-sm btn-dark text-secondary btn-action" onclick="mostrarArchivosEnMemoria()" title="Ver y gestionar archivos en la memoria virtual">
+      <button class="btn btn-sm btn-outline-warning text-warning fw-semibold btn-action" onclick="mostrarArchivosEnMemoria()" title="Ver y gestionar archivos en la memoria virtual">
         <i class="bi bi-folder2-open"></i> Archivos (VFS)
       </button>
 
@@ -593,7 +599,7 @@
         <div class="d-flex align-items-center gap-2">
           <i class="bi bi-file-earmark-code text-info"></i>
           <span class="small fw-semibold text-light" id="archivo-actual-label">script.py</span>
-          <span id="badge-auto-detector" class="badge bg-dark border border-secondary text-secondary" style="font-size: 10.5px;">
+          <span id="badge-auto-detector" class="badge bg-dark border border-warning text-warning fw-semibold" style="font-size: 10.5px;">
             <i class="bi bi-lightning-charge"></i> Auto-Detección Activa
           </span>
         </div>
@@ -619,10 +625,10 @@
             <button class="zoom-btn" onclick="resetZoomEditor()" title="Resetear"><i class="bi bi-arrow-counterclockwise"></i></button>
           </div>
 
-          <button class="btn btn-sm btn-dark text-muted py-0 px-2" onclick="toggleMaximize('panel-editor')" title="Maximizar panel">
+          <button class="btn btn-sm btn-dark text-warning border border-secondary py-0 px-2 fw-bold" onclick="toggleMaximize('panel-editor')" title="Maximizar panel">
             <i class="bi bi-arrows-fullscreen"></i>
           </button>
-          <button class="btn btn-sm btn-outline-secondary text-light py-0 px-2" onclick="limpiarEditor()" title="Limpiar código">
+          <button class="btn btn-sm btn-outline-danger text-white py-0 px-2 fw-semibold" onclick="limpiarEditor()" title="Limpiar código">
             <i class="bi bi-trash3"></i>
           </button>
         </div>
@@ -678,8 +684,8 @@ print("\n💾 Archivo 'Reporte_Titanic_Descargado.csv' listo para descargar.")
       </div>
 
       <div class="panel-footer">
-        <div class="small text-muted d-none d-sm-flex align-items-center gap-1" style="font-size: 11.5px;">
-          <kbd class="bg-dark border border-secondary text-secondary">Tab</kbd> completa &bull; <kbd class="bg-dark border border-secondary text-secondary">Ctrl</kbd> + <kbd class="bg-dark border border-secondary text-secondary">Enter</kbd> ejecuta
+        <div class="small text-light fw-semibold d-none d-sm-flex align-items-center gap-1" style="font-size: 11.5px;">
+          <kbd class="bg-dark border border-info text-white fw-bold">Tab</kbd> completa &bull; <kbd class="bg-dark border border-info text-white fw-bold">Ctrl</kbd> + <kbd class="bg-dark border border-info text-white fw-bold">Enter</kbd> ejecuta
         </div>
 
         <div class="d-flex align-items-center gap-2 ms-auto">
@@ -725,8 +731,8 @@ print("\n💾 Archivo 'Reporte_Titanic_Descargado.csv' listo para descargar.")
           <div id="tools-grafico" class="d-flex align-items-center gap-2 d-none">
             <!-- Selector de Fondo (Presentar / Descargar) -->
             <div id="contenedor-selector-fondo" class="d-flex align-items-center gap-1 bg-dark border border-secondary rounded px-2 py-0" style="height: 28px;">
-              <span class="text-secondary small" style="font-size: 11px;"><i class="bi bi-palette"></i> Fondo:</span>
-              <select id="select-fondo-grafico" class="form-select form-select-sm bg-dark text-info border-0 p-0 shadow-none" style="font-size: 11px; width: auto; cursor: pointer;" onchange="cambiarFondoGrafico(this.value)" title="Elegir fondo para presentar y descargar el gráfico">
+              <span class="text-warning small fw-bold" style="font-size: 11.5px;"><i class="bi bi-palette"></i> Fondo:</span>
+              <select id="select-fondo-grafico" class="form-select form-select-sm bg-dark text-warning border-0 p-0 shadow-none fw-bold" style="font-size: 11px; width: auto; cursor: pointer;" onchange="cambiarFondoGrafico(this.value)" title="Elegir fondo para presentar y descargar el gráfico">
                 <option value="negro" selected>🌙 Negro</option>
                 <option value="blanco">☀️ Blanco</option>
                 <option value="transparente">🏁 Transparente</option>
@@ -748,13 +754,13 @@ print("\n💾 Archivo 'Reporte_Titanic_Descargado.csv' listo para descargar.")
             </div>
           </div>
 
-          <button class="btn btn-sm btn-dark text-muted py-0 px-2" onclick="toggleMaximize('panel-output')" title="Maximizar panel">
+          <button class="btn btn-sm btn-dark text-warning border border-secondary py-0 px-2 fw-bold" onclick="toggleMaximize('panel-output')" title="Maximizar panel">
             <i class="bi bi-arrows-fullscreen"></i>
           </button>
-          <button class="btn btn-sm btn-dark text-muted py-0 px-2" onclick="copiarConsola()" title="Copiar consola">
+          <button class="btn btn-sm btn-dark text-info border border-secondary py-0 px-2 fw-bold" onclick="copiarConsola()" title="Copiar consola">
             <i class="bi bi-copy"></i>
           </button>
-          <button class="btn btn-sm btn-dark text-muted py-0 px-2" onclick="limpiarConsola()" title="Limpiar">
+          <button class="btn btn-sm btn-dark text-danger border border-secondary py-0 px-2 fw-bold" onclick="limpiarConsola()" title="Limpiar">
             <i class="bi bi-trash3"></i>
           </button>
         </div>
@@ -767,14 +773,14 @@ print("\n💾 Archivo 'Reporte_Titanic_Descargado.csv' listo para descargar.")
 
         <div id="tab-grafico" class="d-none">
           <div id="chart-drag-layer">
-            <span class="text-secondary small">Sin gráficos generados.</span>
+            <span class="text-warning small fw-semibold"><i class="bi bi-pie-chart"></i> Sin gráficos generados aún.</span>
           </div>
           <iframe id="html-viz-frame" class="d-none" style="width: 100%; height: 100%; border: none; background: #ffffff;"></iframe>
         </div>
       </div>
 
       <div class="panel-footer" style="height: 38px;">
-        <span id="tiempo-ejecucion" class="small text-muted" style="font-size: 11px;">Listo</span>
+        <span id="tiempo-ejecucion" class="small text-warning fw-bold" style="font-size: 11.5px;">Listo</span>
         <span id="estado-csv" class="small text-info" style="font-size: 11px; cursor: pointer;" onclick="descargarTablaCSV()"></span>
       </div>
     </section>
@@ -2373,7 +2379,7 @@ window.addEventListener("mousemove", (e) => {
   const offset = e.clientX - rect.left;
   const total = rect.width;
 
-  if (offset >= 220 && offset <= total - 220) {
+  if (offset >= 70 && offset <= total - 70) { /* Permite disminuir lo mínimo a ambos lados */
     panelEditor.style.width = `${(offset / total) * 100}%`;
   }
 });
@@ -3472,7 +3478,7 @@ function cambiarTab(tab) {
 }
 
 function ajustarZoomEditor(delta) {
-  fontSizeEditor = Math.min(Math.max(fontSizeEditor + delta, 10), 22);
+  fontSizeEditor = Math.min(Math.max(fontSizeEditor + delta, 10), 26);
   editor.style.fontSize = fontSizeEditor + "px";
   highlightLayer.style.fontSize = fontSizeEditor + "px";
   lineas.style.fontSize = fontSizeEditor + "px";
@@ -3488,7 +3494,7 @@ function resetZoomEditor() {
 }
 
 function ajustarZoomConsola(delta) {
-  fontSizeConsola = Math.min(Math.max(fontSizeConsola + delta, 9), 22);
+  fontSizeConsola = Math.min(Math.max(fontSizeConsola + delta, 10), 26);
   terminal.style.fontSize = fontSizeConsola + "px";
   document.getElementById("consola-zoom-label").innerText = fontSizeConsola + "px";
 }
@@ -3970,8 +3976,8 @@ function actualizarDeteccionCodigo() {
 
   if (!code.trim()) {
     if (badgeDetector) {
-      badgeDetector.className = "badge bg-dark border border-secondary text-secondary";
-      badgeDetector.innerHTML = `<i class="bi bi-file-earmark"></i> Lienzo Vacío`;
+      badgeDetector.className = "badge bg-dark border border-warning text-warning fw-semibold";
+      badgeDetector.innerHTML = `<i class="bi bi-file-earmark-text text-warning"></i> Lienzo Vacío`;
     }
     if (selectPlantillas) selectPlantillas.value = "";
     if (labelArchivo) labelArchivo.innerText = "nuevo_script.py";
@@ -4045,8 +4051,8 @@ function actualizarDeteccionCodigo() {
       badgeDetector.className = "badge bg-dark border border-info text-info";
       badgeDetector.innerHTML = `<i class="bi bi-lightning-charge-fill text-warning"></i> Auto: ${detectados.join(" • ")}`;
     } else {
-      badgeDetector.className = "badge bg-dark border border-secondary text-secondary";
-      badgeDetector.innerHTML = `<i class="bi bi-code-slash"></i> Python Personalizado`;
+      badgeDetector.className = "badge bg-dark border border-info text-light fw-semibold";
+      badgeDetector.innerHTML = `<i class="bi bi-code-slash text-warning"></i> Python Personalizado`;
     }
   }
 
