@@ -456,6 +456,118 @@
       pointer-events: none;
     }
 
+        /* DIAGNÓSTICO INTELIGENTE DE ERRORES (BENTO CARD EDUCATIVA) */
+    .diag-bento-card {
+      margin: 12px 0;
+      background: #090e1a;
+      border: 1.5px solid #ef4444;
+      border-radius: 10px;
+      padding: 14px 16px;
+      box-shadow: 0 4px 20px rgba(239, 68, 68, 0.18);
+      font-family: var(--code-font);
+      color: #f1f5f9;
+      line-height: 1.5;
+      text-align: left;
+    }
+    .diag-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+      border-bottom: 1px solid #1e293b;
+      padding-bottom: 8px;
+      margin-bottom: 10px;
+    }
+    .diag-badge-tipo {
+      background: #ef4444;
+      color: #ffffff;
+      font-weight: 700;
+      font-size: 11.5px;
+      padding: 3px 10px;
+      border-radius: 4px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      letter-spacing: 0.5px;
+    }
+    .diag-badge-loc {
+      background: #0b192c;
+      color: #38bdf8;
+      border: 1px solid #0284c7;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+    .diag-section-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      margin-top: 10px;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .diag-code-box {
+      background: #030712;
+      border: 1px solid #1f293d;
+      border-radius: 6px;
+      padding: 8px 12px;
+      font-size: 12px;
+      overflow-x: auto;
+    }
+    .diag-line-dim { color: #64748b; }
+    .diag-line-err { color: #f87171; font-weight: 700; background: rgba(239, 68, 68, 0.14); border-radius: 3px; padding: 2px 6px; }
+    .diag-pointer { color: #fbbf24; font-weight: 700; padding-left: 6px; }
+    .diag-explain {
+      font-size: 12px;
+      color: #e2e8f0;
+      background: rgba(15, 23, 42, 0.7);
+      border-left: 3px solid #f59e0b;
+      padding: 8px 12px;
+      border-radius: 0 4px 4px 0;
+    }
+    .diag-solution {
+      font-size: 12px;
+      color: #ecfdf5;
+      background: rgba(6, 78, 59, 0.3);
+      border-left: 3px solid #10b981;
+      padding: 10px 12px;
+      border-radius: 0 4px 4px 0;
+    }
+    .diag-solution code {
+      background: #064e3b;
+      color: #6ee7b7;
+      padding: 1px 5px;
+      border-radius: 3px;
+      font-size: 11.5px;
+    }
+    .diag-trace-toggle {
+      margin-top: 12px;
+      font-size: 11px;
+      color: #64748b;
+      cursor: pointer;
+    }
+    .diag-trace-toggle summary:hover {
+      color: #94a3b8;
+    }
+    .diag-trace-pre {
+      background: #050811;
+      border: 1px solid #1e293b;
+      border-radius: 4px;
+      padding: 8px 10px;
+      color: #f87171;
+      font-size: 10.5px;
+      margin-top: 6px;
+      max-height: 140px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+    }
+
     .zoom-toolbar {
       display: inline-flex;
       align-items: center;
@@ -531,6 +643,258 @@
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 3px; }
     ::-webkit-scrollbar-thumb:hover { background: #334155; }
+
+    /* =======================================================
+       ESTÁNDAR MAESTRO: MODO CLARO (WCAG AAA - ALTO CONTRASTE)
+       ======================================================= */
+    body.theme-light {
+      --bg-workspace: #f1f5f9;
+      --panel-bg: #ffffff;
+      --panel-border: #cbd5e1;
+      --cyan-neon: #0284c7;
+      --cyan-neon-glow: rgba(2, 132, 199, 0.25);
+      background-color: var(--bg-workspace) !important;
+      color: #0f172a !important;
+    }
+
+    body.theme-light header {
+      background: #ffffff !important;
+      border-color: #cbd5e1 !important;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+    }
+
+    body.theme-light .ide-panel {
+      background: #ffffff !important;
+      border-color: #cbd5e1 !important;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+    }
+
+    body.theme-light .panel-toolbar {
+      background: #f8fafc !important;
+      border-bottom: 1px solid #cbd5e1 !important;
+    }
+
+    body.theme-light .panel-footer {
+      background: #f8fafc !important;
+      border-top: 1px solid #cbd5e1 !important;
+      color: #334155 !important;
+    }
+
+    body.theme-light .editor-body {
+      background-color: #ffffff !important;
+    }
+
+    body.theme-light .line-counter {
+      background-color: #f8fafc !important;
+      border-right: 1px solid #cbd5e1 !important;
+      color: #64748b !important;
+    }
+
+    body.theme-light #codigo-editor {
+      color: transparent !important;
+      caret-color: #0284c7 !important;
+    }
+    body.theme-light #codigo-editor::selection {
+      background: rgba(2, 132, 199, 0.22) !important;
+    }
+
+    /* Resaltado de sintaxis en Modo Claro (Tokens de Prism con contraste AAA) */
+    body.theme-light #highlight-layer code {
+      color: #0f172a !important;
+    }
+    body.theme-light #highlight-layer .token.comment,
+    body.theme-light #highlight-layer .token.prolog,
+    body.theme-light #highlight-layer .token.doctype,
+    body.theme-light #highlight-layer .token.cdata {
+      color: #64748b !important;
+      font-style: italic;
+    }
+    body.theme-light #highlight-layer .token.punctuation {
+      color: #334155 !important;
+    }
+    body.theme-light #highlight-layer .token.property,
+    body.theme-light #highlight-layer .token.tag,
+    body.theme-light #highlight-layer .token.constant,
+    body.theme-light #highlight-layer .token.symbol,
+    body.theme-light #highlight-layer .token.deleted {
+      color: #dc2626 !important;
+    }
+    body.theme-light #highlight-layer .token.boolean,
+    body.theme-light #highlight-layer .token.number {
+      color: #b45309 !important;
+      font-weight: 600;
+    }
+    body.theme-light #highlight-layer .token.selector,
+    body.theme-light #highlight-layer .token.attr-name,
+    body.theme-light #highlight-layer .token.string,
+    body.theme-light #highlight-layer .token.char,
+    body.theme-light #highlight-layer .token.builtin,
+    body.theme-light #highlight-layer .token.inserted {
+      color: #047857 !important;
+      font-weight: 500;
+    }
+    body.theme-light #highlight-layer .token.operator,
+    body.theme-light #highlight-layer .token.entity,
+    body.theme-light #highlight-layer .token.url {
+      color: #0f172a !important;
+    }
+    body.theme-light #highlight-layer .token.atrule,
+    body.theme-light #highlight-layer .token.attr-value,
+    body.theme-light #highlight-layer .token.keyword {
+      color: #7c3aed !important;
+      font-weight: 700;
+    }
+    body.theme-light #highlight-layer .token.function,
+    body.theme-light #highlight-layer .token.class-name {
+      color: #0369a1 !important;
+      font-weight: 600;
+    }
+    body.theme-light #highlight-layer .token.regex,
+    body.theme-light #highlight-layer .token.important,
+    body.theme-light #highlight-layer .token.variable {
+      color: #c026d3 !important;
+    }
+
+    /* Terminal / Consola en Modo Claro */
+    body.theme-light .output-viewport {
+      background-color: #f8fafc !important;
+    }
+    body.theme-light #tab-terminal-container {
+      background: #f8fafc !important;
+    }
+    body.theme-light #tab-terminal {
+      color: #0f172a !important;
+    }
+    body.theme-light #tab-terminal.error-state {
+      color: #dc2626 !important;
+    }
+    body.theme-light .terminal-inline-input {
+      color: #0f172a !important;
+      border-bottom-color: #0284c7 !important;
+    }
+
+    /* Tabs y Botones en Modo Claro */
+    body.theme-light .tab-btn {
+      color: #475569 !important;
+    }
+    body.theme-light .tab-btn:hover {
+      color: #0f172a !important;
+    }
+    body.theme-light .tab-btn.active {
+      color: #0f172a !important;
+      background-color: #e2e8f0 !important;
+      font-weight: 600;
+    }
+
+    body.theme-light .btn-dark {
+      background-color: #ffffff !important;
+      color: #1e293b !important;
+      border-color: #cbd5e1 !important;
+    }
+    body.theme-light .btn-dark:hover {
+      background-color: #f1f5f9 !important;
+      color: #0f172a !important;
+    }
+
+    body.theme-light .form-select.bg-dark {
+      background-color: #ffffff !important;
+      color: #0f172a !important;
+      border-color: #cbd5e1 !important;
+    }
+
+    body.theme-light .badge.bg-dark {
+      background-color: #f8fafc !important;
+      color: #0f172a !important;
+      border-color: #cbd5e1 !important;
+    }
+
+    body.theme-light #autocomplete-popup {
+      background: #ffffff !important;
+      border: 1px solid #cbd5e1 !important;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12) !important;
+    }
+    body.theme-light .ac-item {
+      color: #1e293b !important;
+      border-bottom-color: #f1f5f9 !important;
+    }
+    body.theme-light .ac-item:hover, body.theme-light .ac-item.selected {
+      background: #f1f5f9 !important;
+      color: #0f172a !important;
+    }
+    body.theme-light .ac-item.selected {
+      background: #e0f2fe !important;
+      border-left-color: #0284c7 !important;
+    }
+    body.theme-light .ac-item .ac-badge {
+      background: #f8fafc !important;
+      color: #475569 !important;
+      border-color: #cbd5e1 !important;
+    }
+
+    body.theme-light .zoom-toolbar {
+      background: #ffffff !important;
+      border-color: #cbd5e1 !important;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08) !important;
+    }
+    body.theme-light .zoom-label {
+      color: #0f172a !important;
+    }
+    body.theme-light .zoom-btn {
+      color: #d97706 !important;
+    }
+
+    body.theme-light .diag-bento-card {
+      background: #ffffff !important;
+      border-color: #dc2626 !important;
+      color: #0f172a !important;
+      box-shadow: 0 4px 15px rgba(220, 38, 38, 0.08) !important;
+    }
+    body.theme-light .diag-code-box {
+      background: #f8fafc !important;
+      border-color: #e2e8f0 !important;
+    }
+    body.theme-light .diag-explain {
+      background: #fffbeb !important;
+      color: #92400e !important;
+      border-left-color: #d97706 !important;
+    }
+    body.theme-light .diag-solution {
+      background: #f0fdf4 !important;
+      color: #166534 !important;
+      border-left-color: #16a34a !important;
+    }
+    body.theme-light .diag-solution code {
+      background: #dcfce7 !important;
+      color: #15803d !important;
+    }
+    body.theme-light .diag-trace-pre {
+      background: #fef2f2 !important;
+      border-color: #fecaca !important;
+      color: #991b1b !important;
+    }
+
+    body.theme-light #tab-grafico {
+      background: #f8fafc !important;
+    }
+
+    body.theme-light .modal-content.bg-dark {
+      background-color: #ffffff !important;
+      color: #0f172a !important;
+      border-color: #cbd5e1 !important;
+    }
+    body.theme-light .modal-header.border-secondary,
+    body.theme-light .modal-footer.border-secondary {
+      border-color: #e2e8f0 !important;
+    }
+    body.theme-light .btn-close-white {
+      filter: invert(1) grayscale(100%) brightness(0%) !important;
+    }
+    body.theme-light ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+    }
+    body.theme-light ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
   </style>
 </head>
 <body>
@@ -554,6 +918,16 @@
       <span class="badge bg-dark border border-info text-info d-none d-lg-inline ms-1" style="font-size: 11px;">
         <i class="bi bi-globe-americas text-info"></i> Folium Maps • Plotly • Seaborn • NetworkX • WordCloud • Excel
       </span>
+
+      <!-- Botón de Modo Oscuro / Modo Claro -->
+      <button id="btn-toggle-tema" 
+              class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1 py-0 px-2 fw-semibold ms-1" 
+              style="height: 28px; font-size: 11px; border-radius: 20px; transition: all 0.25s ease;"
+              onclick="toggleModoTema()" 
+              title="Cambiar a Modo Claro">
+        <i id="icono-tema" class="bi bi-sun-fill text-warning"></i>
+        <span id="texto-tema" class="text-light">Modo Claro</span>
+      </button>
     </div>
 
     <!-- Acciones de Archivos y Plantillas -->
@@ -583,6 +957,10 @@
 
       <button class="btn btn-sm btn-outline-warning text-warning fw-semibold btn-action" onclick="mostrarArchivosEnMemoria()" title="Ver y gestionar archivos en la memoria virtual">
         <i class="bi bi-folder2-open"></i> Archivos (VFS)
+      </button>
+
+      <button id="btn-captura-pantalla" class="btn btn-sm btn-outline-light text-light fw-semibold btn-action" onclick="capturarPantallaCompletaPNG()" title="Capturar pantalla completa de PyStudio en imagen PNG HD">
+        <i class="bi bi-camera-fill text-warning"></i> Captura Pantalla
       </button>
 
       <span id="badge-estado" class="badge bg-dark border border-warning text-warning d-flex align-items-center gap-2 px-3 py-1">
@@ -739,11 +1117,15 @@ print("\n💾 Archivo 'Reporte_Titanic_Descargado.csv' listo para descargar.")
               </select>
             </div>
 
-            <button id="btn-open-html-tab" class="btn btn-outline-warning btn-action d-none" onclick="abrirVisualizacionEnPestana()" title="Abrir mapa o visualización interactiva en una pestaña nueva">
+            <button id="btn-open-html-tab" class="btn btn-outline-warning btn-action d-none" onclick="abrirVisualizacionEnPestana()" title="Abrir visualización interactiva en una pestaña nueva">
               <i class="bi bi-box-arrow-up-right"></i> Abrir en Pestaña
             </button>
 
-            <button id="btn-dl-plot" class="btn btn-outline-info btn-action" onclick="descargarGraficoPNG()" title="Guardar visualización generada" disabled>
+            <button id="btn-dl-html" class="btn btn-outline-primary text-info border-info btn-action d-none" onclick="descargarVisualizacionHTML()" title="Descargar archivo HTML interactivo">
+              <i class="bi bi-filetype-html"></i> Guardar HTML
+            </button>
+
+            <button id="btn-dl-plot" class="btn btn-outline-info btn-action" onclick="descargarGraficoPNG()" title="Guardar imagen PNG del gráfico" disabled>
               <i class="bi bi-download"></i> Guardar PNG
             </button>
             <div id="zoom-toolbar-grafico" class="zoom-toolbar">
@@ -756,6 +1138,9 @@ print("\n💾 Archivo 'Reporte_Titanic_Descargado.csv' listo para descargar.")
 
           <button class="btn btn-sm btn-dark text-warning border border-secondary py-0 px-2 fw-bold" onclick="toggleMaximize('panel-output')" title="Maximizar panel">
             <i class="bi bi-arrows-fullscreen"></i>
+          </button>
+          <button id="btn-capturar-consola" class="btn btn-sm btn-dark text-warning border border-secondary py-0 px-2 fw-bold" onclick="capturarConsolaPNG()" title="Capturar resultado de la consola en imagen PNG HD">
+            <i class="bi bi-camera-fill"></i>
           </button>
           <button class="btn btn-sm btn-dark text-info border border-secondary py-0 px-2 fw-bold" onclick="copiarConsola()" title="Copiar consola">
             <i class="bi bi-copy"></i>
@@ -1248,22 +1633,29 @@ function abrirVisualizacionEnPestana() {
   window.open(url, "_blank");
 }
 
-function descargarGraficoPNG() {
-  if (currentPlotType === "html" && currentHtmlContent) {
-    const htmlExport = obtenerHTMLConFondoActual();
-    const blob = new Blob([htmlExport], { type: "text/html;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const enlace = document.createElement("a");
-    enlace.href = url;
-    const baseName = (currentPlotFilename || "visualizacion").replace(/\.html$/i, "");
-    enlace.download = `${baseName}_${fondoGraficoActual}.html`;
-    document.body.appendChild(enlace);
-    enlace.click();
-    document.body.removeChild(enlace);
-    URL.revokeObjectURL(url);
+function descargarVisualizacionHTML() {
+  if (!currentHtmlContent) {
+    alert("No hay visualización HTML interactiva para descargar.");
     return;
   }
+  const htmlExport = obtenerHTMLConFondoActual();
+  const blob = new Blob([htmlExport], { type: "text/html;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const enlace = document.createElement("a");
+  enlace.href = url;
+  const baseName = (currentPlotFilename || "visualizacion_interactiva").replace(/\.html$/i, "");
+  enlace.download = `${baseName}_${fondoGraficoActual}.html`;
+  document.body.appendChild(enlace);
+  enlace.click();
+  document.body.removeChild(enlace);
+  URL.revokeObjectURL(url);
+}
 
+async function descargarGraficoPNG() {
+  const btnDl = document.getElementById("btn-dl-plot");
+  const textoOriginal = btnDl ? btnDl.innerHTML : "";
+
+  // 1. Animación GIF
   if (currentPlotType === "gif") {
     const b64Gif = (plotsBase64 && plotsBase64[fondoGraficoActual]) || currentPlotB64 || (plotsBase64 && plotsBase64.gif_b64);
     if (!b64Gif) return;
@@ -1277,6 +1669,75 @@ function descargarGraficoPNG() {
     return;
   }
 
+  // 2. Gráfico interactivo HTML (Plotly / Folium / etc.)
+  if (currentPlotType === "html") {
+    const htmlFrame = document.getElementById("html-viz-frame");
+    if (!htmlFrame) return;
+
+    if (btnDl) {
+      btnDl.innerHTML = `<span class="spinner-border spinner-border-sm"></span> Generando PNG...`;
+      btnDl.disabled = true;
+    }
+
+    try {
+      const win = htmlFrame.contentWindow;
+      const doc = htmlFrame.contentDocument || (win && win.document);
+      const fecha = new Date().toISOString().slice(0, 10);
+
+      // 2.A: Si es Plotly interactivo dentro del iframe
+      if (win && win.Plotly) {
+        const plotEl = doc ? doc.querySelector(".js-plotly-plot") : null;
+        if (plotEl) {
+          const bgPlot = fondoGraficoActual === "blanco" ? "#ffffff" : (fondoGraficoActual === "transparente" ? "rgba(0,0,0,0)" : "#080c14");
+          const imgUrl = await win.Plotly.toImage(plotEl, {
+            format: "png",
+            scale: 2,
+            width: plotEl.offsetWidth || 1200,
+            height: plotEl.offsetHeight || 650,
+            setBackground: bgPlot
+          });
+          const enlace = document.createElement("a");
+          enlace.href = imgUrl;
+          enlace.download = `grafico_plotly_${fondoGraficoActual}_${fecha}.png`;
+          document.body.appendChild(enlace);
+          enlace.click();
+          document.body.removeChild(enlace);
+          return;
+        }
+      }
+
+      // 2.B: Si es Folium u otro contenido HTML (captura HD con html2canvas)
+      if (window.html2canvas && doc && doc.body) {
+        const bgCanvas = fondoGraficoActual === "blanco" ? "#ffffff" : (fondoGraficoActual === "transparente" ? null : "#080c14");
+        const canvas = await html2canvas(doc.body, {
+          backgroundColor: bgCanvas,
+          scale: 2,
+          useCORS: true,
+          logging: false
+        });
+        const imgUrl = canvas.toDataURL("image/png");
+        const enlace = document.createElement("a");
+        enlace.href = imgUrl;
+        enlace.download = `grafico_html_${fondoGraficoActual}_${fecha}.png`;
+        document.body.appendChild(enlace);
+        enlace.click();
+        document.body.removeChild(enlace);
+        return;
+      }
+    } catch (e) {
+      console.warn("Aviso al capturar HTML a PNG:", e);
+      alert("Aviso: no se pudo capturar directamente el PNG del visor interactivo. Descargando archivo HTML...");
+      descargarVisualizacionHTML();
+    } finally {
+      if (btnDl) {
+        btnDl.innerHTML = textoOriginal || `<i class="bi bi-download"></i> Guardar PNG`;
+        btnDl.disabled = false;
+      }
+    }
+    return;
+  }
+
+  // 3. Gráfico estático estándar (Matplotlib / Seaborn / WordCloud / NetworkX)
   const b64 = (plotsBase64 && plotsBase64[fondoGraficoActual]) || currentPlotB64;
   if (!b64) {
     alert("No hay gráfico generado para descargar.");
@@ -3317,6 +3778,8 @@ async function ejecutarPython() {
   currentPlotB64 = "";
   currentHtmlContent = "";
   btnDlPlot.disabled = true;
+  const btnDlHtmlInit = document.getElementById("btn-dl-html");
+  if (btnDlHtmlInit) btnDlHtmlInit.classList.add("d-none");
   cambiarTab('terminal');
 
   const t0 = performance.now();
@@ -3383,8 +3846,10 @@ async function ejecutarPython() {
 
       dot.classList.remove("d-none");
       btnDl.disabled = false;
-      btnDl.innerHTML = `<i class="bi bi-filetype-html"></i> Guardar HTML`;
-      btnDl.title = `Descargar visualización interactiva (${currentPlotFilename})`;
+      btnDl.innerHTML = `<i class="bi bi-download"></i> Guardar PNG`;
+      btnDl.title = `Descargar imagen PNG del gráfico con fondo ${fondoGraficoActual}`;
+      const btnDlHtml = document.getElementById("btn-dl-html");
+      if (btnDlHtml) btnDlHtml.classList.remove("d-none");
       cambiarFondoGrafico(fondoGraficoActual);
       cambiarTab('grafico');
 
@@ -3405,6 +3870,7 @@ async function ejecutarPython() {
       resetZoomGrafico();
       dot.classList.remove("d-none");
       btnDl.disabled = false;
+      const btnDlHtmlGif = document.getElementById("btn-dl-html"); if (btnDlHtmlGif) btnDlHtmlGif.classList.add("d-none");
       btnDl.innerHTML = `<i class="bi bi-film"></i> Guardar GIF`;
       btnDl.title = `Descargar animación ${currentPlotFilename} con el fondo elegido`;
       cambiarFondoGrafico(fondoGraficoActual);
@@ -3419,6 +3885,7 @@ async function ejecutarPython() {
       if (zoomBox) zoomBox.classList.remove("d-none");
       if (btnOpenTab) btnOpenTab.classList.add("d-none");
 
+      const btnDlHtmlPng = document.getElementById("btn-dl-html"); if (btnDlHtmlPng) btnDlHtmlPng.classList.add("d-none");
       btnDl.innerHTML = `<i class="bi bi-download"></i> Guardar PNG`;
       btnDl.title = "Guardar gráfico en PNG con el fondo seleccionado";
 
@@ -3439,14 +3906,177 @@ async function ejecutarPython() {
     }
 
   } catch (err) {
-    terminal.className = "error-state";
-    terminal.textContent += "\n❌ Error de Ejecución:\n" + (err.message || err);
+    terminal.className = "";
+    const rawMsg = err.message || String(err);
+    const diagInfo = parsearTracebackPython(rawMsg, code);
+    const diagHTML = generarDiagnosticoEducativo(diagInfo, code, rawMsg);
+    terminal.insertAdjacentHTML("beforeend", diagHTML);
+    terminalContainer.scrollTop = terminalContainer.scrollHeight;
     cambiarTab('terminal');
   } finally {
     btn.disabled = false;
     spinner.classList.add("d-none");
     icon.classList.remove("d-none");
   }
+}
+
+// =======================================================
+// MOTOR DE DIAGNÓSTICO PEDAGÓGICO DE ERRORES (JPV SMART)
+// =======================================================
+function parsearTracebackPython(errMsg, userCode) {
+  const errMatch = errMsg.match(/([a-zA-Z_]\w*Error|[a-zA-Z_]\w*Exception):\s*([^\n]*)/);
+  const tipo = errMatch ? errMatch[1] : "PythonError";
+  const detalle = errMatch ? errMatch[2].trim() : "";
+
+  const frameRegex = /File\s+["']([^"']+)["'],\s+line\s+(\d+)(?:,\s+in\s+([^\n]+))?(?:\n\s+([^\n]+))?(?:\n\s*(\^+))?/g;
+  const frames = [];
+  let m;
+  while ((m = frameRegex.exec(errMsg)) !== null) {
+    frames.push({
+      file: m[1],
+      line: parseInt(m[2], 10),
+      func: m[3] || "",
+      snippet: m[4] ? m[4].trim() : "",
+      pointer: m[5] ? m[5].trim() : ""
+    });
+  }
+
+  const userFrames = frames.filter(f => 
+    !f.file.includes("/lib/") && 
+    !f.file.includes("<exec>") && 
+    !f.file.includes("pyodide")
+  );
+
+  const bestFrame = userFrames.length > 0 ? userFrames[userFrames.length - 1] : frames[frames.length - 1];
+  let lineno = bestFrame ? bestFrame.line : null;
+  let snippet = bestFrame ? bestFrame.snippet : "";
+  let pointer = bestFrame ? bestFrame.pointer : "";
+
+  if ((!snippet || !lineno) && userCode) {
+    const lineMatch = errMsg.match(/line\s+(\d+)/);
+    if (lineMatch) lineno = parseInt(lineMatch[1], 10);
+  }
+
+  return { tipo, detalle, lineno, snippet, pointer };
+}
+
+function generarDiagnosticoEducativo(diag, userCode, rawErr) {
+  const { tipo, detalle, lineno, snippet, pointer } = diag;
+  let tituloError = tipo;
+  let explicacion = "";
+  let recomendacion = "";
+
+  if (tipo === "SyntaxError") {
+    tituloError = "Error de Sintaxis (SyntaxError)";
+    if (detalle.includes("expression expected after dictionary key and ':'") || (snippet && snippet.includes(":,"))) {
+      explicacion = "El diccionario tiene una clave (ej: <code>'Ventas_USD':</code>) sin ningún valor asignado antes de la coma <code>,</code>. En Python, todo elemento de un diccionario exige obligatoriamente la estructura <code>'clave': valor</code>.";
+      recomendacion = "Revisa la línea señalada y coloca un valor (número, texto o lista) después de los dos puntos <code>:</code>.<br><strong>Ejemplo de corrección:</strong><br><code>'Ventas_USD': [53900, 45850, 61215, 41085, 48510],</code><br><code>'Meta_USD': [50000, 50000, 55000, 45000, 45000],</code>";
+    } else if (detalle.includes("was never closed") || detalle.includes("unclosed")) {
+      explicacion = "Hay un paréntesis <code>(</code>, corchete <code>[</code> o llave <code>{</code> que se abrió pero no fue cerrado.";
+      recomendacion = "Busca el paréntesis o corchete de apertura en la línea y asegúrate de cerrarlo antes del final de la instrucción.";
+    } else if (detalle.includes("invalid syntax")) {
+      explicacion = "La sintaxis de esta instrucción no sigue las reglas gramaticales de Python.";
+      recomendacion = "Verifica si olvidaste dos puntos <code>:</code> al final de un <code>if</code>, <code>for</code>, <code>def</code> o <code>while</code>, o si hay un operador o comilla fuera de lugar.";
+    } else {
+      explicacion = detalle || "Error en la estructura sintáctica del código.";
+      recomendacion = "Revisa la línea indicada para corregir caracteres faltantes o fuera de lugar.";
+    }
+  } else if (tipo === "FileNotFoundError") {
+    tituloError = "Archivo No Encontrado (FileNotFoundError)";
+    const matchArch = detalle.match(/['"]([^'"]+)['"]/);
+    const nombreArch = matchArch ? matchArch[1] : "archivo";
+    explicacion = `El script intentó abrir o leer el archivo <code>'${nombreArch}'</code>, pero este no se encuentra en el disco virtual de la sesión en el navegador.`;
+    recomendacion = `1. Pulsa el botón <strong>'Subir CSV / Excel'</strong> en la barra superior para cargarlo desde tu PC a PyStudio.<br>2. O crea los datos directamente en el código usando <code>pd.DataFrame({...})</code>.`;
+  } else if (tipo === "NameError") {
+    tituloError = "Variable o Función No Definida (NameError)";
+    const matchVar = detalle.match(/name\s+['"]([^'"]+)['"]/);
+    const nomVar = matchVar ? matchVar[1] : "variable";
+    explicacion = `La variable o función <code>'${nomVar}'</code> se utilizó pero no ha sido definida en este script, o tiene una letra equivocada.`;
+    recomendacion = `1. Si es una variable propia, asígnale un valor antes de usarla.<br>2. Si es una librería como Pandas (<code>pd</code>) o Matplotlib (<code>plt</code>), asegúrate de tener al inicio: <code>import pandas as pd</code> o <code>import matplotlib.pyplot as plt</code>.<br>3. Recuerda que Python distingue mayúsculas de minúsculas.`;
+  } else if (tipo === "KeyError") {
+    tituloError = "Columna o Clave No Encontrada (KeyError)";
+    const matchKey = detalle.match(/['"]([^'"]+)['"]/);
+    const nomKey = matchKey ? matchKey[1] : "clave";
+    explicacion = `La columna o clave <code>['${nomKey}']</code> no existe en el DataFrame o diccionario.`;
+    recomendacion = `1. Comprueba los nombres reales de las columnas agregando: <code>print(df.columns.tolist())</code>.<br>2. Verifica si el nombre tiene espacios extra (ej: <code>' ${nomKey} '</code>) o diferencias en mayúsculas/minúsculas.`;
+  } else if (tipo === "ZeroDivisionError") {
+    tituloError = "División Entre Cero (ZeroDivisionError)";
+    explicacion = "El código intentó realizar una división matemática donde el denominador o divisor es igual a 0.";
+    recomendacion = "Protege el cálculo verificando que el divisor sea positivo: <code>resultado = (a / b) if b > 0 else 0</code>.";
+  } else if (tipo === "IndexError") {
+    tituloError = "Índice Fuera de Rango (IndexError)";
+    explicacion = "Se intentó acceder a una posición o elemento que no existe dentro de la lista o arreglo.";
+    recomendacion = "Verifica la cantidad total de elementos con <code>len(lista)</code>. Recuerda que en Python los índices inician en 0.";
+  } else if (tipo === "TypeError") {
+    tituloError = "Tipos Incompatibles (TypeError)";
+    explicacion = `Operación inválida entre tipos de datos incompatibles (${detalle}).`;
+    recomendacion = "Comprueba el tipo de dato de tus variables con <code>print(type(var))</code>. Si unes texto y números, usa <code>f'{var}'</code> o <code>str(var)</code>.";
+  } else if (tipo === "IndentationError") {
+    tituloError = "Error de Sangría / Indentación (IndentationError)";
+    explicacion = "Los espacios al inicio de la línea no corresponden con el bloque de código esperado.";
+    recomendacion = "Usa 4 espacios por cada nivel de sangría después de dos puntos <code>:</code>. No mezcles espacios con tabulaciones.";
+  } else {
+    tituloError = `${tipo}`;
+    explicacion = detalle || "Ocurrió un error durante la ejecución del script.";
+    recomendacion = "Revisa la línea señalada y valida los tipos de datos y parámetros utilizados.";
+  }
+
+  let lineasContextoHTML = "";
+  if (userCode && lineno) {
+    const arrLines = userCode.split("\n");
+    const idx = lineno - 1;
+    if (idx >= 0 && idx < arrLines.length) {
+      const start = Math.max(0, idx - 1);
+      const end = Math.min(arrLines.length - 1, idx + 1);
+
+      for (let i = start; i <= end; i++) {
+        const numL = String(i + 1).padStart(2, " ");
+        const rawText = arrLines[i].replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        if (i === idx) {
+          lineasContextoHTML += `<div class="diag-line-err"><span class="text-danger fw-bold">❌ ${numL} │</span> ${rawText}</div>`;
+          if (pointer) {
+            lineasContextoHTML += `<div class="diag-pointer"><span class="text-secondary">     │</span> <span class="text-warning fw-bold">▲ [Error aquí: ${tipo}]</span></div>`;
+          }
+        } else {
+          lineasContextoHTML += `<div class="diag-line-dim"><span class="text-secondary">   ${numL} │</span> ${rawText}</div>`;
+        }
+      }
+    }
+  }
+
+  if (!lineasContextoHTML && snippet) {
+    lineasContextoHTML = `<div class="diag-line-err"><span class="text-danger fw-bold">❌ Línea ${lineno || "?"}:</span> ${snippet.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")}</div>`;
+    if (pointer) {
+      lineasContextoHTML += `<div class="diag-pointer"><span class="text-warning fw-bold">   ▲ [Error aquí]</span></div>`;
+    }
+  }
+
+  const rawEscapado = (rawErr || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+  return `
+<div class="diag-bento-card">
+  <div class="diag-header">
+    <span class="diag-badge-tipo"><i class="bi bi-exclamation-octagon-fill"></i> ${tituloError}</span>
+    ${lineno ? `<span class="diag-badge-loc"><i class="bi bi-geo-alt-fill text-info"></i> Línea ${lineno}</span>` : ""}
+  </div>
+
+  ${lineasContextoHTML ? `
+  <div class="diag-section-title"><i class="bi bi-code-slash text-info"></i> Fragmento de Código Afectado:</div>
+  <div class="diag-code-box">${lineasContextoHTML}</div>
+  ` : ""}
+
+  <div class="diag-section-title"><i class="bi bi-info-circle-fill text-warning"></i> ¿Por qué ocurrió esto?:</div>
+  <div class="diag-explain">${explicacion}</div>
+
+  <div class="diag-section-title"><i class="bi bi-lightbulb-fill text-success"></i> ¿Qué debes hacer en tu código? (Recomendación):</div>
+  <div class="diag-solution">${recomendacion}</div>
+
+  <details class="diag-trace-toggle">
+    <summary><i class="bi bi-terminal"></i> Ver rastro técnico original de la consola (Traceback)</summary>
+    <pre class="diag-trace-pre">${rawEscapado}</pre>
+  </details>
+</div>
+`;
 }
 
 function cambiarTab(tab) {
@@ -3524,6 +4154,150 @@ function limpiarConsola() {
 
 function copiarConsola() {
   navigator.clipboard.writeText(terminal.textContent);
+}
+
+// =======================================================
+// CAPTURA DE PANTALLA COMPLETA Y RESULTADOS DE CONSOLA (PNG HD)
+// =======================================================
+async function capturarPantallaCompletaPNG() {
+  const btn = document.getElementById("btn-captura-pantalla");
+  const origHTML = btn ? btn.innerHTML : "";
+
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = `<span class="spinner-border spinner-border-sm me-1"></span> Capturando...`;
+  }
+
+  try {
+    if (typeof ocultarAutocomplete === "function") ocultarAutocomplete();
+
+    if (typeof html2canvas !== "function") {
+      alert("La librería html2canvas aún se está cargando. Por favor intenta en un segundo.");
+      return;
+    }
+
+    const esModoClaro = document.body.classList.contains("theme-light");
+    const canvas = await html2canvas(document.body, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: esModoClaro ? "#f1f5f9" : "#06090f",
+      logging: false,
+      ignoreElements: (el) => el.classList && el.classList.contains("modal-backdrop")
+    });
+
+    const dataUrl = canvas.toDataURL("image/png");
+    const a = document.createElement("a");
+    const d = new Date();
+    const pad = (n) => String(n).padStart(2, "0");
+    const fecha = `${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`;
+    a.download = `JPV_PyStudio_Pantalla_Completa_${fecha}.png`;
+    a.href = dataUrl;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  } catch (err) {
+    console.error("Error al capturar pantalla completa:", err);
+    alert("Hubo un problema al generar la captura: " + (err.message || err));
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = origHTML;
+    }
+  }
+}
+
+async function capturarConsolaPNG() {
+  const termEl = document.getElementById("tab-terminal");
+  const container = document.getElementById("tab-terminal-container");
+  const btn = document.getElementById("btn-capturar-consola");
+
+  const texto = termEl ? termEl.textContent.trim() : "";
+  if (!texto || texto === "# Esperando inicio de WebAssembly..." || texto === "# Esperando inicio...") {
+    alert("⚠️ No hay resultados en la consola para capturar. Ejecuta primero un script en Python para ver salidas.");
+    return;
+  }
+
+  const origHTML = btn ? btn.innerHTML : "";
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = `<span class="spinner-border spinner-border-sm" style="width: 12px; height: 12px;"></span>`;
+  }
+
+  try {
+    if (typeof cambiarTab === "function") cambiarTab('terminal');
+
+    if (typeof html2canvas !== "function") {
+      alert("La librería html2canvas aún se está cargando. Por favor intenta en un segundo.");
+      return;
+    }
+
+    const esModoClaro = document.body.classList.contains("theme-light");
+
+    // Contenedor temporal de captura de consola en HD
+    const clon = container.cloneNode(true);
+    clon.style.height = "auto";
+    clon.style.maxHeight = "none";
+    clon.style.overflow = "visible";
+    clon.style.position = "fixed";
+    clon.style.left = "-99999px";
+    clon.style.top = "0";
+    clon.style.width = Math.max(container.clientWidth || 800, 780) + "px";
+    clon.style.backgroundColor = esModoClaro ? "#ffffff" : "#090e17";
+    clon.style.padding = "20px";
+    clon.style.borderRadius = "10px";
+    clon.style.border = esModoClaro ? "1px solid #cbd5e1" : "1px solid rgba(255, 255, 255, 0.12)";
+    clon.style.boxShadow = esModoClaro ? "0 10px 30px rgba(0,0,0,0.12)" : "0 10px 30px rgba(0,0,0,0.85)";
+
+    const headerClon = document.createElement("div");
+    headerClon.style.display = "flex";
+    headerClon.style.justifyContent = "space-between";
+    headerClon.style.alignItems = "center";
+    headerClon.style.paddingBottom = "12px";
+    headerClon.style.marginBottom = "14px";
+    headerClon.style.borderBottom = esModoClaro ? "1px solid #e2e8f0" : "1px solid rgba(255, 255, 255, 0.08)";
+    headerClon.style.fontFamily = "'JetBrains Mono', monospace";
+    headerClon.style.fontSize = "12px";
+    headerClon.innerHTML = `
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span style="display:inline-block; width:11px; height:11px; border-radius:50%; background:#ff5f56;"></span>
+        <span style="display:inline-block; width:11px; height:11px; border-radius:50%; background:#ffbd2e;"></span>
+        <span style="display:inline-block; width:11px; height:11px; border-radius:50%; background:#27c93f;"></span>
+        <span style="color:${esModoClaro ? '#0284c7' : '#00f2fe'}; margin-left:6px; font-weight:600;"><i class="bi bi-terminal"></i> Salida de Consola</span>
+      </div>
+      <div style="color:#64748b;">JPV PyStudio • Python 3.12</div>
+    `;
+    clon.insertBefore(headerClon, clon.firstChild);
+
+    document.body.appendChild(clon);
+
+    const canvas = await html2canvas(clon, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: esModoClaro ? "#f1f5f9" : "#06090f",
+      logging: false
+    });
+
+    document.body.removeChild(clon);
+
+    const dataUrl = canvas.toDataURL("image/png");
+    const a = document.createElement("a");
+    const d = new Date();
+    const pad = (n) => String(n).padStart(2, "0");
+    const fecha = `${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`;
+    a.download = `JPV_PyStudio_Consola_${fecha}.png`;
+    a.href = dataUrl;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  } catch (err) {
+    console.error("Error al capturar consola:", err);
+    alert("Hubo un problema al capturar la consola: " + (err.message || err));
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = origHTML;
+    }
+  }
 }
 
 
@@ -4131,7 +4905,55 @@ function elegirModoInicio(modo) {
   if (modal) modal.hide();
 }
 
+// =======================================================
+// GESTIÓN DE TEMAS: MODO OSCURO (DEFAULT) Y MODO CLARO (WCAG AAA)
+// =======================================================
+function aplicarTema(tema) {
+  const btn = document.getElementById("btn-toggle-tema");
+  const icono = document.getElementById("icono-tema");
+  const texto = document.getElementById("texto-tema");
+
+  if (tema === "light") {
+    document.body.classList.add("theme-light");
+    if (icono) icono.className = "bi bi-moon-stars-fill text-primary";
+    if (texto) {
+      texto.textContent = "Modo Oscuro";
+      texto.className = "text-dark fw-bold";
+    }
+    if (btn) {
+      btn.title = "Cambiar a Modo Oscuro";
+      btn.className = "btn btn-sm btn-outline-dark d-flex align-items-center gap-1 py-0 px-2 fw-semibold ms-1";
+    }
+    localStorage.setItem("pystudio_tema", "light");
+  } else {
+    document.body.classList.remove("theme-light");
+    if (icono) icono.className = "bi bi-sun-fill text-warning";
+    if (texto) {
+      texto.textContent = "Modo Claro";
+      texto.className = "text-light fw-bold";
+    }
+    if (btn) {
+      btn.title = "Cambiar a Modo Claro";
+      btn.className = "btn btn-sm btn-outline-secondary d-flex align-items-center gap-1 py-0 px-2 fw-semibold ms-1";
+    }
+    localStorage.setItem("pystudio_tema", "dark");
+  }
+}
+
+function toggleModoTema() {
+  const esClaro = document.body.classList.contains("theme-light");
+  aplicarTema(esClaro ? "dark" : "light");
+}
+
 window.addEventListener("DOMContentLoaded", () => {
+  // Inicialización del tema: Modo Oscuro por defecto o preferencia guardada
+  const temaGuardado = localStorage.getItem("pystudio_tema");
+  if (temaGuardado === "light") {
+    aplicarTema("light");
+  } else {
+    aplicarTema("dark");
+  }
+
   const pref = localStorage.getItem("pystudio_inicio");
   if (pref === "vacio") {
     editor.value = "";
