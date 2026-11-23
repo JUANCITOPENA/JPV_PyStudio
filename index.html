@@ -4697,6 +4697,31 @@ async function descargarSuiteGlobal() {
     btn.innerHTML = `<span class="spinner-border spinner-border-sm me-1"></span> Empaquetando Suite...`;
   }
 
+  // Sanitizador estricto de base64 para evitar errores de JSZip "Invalid base64 input, it looks like a data url"
+  function sanitizarBase64(input) {
+    if (!input) return "";
+    let str = String(input).trim();
+    const coma = str.indexOf(",");
+    if (str.indexOf("data:") === 0 && coma !== -1) {
+      str = str.substring(coma + 1);
+    }
+    return str.replace(/^data:[^;]+;base64,/, "").trim();
+  }
+
+  function agregarImagenZip(carpetaZip, nombreArchivo, datoB64oDataUrl) {
+    if (!datoB64oDataUrl) return false;
+    try {
+      const b64Limpio = sanitizarBase64(datoB64oDataUrl);
+      if (b64Limpio && b64Limpio.length > 20) {
+        carpetaZip.file(nombreArchivo, b64Limpio, { base64: true });
+        return true;
+      }
+    } catch (eImg) {
+      console.warn(`No se pudo agregar imagen ${nombreArchivo} a la suite:`, eImg);
+    }
+    return false;
+  }
+
   try {
     if (typeof JSZip === "undefined") {
       alert("La biblioteca JSZip se está inicializando. Por favor intenta de nuevo en un segundo.");
@@ -4740,8 +4765,7 @@ async function descargarSuiteGlobal() {
         document.body.appendChild(renderContainer);
         const codeCanvas = await html2canvas(renderContainer, { scale: 2, backgroundColor: "#06090f", logging: false });
         document.body.removeChild(renderContainer);
-        const codeB64 = codeCanvas.toDataURL("image/png").replace(/^data:image\/png;base64,/, "");
-        carpeta.file("01_Captura_Codigo_HD.png", codeB64, { base64: true });
+        agregarImagenZip(carpeta, "01_Captura_Codigo_HD.png", codeCanvas.toDataURL("image/png"));
       } catch(eCode) {}
     }
 
@@ -4767,18 +4791,18 @@ async function descargarSuiteGlobal() {
         document.body.appendChild(clon);
         const termCanvas = await html2canvas(clon, { scale: 2, backgroundColor: "#06090f", logging: false });
         document.body.removeChild(clon);
-        const termB64 = termCanvas.toDataURL("image/png").replace(/^data:image\/png;base64,/, "");
-        carpeta.file("02_Captura_Consola_HD.png", termB64, { base64: true });
+        agregarImagenZip(carpeta, "02_Captura_Consola_HD.png", termCanvas.toDataURL("image/png"));
         carpeta.file("02_salida_consola.txt", textoTerm);
       } catch(eTerm) {}
     }
 
     // 4. Gráficos / Visualizaciones (si existen)
     if (typeof currentPlotB64 !== "undefined" && currentPlotB64) {
-      carpeta.file("03_Grafico_Matplotlib_HD.png", currentPlotB64, { base64: true });
+      agregarImagenZip(carpeta, "03_Grafico_Matplotlib_HD.png", currentPlotB64);
     }
-    if (typeof plotsBase64 !== "undefined" && plotsBase64 && plotsBase64.gif_b64) {
-      carpeta.file("03_Animacion_Generada.gif", plotsBase64.gif_b64, { base64: true });
+    if (typeof plotsBase64 !== "undefined" && plotsBase64 && (plotsBase64.gif_b64 || (typeof fondoGraficoActual !== "undefined" && plotsBase64[fondoGraficoActual]))) {
+      const b64Gif = plotsBase64.gif_b64 || plotsBase64[fondoGraficoActual];
+      agregarImagenZip(carpeta, "03_Animacion_Generada.gif", b64Gif);
     }
     if (typeof currentHtmlContent !== "undefined" && currentHtmlContent) {
       carpeta.file("03_Grafico_Interactivo.html", currentHtmlContent);
@@ -4789,9 +4813,8 @@ async function descargarSuiteGlobal() {
     if (stFrame && !stFrame.classList.contains("d-none") && stFrame.contentDocument) {
       try {
         const rootEl = stFrame.contentDocument.getElementById("root") || stFrame.contentDocument.body;
-        const stCanvas = await html2canvas(rootEl, { scale: 2, backgroundColor: "#0e1117", logging: false });
-        const stB64 = stCanvas.toDataURL("image/png").replace(/^data:image\/png;base64,/, "");
-        carpeta.file("04_Captura_Streamlit_App_HD.png", stB64, { base64: true });
+        const stCanvas = await html2canvas(rootEl, { scale: 2, backgroundColor: "#0e1117", logging: false, useCORS: true });
+        agregarImagenZip(carpeta, "04_Captura_Streamlit_App_HD.png", stCanvas.toDataURL("image/png"));
       } catch(eStImg) {}
     }
     if (typeof ultimoStreamlitHTML !== "undefined" && ultimoStreamlitHTML) {
@@ -4800,9 +4823,28 @@ async function descargarSuiteGlobal() {
 
     // 6. Captura de Pantalla Completa del Entorno (Full Viewport)
     try {
-      const fullCanvas = await html2canvas(document.body, { scale: 2, backgroundColor: "#06090f", logging: false });
-      const fullB64 = fullCanvas.toDataURL("image/png").replace(/^data:image\/png;base64,/, "");
-      carpeta.file("00_Pantalla_Completa_PyStudio.png", fullB64, { base64: true });
+      const fullCanvas = await html2canvas(document.body, { scale: 2, backgroundColor: "#06090f", logging: false, useCORS: true });
+      
+      // Componer iframe de Streamlit o HTML si está en pantalla
+      const htmlFrame = document.getElementById("html-viz-frame");
+      if (stFrame && !stFrame.classList.contains("d-none") && stFrame.contentDocument) {
+        try {
+          const rootEl = stFrame.contentDocument.getElementById("root") || stFrame.contentDocument.body;
+          const subCanvas = await html2canvas(rootEl, { scale: 2, backgroundColor: "#0e1117", logging: false, useCORS: true });
+          const rect = stFrame.getBoundingClientRect();
+          const ctx = fullCanvas.getContext("2d");
+          ctx.drawImage(subCanvas, rect.left * 2, rect.top * 2, rect.width * 2, rect.height * 2);
+        } catch(eStComp) {}
+      } else if (htmlFrame && !htmlFrame.classList.contains("d-none") && htmlFrame.contentDocument) {
+        try {
+          const subCanvas = await html2canvas(htmlFrame.contentDocument.body, { scale: 2, logging: false, useCORS: true });
+          const rect = htmlFrame.getBoundingClientRect();
+          const ctx = fullCanvas.getContext("2d");
+          ctx.drawImage(subCanvas, rect.left * 2, rect.top * 2, rect.width * 2, rect.height * 2);
+        } catch(eHtmlComp) {}
+      }
+
+      agregarImagenZip(carpeta, "00_Pantalla_Completa_PyStudio.png", fullCanvas.toDataURL("image/png"));
     } catch(eFull) {}
 
     // 7. Generar ZIP y descargar
