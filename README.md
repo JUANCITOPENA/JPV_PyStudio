@@ -5,19 +5,28 @@
 
 [![Demo en Vivo](https://img.shields.io/badge/🚀%20Demo%20en%20Vivo-GitHub%20Pages-00f2fe?style=for-the-badge&logo=github&logoColor=black)](https://juancitopena.github.io/JPV_PyStudio/)
 [![Python](https://img.shields.io/badge/Python-3.12%20(WebAssembly)-3776ab?style=for-the-badge&logo=python&logoColor=white)](https://pyodide.org/en/stable/)
+[![Streamlit](https://img.shields.io/badge/Streamlit-Wasm%20(stlite)-ff4b4b?style=for-the-badge&logo=streamlit&logoColor=white)](https://juancitopena.github.io/JPV_PyStudio/)
 [![Licencia](https://img.shields.io/badge/Licencia-MIT-10b981?style=for-the-badge)](LICENSE)
 [![GitHub Stars](https://img.shields.io/github/stars/JUANCITOPENA/JPV_PyStudio?style=for-the-badge&color=f59e0b&logo=apachespark&logoColor=black)](https://github.com/JUANCITOPENA/JPV_PyStudio/stargazers)
 [![GitHub Forks](https://img.shields.io/github/forks/JUANCITOPENA/JPV_PyStudio?style=for-the-badge&color=8b5cf6&logo=git&logoColor=white)](https://github.com/JUANCITOPENA/JPV_PyStudio/network/members)
 
 **Cero instalaciones • Cero configuraciones • Cero servidores backend • 100% Privacidad en el Cliente**
 
-[🌐 Probar JPV PyStudio en Vivo](https://juancitopena.github.io/JPV_PyStudio/) • [🎯 ¿Qué Puedes Lograr?](#-qué-puedes-lograr-con-jpv-pystudio-casos-de-uso--alcance-real) • [📸 Para Creadores de Contenido](#-el-aliado-definitivo-para-creadores-de-contenido-docentes-y-divulgadores) • [⭐ Dar una Estrella](https://github.com/JUANCITOPENA/JPV_PyStudio) • [👨‍💻 Sobre el Autor](#-autor--arquitectura-institucional-neo-brutalista)
+[🌐 Abrir JPV PyStudio en Vivo](https://juancitopena.github.io/JPV_PyStudio/) • [🎈 Streamlit Wasm](#-desarrollo-de-aplicaciones-streamlit-100-en-el-navegador-stlite) • [📦 Suite de Descarga Global](#-suite-de-capturas-hd-y-descarga-global-en-zip) • [🎯 Casos de Uso](#-qué-puedes-lograr-con-jpv-pystudio-casos-de-uso--alcance-real) • [📸 Para Creadores](#-el-aliado-definitivo-para-creadores-de-contenido-docentes-y-divulgadores) • [👨‍💻 Sobre el Autor](#-autor--arquitectura-institucional-neo-brutalista)
+
+<br>
+
+<a href="https://juancitopena.github.io/JPV_PyStudio/">
+  <img src="assets/pystudio_hero_cover.png" alt="JPV PyStudio - Portada y Entorno Completo en el Navegador" width="100%" style="border-radius: 12px; border: 2px solid #00f2fe; box-shadow: 0 10px 40px rgba(0, 242, 254, 0.25);">
+</a>
+
+<p align="center"><em>🖥️ <strong>JPV PyStudio en acción:</strong> Editor Monaco, Auto-Detección AST, Salida de Gráficos Adaptativos, Consola de Terminal y Suite de Capturas HD.</em></p>
 
 </div>
 
 ---
 
-> ### 🚀 **Acceso Directo al Entorno en Vivo:**  
+> ### 🚀 **Acceso Directo al Entorno Web en Vivo:**  
 > 👉 **[https://juancitopena.github.io/JPV_PyStudio/](https://juancitopena.github.io/JPV_PyStudio/)**  
 > *(Listo para codificar de inmediato: sin instalaciones, sin registro, 100% en tu navegador con WebAssembly)*
 
@@ -37,26 +46,93 @@ El mayor obstáculo que enfrenta un estudiante, docente o profesional al aprende
 **JPV PyStudio** democratiza el acceso a la computación científica transformando cualquier navegador moderno (Google Chrome, Edge, Safari, Firefox) en una **estación de trabajo completa y autónoma**. No requiere instalar ningún ejecutable, no consume recursos en la nube y funciona de forma inmediata:
 
 1. **Abres la URL** en tu navegador.
-2. **Escribes tu código Python** o seleccionas plantillas preconstruidas (*Pandas, Folium, Plotly, Seaborn, NetworkX, WordCloud, Excel*).
+2. **Escribes tu código Python** o seleccionas plantillas preconstruidas (*Pandas, Streamlit, Folium, Plotly, Seaborn, NetworkX, WordCloud, Excel*).
 3. **Pulsas `Ejecutar` (`Ctrl + Enter`)**: el motor compila y procesa los datos en la memoria RAM de tu propio equipo.
-4. **Visualizas resultados**: tablas interactivas, consolas de salida, mapas geoespaciales y gráficos estadísticos sincronizados.
-5. **Exportas tu trabajo**: descarga datasets limpios en CSV/Excel, el archivo fuente `.py`, imágenes de gráficos y **capturas fotográficas completas del código en PNG HD** para tareas, investigaciones o redes sociales.
+4. **Visualizas resultados**: aplicaciones Streamlit interactivas, tablas dinámicas, mapas geoespaciales y gráficos estadísticos sincronizados.
+5. **Exportas tu trabajo**: descarga datasets limpios en CSV/Excel, el archivo fuente `.py`, imágenes de gráficos y la **Suite Completa en archivo ZIP con capturas fotográficas en alta resolución**.
+
+---
+
+## 🎈 Desarrollo de Aplicaciones Streamlit 100% en el Navegador (stlite)
+
+**JPV PyStudio** incorpora un motor WebAssembly de **Streamlit** impulsado por `@stlite/mountable`. Esto te permite concebir, programar y probar tableros de control ejecutivos y aplicaciones interactivas completas con la sintaxis oficial `import streamlit as st` sin levantar servidores Python locales ni máquinas virtuales en la nube:
+
+<div align="center">
+  <a href="https://juancitopena.github.io/JPV_PyStudio/">
+    <img src="assets/pystudio_streamlit_demo.png" alt="Streamlit Dashboard Interactivo en JPV PyStudio" width="95%" style="border-radius: 10px; border: 2px solid #ff4b4b; box-shadow: 0 8px 30px rgba(255, 75, 75, 0.25);">
+  </a>
+  <p><em>🎈 Dashboard Comercial Interactivo creado con Streamlit (`stlite`) + Plotly Express dentro de JPV PyStudio.</em></p>
+</div>
+
+### 🌟 Capacidades de Streamlit en JPV PyStudio:
+- **Componentes Nativos Soportados:** `st.title()`, `st.metric()`, `st.columns()`, `st.divider()`, `st.subheader()`, `st.dataframe()`, `st.plotly_chart()`, `st.button()`, `st.selectbox()`, `st.slider()` y más.
+- **Pestaña Dedicada de Visualización:** Al detectar `import streamlit` o `st.*`, el editor conmuta automáticamente a la pestaña **🎈 Streamlit** con recarga dinámica en caliente.
+- **Herramientas de Exportación para Streamlit:**
+  - 🌐 **Abrir en Pestaña Independiente:** Despliega tu dashboard a pantalla completa en una nueva ventana del navegador.
+  - 💾 **Guardar HTML Autónomo:** Descarga un único archivo `.html` autocontenido con la app embebida, listo para enviar por correo o compartir sin requerir Python.
+  - 📸 **Capturar Streamlit (PNG HD):** Genera una captura de pantalla en resolución 2x Retina exclusivamente de tu aplicación web interactiva.
+
+---
+
+## 📦 Suite de Capturas HD y Descarga Global en ZIP
+
+Hemos incorporado el botón maestro **`📦 Descargar Todo (Suite)`** en la barra superior del IDE, permitiéndote empaquetar en un único archivo comprimido `.zip` todos los resultados de tu sesión de trabajo con un solo clic:
+
+```
+📦 JPV_PyStudio_Suite_Completa_YYYYMMDD_HHMMSS.zip
+├── 00_Pantalla_Completa_PyStudio.png   # Captura integral del IDE (incluye iframe de Streamlit/Plotly compuesto)
+├── 01_codigo_fuente.py                 # Script Python limpio del editor Monaco
+├── 01_Captura_Codigo_HD.png            # Tarjeta de código estilo macOS con sintaxis Prism Okaidia
+├── 02_salida_consola.txt               # Log completo de terminal en texto plano
+├── 02_Captura_Consola_HD.png           # Imagen de la consola con formato visual y colores
+├── 03_Grafico_Matplotlib_HD.png        # Gráfico estático en alta resolución (si fue generado)
+├── 03_Animacion_Generada.gif           # Animación gráfica en bucle (si fue generada)
+├── 03_Grafico_Interactivo.html         # Visualización HTML interactiva de Plotly o Folium
+├── 04_Captura_Streamlit_App_HD.png     # Captura en alta resolución de la app Streamlit (si está activa)
+└── 04_Streamlit_App_Autonoma.html      # Archivo HTML autocontenido de la aplicación Streamlit
+```
+
+<div align="center">
+  <table width="100%">
+    <tr>
+      <td width="50%" align="center">
+        <img src="assets/pystudio_grafico_analitico.png" alt="Gráfico Analítico en Modo Oscuro" style="border-radius: 8px; border: 1px solid rgba(255,255,255,0.15);">
+        <br><sub>📊 Gráficos Estadísticos con Fondos Adaptativos (Dark / White / Transparent)</sub>
+      </td>
+      <td width="50%" align="center">
+        <img src="assets/pystudio_consola_hd.png" alt="Consola HD de PyStudio" style="border-radius: 8px; border: 1px solid rgba(255,255,255,0.15);">
+        <br><sub>🖥️ Terminal Interactiva con Captura HD de Resultados y Tabulate</sub>
+      </td>
+    </tr>
+  </table>
+</div>
+
+---
+
+## 🌓 Selector de Tema Dual: Modo Claro y Modo Oscuro (WCAG 2.2 AAA)
+
+Para responder a entornos académicos y profesionales variados, **JPV PyStudio** incluye un interruptor de tema instantáneo en el encabezado (`#btn-toggle-tema`):
+
+- **Modo Oscuro (Predeterminado):** Estética técnica hacker inspirada en suites de ingeniería, reduciendo la fatiga visual en sesiones prolongadas.
+- **Modo Claro (WCAG 2.2 AAA):** Diseñado con fondos blancos/neutros de alto contraste (`#FFFFFF` y `#F8FAFC`) con tipografía oscura (`#0F172A`), ideal para proyectores en aulas universitarias, conferencias o auditorios con iluminación directa.
+- **Persistencia Local:** La preferencia se almacena automáticamente en `localStorage` para mantenerse activa entre recargas.
 
 ---
 
 ## 🎯 ¿Qué Puedes Lograr con JPV PyStudio? (Casos de Uso & Alcance Real)
 
-Con **JPV PyStudio** tienes en una sola pestaña del navegador el poder equivalente a un entorno de desarrollo local configurado con las principales librerías científicas de Python:
+Con **JPV PyStudio** dispones en una sola pestaña del navegador del ecosistema de librerías más completo de la ciencia de datos moderna:
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────────────────┐
 │                          ALCANCE TÉCNICO EN UNA SOLA PESTAÑA                            │
 ├──────────────────────────┬─────────────────────────────┬────────────────────────────────┤
 │   CIENCIA DE DATOS & EDA │   VISUALIZACIÓN AVANZADA    │   AUTOMATIZACIÓN & ARCHIVOS    │
-│   • Pandas & NumPy       │   • Folium (Mapas & Rutas)  │   • Excel (.xlsx con openpyxl) │
-│   • SciPy & SymPy        │   • Plotly Express (HTML5)  │   • CSV & JSON bidireccional   │
-│   • Scikit-Learn (ML)    │   • Seaborn & Matplotlib    │   • Drag & Drop directo a RAM  │
-│   • Statsmodels          │   • NetworkX & WordCloud    │   • Descarga del script .py    │
+│   • Pandas & NumPy       │   • Streamlit (Apps Wasm)   │   • Excel (.xlsx con openpyxl) │
+│   • SciPy & SymPy        │   • Folium (Mapas & Rutas)  │   • Tabulate (Tablas Consola)  │
+│   • Scikit-Learn (ML)    │   • Plotly Express (HTML5)  │   • CSV & JSON bidireccional   │
+│   • Statsmodels          │   • Seaborn & Matplotlib    │   • Drag & Drop directo a RAM  │
+│   • Micropip (PyPI)      │   • NetworkX & WordCloud    │   • Descarga del script .py    │
 └──────────────────────────┴─────────────────────────────┴────────────────────────────────┘
 ```
 
@@ -64,31 +140,34 @@ Con **JPV PyStudio** tienes en una sola pestaña del navegador el poder equivale
 - Descarga y procesamiento de datasets desde URLs públicas (por ejemplo, el dataset Titanic o repositorios de GitHub) directamente con `pd.read_csv(url)`.
 - Limpieza de datos, imputación de nulos, agregaciones (`groupby`), tablas pivote y cálculo de matrices de correlación estadística sin instalar paquetes en la máquina física.
 
-### 2. 🗺️ Geointeligencia y Mapas Interactivos en Vivo (Folium)
+### 2. 🎈 Aplicaciones Web y Cuadros de Mando con Streamlit
+- Creación rápida de interfaces interactivas para presentar modelos predictivos, KPIs y reportes ejecutivos con métricas dinámicas (`st.metric`), columnas paralelas y selectores.
+
+### 3. 🗺️ Geointeligencia y Mapas Interactivos en Vivo (Folium)
 - Renderizado de mapas interactivos completos con zoom, capas satelitales OpenStreetMap, mapas de calor (`HeatMap`) y clústeres de marcadores (`MarkerCluster`).
 - Visualización de trazas de movimiento y logística animada con `AntPath`.
 - Botón **"Abrir en Pestaña"** para desplegar el mapa interactivo a pantalla completa o exportarlo para presentaciones.
 
-### 3. 📈 Dashboards Interactivos en HTML (Plotly Express & Bokeh)
+### 4. 📈 Dashboards Interactivos en HTML (Plotly Express & Bokeh)
 - Gráficos interactivos de dispersión, líneas multieje, diagramas de caja (*Box Plots*), histogramas y gráficos solares (*Sunburst*).
 - Tooltips flotantes, zoom rectangular, aislamiento de series mediante clics en la leyenda y renderizado fluido sin latencia de red.
 
-### 4. 🕸️ Modelado de Redes Complejas y Topología de Grafos (NetworkX)
+### 5. 🕸️ Modelado de Redes Complejas y Topología de Grafos (NetworkX)
 - Construcción de grafos dirigidos y no dirigidos, análisis de centralidad, cálculo del camino más corto (Algoritmo de Dijkstra) y diagramas de topología visual.
 
-### 5. ☁️ Minería de Texto & Procesamiento de Lenguaje Natural (WordCloud)
+### 6. ☁️ Minería de Texto & Procesamiento de Lenguaje Natural (WordCloud)
 - Análisis de frecuencia de palabras y generación de nubes de términos en alta definición para resumir discursos, encuestas o artículos académicos.
 
-### 6. 📑 Automatización Contable y Ofimática Multicapa (Excel .xlsx)
+### 7. 📑 Automatización Contable y Ofimática Multicapa (Excel .xlsx & Tabulate)
 - Generación de libros de cálculo de Microsoft Excel con múltiples hojas, estilos de celda, formatos contables y fórmulas dinámicas mediante `openpyxl` y `xlsxwriter`.
-- Lectura y extracción automática de datos desde archivos Excel arrastrados al navegador.
+- Formato de tablas ejecutivas en consola mediante `tabulate` (estilo `fancy_grid`, `github`, `psql`).
 
-### 7. 🤖 Machine Learning Clásico & Modelado Predictivo (Scikit-Learn)
+### 8. 🤖 Machine Learning Clásico & Modelado Predictivo (Scikit-Learn)
 - Entrenamiento en memoria de algoritmos supervisados y no supervisados: Regresión Lineal, Regresión Logística, Árboles de Decisión, Random Forest y agrupamiento K-Means.
 - Evaluación de métricas de precisión, matrices de confusión y curvas ROC de forma instantánea.
 
-### 8. 🌐 Consumo Seguro de APIs REST Públicas
-- Ejecución de peticiones HTTPS a servicios web y APIs abiertas en vivo (`requests` parcheado con conectividad WebAssembly) para analizar datos meteorológicos, cotizaciones financieras o indicadores económicos oficiales.
+### 9. 🌐 Consumo Seguro de APIs REST Públicas
+- Ejecución de peticiones HTTPS a servicios web y APIs abiertas en vivo (`requests` parcheado con conectividad WebAssembly) para consultar datos meteorológicos, cotizaciones financieras, indicadores económicos o endpoints públicos.
 
 ---
 
@@ -101,15 +180,16 @@ Con **JPV PyStudio** tienes en una sola pestaña del navegador el poder equivale
 ```
                   EL FLUJO DE ORO DEL CREADOR DE CONTENIDO (2 MINUTOS)
 ┌────────────────────┐      ┌─────────────────────────┐      ┌─────────────────────────┐
-│ 1. Escribe / Prueba│      │ 2. Captura Código en    │      │ 3. Exporta Gráfico      │
-│    tu código en    │ ───► │    PNG HD (Mac Style)   │ ───► │    (Fondo Transparente  │
-│    JPV PyStudio    │      │    (Copiar al Portapap.)│      │    o Modo Oscuro)       │
+│ 1. Escribe / Prueba│      │ 2. Captura Código en    │      │ 3. Exporta Gráficos     │
+│    tu código en    │ ───► │    PNG HD (Mac Style)   │ ───► │    (Fondo Transparente, │
+│    JPV PyStudio    │      │    (Copiar al Portapap.)│      │    Dark o White)        │
 └────────────────────┘      └─────────────────────────┘      └─────────────────────────┘
                                                                           │
                                                                           ▼
                                                              ┌─────────────────────────┐
-                                                             │ 4. ¡Publica tu Post /   │
-                                                             │    Carrusel de Impacto! │
+                                                             │ 4. Descarga la Suite    │
+                                                             │    Completa en ZIP y    │
+                                                             │    ¡Publica tu Post!    │
                                                              └─────────────────────────┘
 ```
 
@@ -130,50 +210,6 @@ Con **JPV PyStudio** tienes en una sola pestaña del navegador el poder equivale
 - **Fondo Negro:** Optimizado para lectores en modo oscuro (*Dark Mode*) en redes sociales.
 - **Fondo Blanco:** Conforme a los estándares editoriales para artículos científicos, publicaciones en PDF o entregas académicas.
 
-### 📱 3. La Estructura del "Carrusel Técnico Perfecto" en Redes Sociales
-Con **JPV PyStudio** construyes carruseles educativos de alto alcance con cero fricción:
-- **Slide 1 (El Reto):** Planteamiento del problema analítico o de negocio.
-- **Slide 2 (El Código):** La captura en PNG HD del script Python generada con JPV PyStudio.
-- **Slide 3 (El Resultado):** La imagen PNG del gráfico o mapa interactivo exportado en 1 clic.
-- **Slide 4 (El Entregable):** El archivo `.py` y el `.xlsx` descargados listos para que tu comunidad practique.
-
----
-
-## 🚀 Capacidades y Características Principales de la Plataforma
-
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                             JPV PyStudio                                    │
-│  ┌───────────────────────────────┐  ┌────────────────────────────────────┐  │
-│  │   Panel Editor de Código      │  │    Panel Salida Multiformato       │  │
-│  │  • Sintaxis Prism Okaidia     │  │  • Consola interactiva (input())   │  │
-│  │  • Autocompletado inteligente │  │  • Tablas paginadas CSV/Excel      │  │
-│  │  • Auto-detección AST         │  │  • Visor Gráfico (Pan & Zoom)      │  │
-│  │  • 📸 Captura Global PNG HD   │  │  • Mapas Folium & Dashboards HTML  │  │
-│  │  • 📥 Descargar Script .py    │  │  • Descarga CSV / Excel / PNG      │  │
-│  └───────────────────────────────┘  └────────────────────────────────────┘  │
-│         ▲                                         ▲                         │
-│         └─────────── Motor WebAssembly (Pyodide) ─┘                         │
-│                      (CPython 3.12 nativo en RAM)                           │
-└─────────────────────────────────────────────────────────────────────────────┘
-```
-
-### 1. 📥 Descarga del Script Python (`.py`) Personalizado
-- Descarga el código fuente en un archivo `.py` en cualquier momento.
-- Sugiere automáticamente el nombre según la plantilla activa (`folium_analisis.py`, `titanic_analisis.py`, etc.) o permite al usuario definir un nombre personalizado con extensión garantizada.
-
-### 2. ⚡ Auto-Instalador Inteligente de Dependencias (AST)
-El motor incorpora un analizador sintáctico en Python (`ast.walk`) que escanea en milisegundos las declaraciones `import` y `from ... import` del código escrito por el usuario. Si detecta librerías requeridas que aún no están en memoria, **las descarga e instala automáticamente desde PyPI/Pyodide (`micropip`)** sin que el usuario tenga que ejecutar comandos de terminal manuales.
-
-### 3. 📁 Sistema de Archivos Virtual (VFS) & Drag & Drop
-- Arrastra archivos locales (`.csv`, `.xlsx`, `.json`, `.parquet`, `.txt`) directamente desde tu PC a la ventana del editor; el sistema los inyecta en el disco virtual de Pyodide para leerlos de inmediato con `pd.read_csv("archivo.csv")`.
-- Administrador gráfico de archivos en memoria con descarga inmediata de vuelta a la PC.
-
-### 4. 🛡️ Privacidad Absoluta (Zero-Knowledge Architecture)
-Al no existir ningún servidor backend procesando el código:
-- Tus datos, contraseñas, tokens de API y datasets confidenciales **nunca salen de tu navegador**.
-- No hay almacenamiento en servidores de terceros ni riesgo de fuga de datos (GDPR / DGII Compliance).
-
 ---
 
 ## 🔬 ¿Por qué usamos Pyodide (WebAssembly)?
@@ -183,46 +219,36 @@ Al no existir ningún servidor backend procesando el código:
 ### ¿Qué nos ofrece Pyodide en JPV PyStudio?
 1. **CPython Real en WebAssembly:** No es un intérprete recortado ni una reimplementación parcial; es CPython 3.12 compilado a binarios Wasm, manteniendo compatibilidad total con la semántica del lenguaje.
 2. **Paquetes con Extensiones C/C++/Fortran:** A diferencia de proyectos que solo admiten Python puro, Pyodide incluye compilaciones optimizadas de bibliotecas pesadas en C como `numpy`, `scipy` y `pandas`.
-3. **Puente Bidireccional Python ⇄ JavaScript:** Permite interactuar con el DOM del navegador, renderizar mapas `folium` en iframes en vivo, manipular gráficos SVG/Canvas y gestionar descargas nativas sin intermediarios.
+3. **Puente Bidireccional Python ⇄ JavaScript:** Permite interactuar con el DOM del navegador, renderizar mapas `folium` y apps `streamlit` en iframes en vivo, manipular gráficos SVG/Canvas y gestionar descargas nativas sin intermediarios.
 4. **Aislamiento Seguro en Sandbox:** El código Python se ejecuta dentro del sandbox de seguridad del navegador, impidiendo accesos no autorizados al sistema operativo del usuario.
 
 ### ⚖️ Comparativa: JPV PyStudio frente a otras opciones
 
-| Solución | Servidor Requerido | Soporte Pandas/NumPy | Tiempo de Inicio | Requiere Registro | Ideal para Practicar Rápido | Captura de Código PNG | Descarga .py Directa |
+| Solución | Servidor Requerido | Soporte Pandas/NumPy | Soporte Streamlit | Tiempo de Inicio | Requiere Registro | Captura de Código PNG | Suite ZIP Completa |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| **🐍 JPV PyStudio (Pyodide)** | ❌ **No (100% Cliente)** | ✅ **Completo (Wasm)** | ⚡ **1-2 segundos** | ❌ **No** | 🌟 **Óptimo (IDE Clásico)** | ✅ **Sí (Nativo HD 2x)** | ✅ **Sí (1 Clic)** |
-| **JupyterLite** | ❌ No (Cliente) | ✅ Completo | ⏳ 8-15 segundos | ❌ No | ⚠️ Complejo (Notebooks) | ❌ Requiere plugins | ⚠️ Menú anidado |
-| **Brython / Skulpt** | ❌ No (Cliente) | ❌ Muy limitado (Sin C) | ⚡ Instantáneo | ❌ No | ❌ No apto para Data Science | ❌ No | ❌ No |
-| **Google Colab** | ✅ Sí (Cloud VM) | ✅ Completo | ⏳ 15-30 segundos | ✅ Sí (Cuenta Google) | ⚠️ Lento / Desconexiones | ❌ Extensiones ajenas | ⚠️ Exportación lenta |
-| **Python Local (VS Code)** | ❌ No (Local) | ✅ Completo | ⏳ Horas de setup | ❌ No | ⚠️ Alto soporte técnico | ❌ Requiere Polacode | ✅ Local |
-
----
-
-## 🧩 Filosofía de Ingeniería: ¿Por qué HTML5, CSS y JavaScript Vanilla?
-
-En una era donde las herramientas web sufren de hipertrofia (*overengineering*) con cadenas de construcción gigantescas (`node_modules`, bundlers que pesan cientos de megabytes, configuraciones de TypeScript complejas), **JPV PyStudio** adopta el principio de diseño de la **Gobernanza Empresarial JPV**:
-
-> *"La máxima sofisticación de la ingeniería de software es la simplicidad, la resiliencia y la durabilidad temporal."*
-
-- **Despliegue Instantáneo en Servidores Estáticos:** Puede servirse desde GitHub Pages, AWS S3, Cloudflare Pages o abrirse localmente como un archivo `index.html` sin necesidad de servidores Node.js.
-- **Cero Costo de Infraestructura:** El creador o la institución educativa gasta **$0 mensuales en servidores**, sin importar si acceden 10 estudiantes o 100,000 usuarios en simultáneo.
-- **Auditable y Didáctico:** Todo el código fuente del frontend es legible, transparente y puede ser estudiado directamente por estudiantes para comprender cómo interactúan WebAssembly, Prism.js, Bootstrap y la API de Canvas.
-- **Resiliencia Extrema:** Sin dependencias frágiles que rompan el proyecto en futuras versiones de Node o empaquetadores.
+| **🐍 JPV PyStudio** | ❌ **No (100% Cliente)** | ✅ **Completo (Wasm)** | ✅ **Sí (stlite)** | ⚡ **1-2 segundos** | ❌ **No** | ✅ **Sí (Nativo HD 2x)** | ✅ **Sí (1 Clic)** |
+| **JupyterLite** | ❌ No (Cliente) | ✅ Completo | ❌ No | ⏳ 8-15 segundos | ❌ No | ❌ Requiere plugins | ❌ No |
+| **Brython / Skulpt** | ❌ No (Cliente) | ❌ Muy limitado (Sin C) | ❌ No | ⚡ Instantáneo | ❌ No | ❌ No | ❌ No |
+| **Google Colab** | ✅ Sí (Cloud VM) | ✅ Completo | ⚠️ Requiere ngrok/túnel | ⏳ 15-30 segundos | ✅ Sí (Cuenta Google) | ❌ Extensiones ajenas | ❌ No |
+| **Python Local (VS Code)** | ❌ No (Local) | ✅ Completo | ✅ Local | ⏳ Horas de setup | ❌ No | ❌ Requiere Polacode | ❌ No |
 
 ---
 
 ## 🗺️ Roadmap de Escalamiento e Innovación Futura
 
 - [x] Motor Pyodide v0.26.1 con soporte CPython 3.12.
-- [x] Auto-detección sintáctica de dependencias vía AST.
+- [x] **Integración de Streamlit en WebAssembly (`stlite`) con visor reactivo.**
+- [x] **Selector de Tema Dual (Modo Claro / Modo Oscuro) con accesibilidad WCAG 2.2 AAA.**
+- [x] **Suite de Descarga Global en ZIP con empaquetado de código, consola, gráficos y Streamlit.**
+- [x] **Captura de Pantalla Completa inteligente con composición de iframes activos.**
+- [x] Auto-detección sintáctica de dependencias vía AST con instalación dinámica `micropip`.
 - [x] Visor de gráficos unificado con fondos transparente/blanco/negro y descarga PNG.
 - [x] Sistema de Archivos Virtual (VFS) con drag & drop de archivos CSV/Excel.
-- [x] **Captura Global del Código en Imagen PNG HD (2x Retina con temas, números de línea y marcos).**
-- [x] **Botón de Descarga Directa del Script Python (`.py`) con selector de nombre.**
+- [x] Captura Global del Código en Imagen PNG HD (2x Retina con temas, números de línea y marcos).
+- [x] Botón de Descarga Directa del Script Python (`.py`).
 - [ ] **Soporte PWA Offline-First:** Almacenamiento en caché de paquetes WebAssembly mediante Service Workers para programar en aviones o zonas sin internet.
 - [ ] **Integración de DuckDB-Wasm:** Consultas SQL analíticas ultrarrápidas sobre archivos Parquet y CSV de gigabytes en la RAM del navegador.
 - [ ] **Soporte de WebGPU:** Inferencia de modelos pequeños de lenguaje (LLMs / SLMs locales) para autocompletado y tutoría de código asistida por IA local.
-- [ ] **Exportación a Cuadernos Jupyter (.ipynb):** Conversión bidireccional entre scripts `.py` y notebooks `.ipynb`.
 
 ---
 
