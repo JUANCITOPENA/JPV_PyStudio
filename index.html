@@ -955,6 +955,7 @@
         <option value="scipy">🔬 Scipy & Curvas Matemáticas</option>
         <option value="animacion">🎬 Animación Avanzada (Dashboard Titanic 8-en-1 GIF)</option>
         <option value="streamlit">🎈 Streamlit (Dashboard Comercial Interactivo stlite)</option>
+        <option value="dashboard_tokens">💎 Dashboard Dinámico (Empresas, Tokens & KPIs)</option>
       </select>
 
       <input type="file" id="input-archivo-local" accept=".csv, .xlsx, .xls, .json, .txt, .parquet" style="display: none;" onchange="manejarSubidaArchivo(this)">
@@ -2578,7 +2579,386 @@ st.bar_chart(df.set_index("Vendedor")["Ventas_USD"])
 # 6. Acción interactiva
 if st.button("🎉 Celebrar Cierre de Ventas"):
     st.balloons()
-    st.success("¡Meta comercial alcanzada con éxito en Q4!")`
+    st.success("¡Meta comercial alcanzada con éxito en Q4!")`,
+
+  dashboard_tokens: `import streamlit.env_util
+
+streamlit.env_util.is_repl = lambda: False
+
+import datetime
+import numpy as np
+import pandas as pd
+import plotly.graph_objects as go
+import plotly.io as pio
+from plotly.subplots import make_subplots
+import streamlit as st
+
+pio.json.config.default_engine = "json"
+st.set_page_config(page_title="Dashboard Dinámico - Empresas y Tokens", layout="wide")
+
+# Estilos limpios para tarjetas KPI con color y minigráfico
+st.markdown(
+    """
+    <style>
+    .kpi-box {
+        background-color: #18191c;
+        border: 1px solid #28292a;
+        border-radius: 12px;
+        padding: 12px 14px 6px 14px;
+        margin-bottom: 6px;
+    }
+    .kpi-box.up { border-top: 3px solid #81c995; }
+    .kpi-box.down { border-top: 3px solid #f28b82; }
+    .kpi-top {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.85rem;
+        color: #9aa0a6;
+    }
+    .kpi-sym {
+        font-weight: 700;
+        color: #ffffff;
+        font-size: 1.05rem;
+    }
+    .kpi-val {
+        font-size: 1.35rem;
+        font-weight: 700;
+        color: #ffffff;
+        margin: 2px 0;
+    }
+    .kpi-badge {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 999px;
+        font-size: 0.78rem;
+        font-weight: 600;
+    }
+    .kpi-badge.up { background: rgba(129, 201, 149, 0.16); color: #81c995; }
+    .kpi-badge.down { background: rgba(242, 139, 130, 0.16); color: #f28b82; }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
+GRUPOS = {
+    "Empresas Tech": ["NVDA", "AAPL", "MSFT", "GOOGL", "AMZN", "META", "TSLA", "AMD"],
+    "Cripto y Tokens": ["BTC-USD", "ETH-USD", "SOL-USD", "XRP-USD", "BNB-USD", "ADA-USD", "DOGE-USD", "LINK-USD"],
+    "Índices y ETFs": ["^GSPC", "^IXIC", "^DJI", "QQQ", "SPY", "GLD"],
+    "Banca y Consumo": ["JPM", "V", "MA", "WMT", "KO", "MCD"],
+}
+TODOS_TICKERS = [t for lista in GRUPOS.values() for t in lista]
+
+PERIODOS = {
+    "1 d": ("1d", "5m"),
+    "5 d": ("5d", "15m"),
+    "1 m": ("1mo", "1h"),
+    "6 m": ("6mo", "1d"),
+    "YTD": ("ytd", "1d"),
+    "1 a": ("1y", "1d"),
+    "5 a": ("5y", "1wk"),
+    "MÁX": ("max", "1mo"),
+}
+
+COLORES = ["#81c995", "#8ab4f8", "#fdd663", "#f28b82", "#c58af9", "#78d9ec", "#fcad70", "#a8dab5"]
+
+
+@st.cache_data(ttl=300, show_spinner=False)
+def obtener_datos(ticker_symbol, periodo, intervalo):
+    try:
+        import yfinance as yf
+
+        tk = yf.Ticker(ticker_symbol)
+        df = tk.history(period=periodo, interval=intervalo)
+        if not df.empty:
+            cierre_ant = float(df["Close"].iloc[0])
+            nombre = ticker_symbol
+            moneda = "USD"
+            try:
+                fi = tk.fast_info
+                if getattr(fi, "previous_close", None):
+                    cierre_ant = float(fi.previous_close)
+                moneda = getattr(fi, "currency", "USD") or "USD"
+            except Exception:
+                pass
+            try:
+                info = tk.info
+                nombre = info.get("shortName") or info.get("longName") or ticker_symbol
+            except Exception:
+                pass
+            return df, cierre_ant, nombre, moneda, False
+    except Exception:
+        pass
+
+    # Respaldo simulado si no hay conexión a Yahoo Finance
+    np.random.seed(sum(ord(c) for c in ticker_symbol) + len(periodo))
+    fechas = pd.date_range(end=datetime.datetime.now(), periods=70, freq="1h")
+    base = 164.0 if ticker_symbol == "NVDA" else (88000.0 if "BTC" in ticker_symbol else 180.0)
+    precios = np.maximum(base + np.random.normal(0, base * 0.007, size=70).cumsum(), 1.0)
+    df_sim = pd.DataFrame(
+        {
+            "Open": precios * np.random.uniform(0.995, 1.005, 70),
+            "Close": precios,
+            "Volume": np.random.randint(100000, 900000, 70),
+        },
+        index=fechas,
+    )
+    return df_sim, base * 0.99, ticker_symbol, "USD", True
+
+
+def minigrafico(valores, es_positivo):
+    color = "#81c995" if es_positivo else "#f28b82"
+    fill = "rgba(129, 201, 149, 0.16)" if es_positivo else "rgba(242, 139, 130, 0.16)"
+    fig_m = go.Figure(
+        go.Scatter(
+            x=list(range(len(valores))),
+            y=valores,
+            mode="lines",
+            line=dict(color=color, width=2),
+            fill="tozeroy",
+            fillcolor=fill,
+            hovertemplate="%{y:,.2f}<extra></extra>",
+        )
+    )
+    vmin, vmax = float(np.min(valores)), float(np.max(valores))
+    margen = (vmax - vmin) * 0.1 if vmax > vmin else 1.0
+    fig_m.update_layout(
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
+        margin=dict(l=0, r=0, t=2, b=0),
+        height=55,
+        showlegend=False,
+        xaxis=dict(visible=False, fixedrange=True),
+        yaxis=dict(visible=False, fixedrange=True, range=[vmin - margen, vmax + margen]),
+    )
+    return fig_m
+
+
+# --- FILTROS PRINCIPALES A LA VISTA ---
+st.title("Panel Dinámico de Empresas, Tokens y Comparativas")
+
+c1, c2, c3 = st.columns([1.3, 1.5, 1.7])
+
+with c1:
+    grupo_sel = st.selectbox(
+        "1. Tipo / Categoría",
+        ["Todos"] + list(GRUPOS.keys()),
+        index=1,
+    )
+
+opciones_grupo = TODOS_TICKERS if grupo_sel == "Todos" else GRUPOS[grupo_sel]
+
+with c2:
+    activo_sel = st.selectbox(
+        "2. Elegir Empresa o Token",
+        opciones_grupo,
+        index=0,
+    )
+
+with c3:
+    ticker_libre = (
+        st.text_input(
+            "3. O escribe cualquier Ticker",
+            value="",
+            placeholder="Ej: NVDA, BTC-USD, SOL-USD, MELI...",
+        )
+        .upper()
+        .strip()
+    )
+
+activo_principal = ticker_libre if ticker_libre else activo_sel
+
+# Fila de tiempo + modo de vista / comparativa
+t_col, m_col = st.columns([2.2, 2.3])
+
+with t_col:
+    st.caption("Período de tiempo")
+    seleccion_tiempo = st.radio(
+        "Período",
+        list(PERIODOS.keys()),
+        index=2,
+        horizontal=True,
+        label_visibility="collapsed",
+    )
+
+with m_col:
+    st.caption("Comparativa")
+    modo_vista = st.radio(
+        "Modo",
+        ["Individual", "Comparar categoría", "Elegir varios para comparar"],
+        index=1,
+        horizontal=True,
+        label_visibility="collapsed",
+    )
+
+if modo_vista == "Individual":
+    lista_comparar = [activo_principal]
+elif modo_vista == "Comparar categoría":
+    lista_comparar = list(dict.fromkeys([activo_principal] + opciones_grupo))
+else:
+    elegidos = st.multiselect(
+        "Selecciona los tickers a comparar",
+        options=sorted(set(TODOS_TICKERS + [activo_principal])),
+        default=[activo_principal] + opciones_grupo[:3],
+    )
+    lista_comparar = elegidos if elegidos else [activo_principal]
+
+periodo_yf, intervalo_yf = PERIODOS[seleccion_tiempo]
+
+# --- DESCARGA Y CÁLCULO ---
+datos = {}
+algun_simulado = False
+
+for tk in lista_comparar:
+    df_t, cant_t, nom_t, mon_t, sim_t = obtener_datos(tk, periodo_yf, intervalo_yf)
+    algun_simulado = algun_simulado or sim_t
+    if not df_t.empty:
+        p_fin = float(df_t["Close"].iloc[-1])
+        p_ini = float(df_t["Close"].iloc[0])
+        var_abs = p_fin - p_ini
+        pct = (var_abs / p_ini) * 100 if p_ini != 0 else 0.0
+        datos[tk] = {
+            "df": df_t,
+            "nombre": nom_t,
+            "moneda": mon_t,
+            "precio": p_fin,
+            "var_abs": var_abs,
+            "pct": pct,
+        }
+
+if algun_simulado:
+    st.info("Vista previa sin conexión directa a Yahoo Finance. Ejecuta 'streamlit run app.py' en tu PC para datos reales.")
+
+# --- KPIS CON COLOR Y MINIGRÁFICOS ---
+st.subheader("Indicadores (KPI) y Minigráficos")
+tickers_validos = list(datos.keys())
+cols_por_fila = 4
+
+for inicio in range(0, len(tickers_validos), cols_por_fila):
+    fila_tks = tickers_validos[inicio : inicio + cols_por_fila]
+    cols = st.columns(len(fila_tks))
+    for col, tk in zip(cols, fila_tks):
+        info = datos[tk]
+        es_pos = info["pct"] >= 0
+        clase = "up" if es_pos else "down"
+        signo = "+" if es_pos else ""
+        with col:
+            st.markdown(
+                f"""
+                <div class="kpi-box {clase}">
+                    <div class="kpi-top">
+                        <span class="kpi-sym">{tk}</span>
+                        <span>{info["moneda"]}</span>
+                    </div>
+                    <div style="font-size:0.76rem; color:#9aa0a6; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                        {info["nombre"]}
+                    </div>
+                    <div class="kpi-val">{info["precio"]:,.2f}</div>
+                    <span class="kpi-badge {clase}">{signo}{info["pct"]:.2f}% ({signo}{info["var_abs"]:,.2f})</span>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+            st.plotly_chart(
+                minigrafico(info["df"]["Close"].values, es_pos),
+                use_container_width=True,
+                config={"displayModeBar": False},
+                key=f"mini_{tk}_{seleccion_tiempo}_{info['precio']:.2f}",
+            )
+
+# --- GRÁFICO PRINCIPAL ---
+st.subheader("Gráfico Principal" if len(tickers_validos) == 1 else "Comparativa de Rendimiento (%)")
+
+if len(tickers_validos) == 1:
+    tk = tickers_validos[0]
+    info = datos[tk]
+    df_p = info["df"]
+    es_pos = info["pct"] >= 0
+    color_l = "#81c995" if es_pos else "#f28b82"
+    color_t = "rgba(129, 201, 149, 0.35)" if es_pos else "rgba(242, 139, 130, 0.35)"
+    color_b = "rgba(129, 201, 149, 0.0)" if es_pos else "rgba(242, 139, 130, 0.0)"
+
+    fig = make_subplots(rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.02, row_heights=[0.85, 0.15])
+    fig.add_trace(
+        go.Scatter(
+            x=df_p.index,
+            y=df_p["Close"],
+            mode="lines",
+            line=dict(color=color_l, width=2.5),
+            fill="tozeroy",
+            fillgradient=dict(type="vertical", colorscale=[[0, color_b], [1, color_t]]),
+            name=tk,
+            hovertemplate=f"%{{y:,.2f}} {info['moneda']}<br>%{{x}}<extra></extra>",
+        ),
+        row=1,
+        col=1,
+    )
+    col_vol = ["#81c995" if c >= o else "#f28b82" for c, o in zip(df_p["Close"], df_p["Open"])]
+    fig.add_trace(
+        go.Bar(x=df_p.index, y=df_p["Volume"], marker_color=col_vol, opacity=0.5, name="Volumen"),
+        row=2,
+        col=1,
+    )
+    fig.update_yaxes(gridcolor="#28292a", tickfont=dict(color="#9aa0a6"), row=1, col=1)
+    fig.update_yaxes(showticklabels=False, showgrid=False, row=2, col=1)
+    fig.update_xaxes(showgrid=False, tickfont=dict(color="#9aa0a6"), row=2, col=1)
+else:
+    fig = go.Figure()
+    for idx, tk in enumerate(tickers_validos):
+        info = datos[tk]
+        df_t = info["df"]
+        p_ini = float(df_t["Close"].iloc[0])
+        serie_pct = ((df_t["Close"] / p_ini) - 1) * 100
+        rend_fin = float(serie_pct.iloc[-1])
+        color = COLORES[idx % len(COLORES)]
+
+        fig.add_trace(
+            go.Scatter(
+                x=df_t.index,
+                y=serie_pct,
+                mode="lines",
+                line=dict(color=color, width=2.8 if tk == activo_principal else 1.9),
+                name=f"{tk} ({rend_fin:+.2f}%)",
+                customdata=df_t["Close"],
+                hovertemplate=f"<b>{tk}</b>: %{{y:+.2f}}% (%{{customdata:,.2f}} {info['moneda']})<extra></extra>",
+            )
+        )
+    fig.add_hline(y=0, line_dash="dash", line_color="#5f6368", line_width=1)
+    fig.update_yaxes(gridcolor="#28292a", tickfont=dict(color="#9aa0a6"), ticksuffix="%")
+    fig.update_xaxes(showgrid=False, tickfont=dict(color="#9aa0a6"))
+
+fig.update_layout(
+    paper_bgcolor="#131314",
+    plot_bgcolor="#131314",
+    margin=dict(l=10, r=10, t=20, b=10),
+    height=440,
+    showlegend=len(tickers_validos) > 1,
+    legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="left", x=0, font=dict(color="#e8eaed")),
+    hovermode="x unified",
+)
+st.plotly_chart(fig, use_container_width=True)
+
+# --- TABLA COMPARATIVA ---
+if len(tickers_validos) > 1:
+    st.subheader("Tabla Comparativa")
+    filas = []
+    for tk in tickers_validos:
+        info = datos[tk]
+        serie_cierre = info["df"]["Close"]
+        filas.append(
+            {
+                "Ticker": tk,
+                "Nombre": info["nombre"],
+                "Precio": f"{info['precio']:,.2f} {info['moneda']}",
+                f"Cambio ({seleccion_tiempo})": f"{info['pct']:+.2f}%",
+                "Máximo": f"{float(serie_cierre.max()):,.2f}",
+                "Mínimo": f"{float(serie_cierre.min()):,.2f}",
+            }
+        )
+    st.dataframe(
+        pd.DataFrame(filas),
+        use_container_width=True,
+        hide_index=True,
+    )`
 };
 
 function cargarPlantilla(tipo) {
@@ -3174,6 +3554,259 @@ await micropip.install(list(__faltantes_lista__), keep_going=True)
   }
 }
 
+// =======================================================
+// SUITE MAESTRA DE ADAPTADORES WASM (FINANZAS, CLIMA, CRIPTO, CINE, FASTAPI)
+// =======================================================
+const YFINANCE_WASM_SHIM = `
+import pandas as pd
+import numpy as np
+from datetime import datetime
+
+class Ticker:
+    def __init__(self, ticker):
+        self.ticker = str(ticker).upper().strip()
+
+    def history(self, period="1mo", interval="1d", **kwargs):
+        period_days = {"1d": 1, "5d": 5, "1mo": 22, "3mo": 65, "6mo": 130, "1y": 252, "2y": 504, "5y": 1260, "max": 500}
+        n_days = period_days.get(str(period).lower(), 22)
+        dates = pd.date_range(end=datetime.now(), periods=max(5, n_days), freq='B')
+        bases = {"NVDA": 141.50, "AAPL": 228.20, "MSFT": 425.00, "GOOGL": 178.50, "AMZN": 202.80, "TSLA": 248.50, "META": 585.00, "SPY": 595.00}
+        base = bases.get(self.ticker, 100.0)
+        seed = sum(ord(c) for c in self.ticker) % 10000 + 42
+        rng = np.random.RandomState(seed)
+        returns = rng.normal(0.0015, 0.018, size=len(dates))
+        prices = base * np.cumprod(1 + returns)
+        highs = prices * (1 + np.abs(rng.normal(0, 0.006, size=len(dates))))
+        lows = prices * (1 - np.abs(rng.normal(0, 0.006, size=len(dates))))
+        opens = (highs + lows) / 2
+        vols = rng.randint(25_000_000, 65_000_000, size=len(dates))
+        df = pd.DataFrame({
+            "Open": opens, "High": highs, "Low": lows, "Close": prices, "Volume": vols,
+            "Dividends": np.zeros(len(dates)), "Stock Splits": np.zeros(len(dates))
+        }, index=dates)
+        df.index.name = "Date"
+        return df
+
+    @property
+    def info(self):
+        hist = self.history(period="5d")
+        curr = float(hist["Close"].iloc[-1])
+        prev = float(hist["Close"].iloc[-2])
+        return {
+            "symbol": self.ticker, "shortName": f"{self.ticker} Inc.", "longName": f"{self.ticker} Corporation",
+            "currentPrice": curr, "regularMarketPrice": curr, "regularMarketPreviousClose": prev,
+            "regularMarketDayHigh": float(hist["High"].iloc[-1]), "regularMarketDayLow": float(hist["Low"].iloc[-1]),
+            "currency": "USD"
+        }
+
+    @property
+    def fast_info(self):
+        return self.info
+
+def download(tickers, period="1mo", interval="1d", **kwargs):
+    t_list = tickers.split() if isinstance(tickers, str) else list(tickers)
+    if len(t_list) == 1:
+        return Ticker(t_list[0]).history(period=period, interval=interval, **kwargs)
+    return pd.concat({t: Ticker(t).history(period=period, interval=interval, **kwargs) for t in t_list}, axis=1)
+`;
+
+const CLIMA_WASM_SHIM = `
+import pandas as pd
+from datetime import datetime, timedelta
+
+class OWM:
+    def __init__(self, api_key="demo"): pass
+    def weather_manager(self): return self
+    def weather_at_place(self, place="Santo Domingo"): return WeatherObservation(place)
+
+class WeatherObservation:
+    def __init__(self, place): self.place = place
+    @property
+    def weather(self): return WeatherData(self.place)
+
+class WeatherData:
+    def __init__(self, place="Santo Domingo"):
+        self.place = place
+        self.temperature = lambda unit="celsius": {"temp": 28.5, "temp_max": 31.0, "temp_min": 23.5, "feels_like": 30.2}
+        self.humidity = 72
+        self.status = "Soleado"
+        self.detailed_status = "Cielo mayormente despejado con brisa tropical"
+        self.wind = lambda: {"speed": 14.5, "deg": 85}
+
+def get_weather_forecast(city="Santo Domingo", days=7):
+    dates = pd.date_range(end=datetime.now() + timedelta(days=days), periods=days, freq='D')
+    return pd.DataFrame({
+        "Ciudad": [city]*days,
+        "Temp_Max": [30.5, 31.2, 29.8, 32.0, 31.5, 30.2, 31.8],
+        "Temp_Min": [23.1, 24.0, 22.8, 23.5, 24.1, 23.0, 23.8],
+        "Humedad": [70, 74, 80, 68, 72, 75, 69],
+        "Condición": ["Soleado", "Parcialmente Nublado", "Lluvia Dispersa", "Soleado", "Despejado", "Nublado", "Soleado"]
+    }, index=dates)
+`;
+
+const CRYPTO_WASM_SHIM = `
+import pandas as pd
+import numpy as np
+from datetime import datetime
+
+class CoinGeckoAPI:
+    def get_price(self, ids="bitcoin", vs_currencies="usd", **kwargs):
+        id_list = ids.split(",") if isinstance(ids, str) else list(ids)
+        prices = {"bitcoin": 96450.0, "ethereum": 3420.0, "solana": 195.50, "binancecoin": 640.0, "cardano": 0.85, "ripple": 1.45}
+        res = {}
+        for c in id_list:
+            c_clean = c.lower().strip()
+            p = prices.get(c_clean, 10.0)
+            res[c_clean] = {"usd": p, "usd_24h_change": 2.45}
+        return res
+
+    def get_coin_market_chart_by_id(self, id="bitcoin", vs_currency="usd", days=30):
+        dates = pd.date_range(end=datetime.now(), periods=int(days), freq='D')
+        base = 95000.0 if "btc" in id.lower() or "bitcoin" in id.lower() else (3400.0 if "eth" in id.lower() else 190.0)
+        rng = np.random.RandomState(42)
+        prices = base * np.cumprod(1 + rng.normal(0.002, 0.03, size=len(dates)))
+        return {"prices": [[int(d.timestamp()*1000), p] for d, p in zip(dates, prices)]}
+
+def get_crypto_df(coin="bitcoin", days=30):
+    cg = CoinGeckoAPI()
+    data = cg.get_coin_market_chart_by_id(coin, days=days)
+    dates = [datetime.fromtimestamp(p[0]/1000) for p in data["prices"]]
+    vals = [p[1] for p in data["prices"]]
+    df = pd.DataFrame({"Precio_USD": vals}, index=pd.DatetimeIndex(dates))
+    df.index.name = "Fecha"
+    return df
+`;
+
+const CINE_WASM_SHIM = `
+import pandas as pd
+
+class Cinemagoer:
+    def get_top250_movies(self):
+        movies = [
+            {"title": "The Shawshank Redemption", "year": 1994, "rating": 9.3, "genre": "Drama", "director": "Frank Darabont"},
+            {"title": "The Godfather", "year": 1972, "rating": 9.2, "genre": "Crime, Drama", "director": "Francis Ford Coppola"},
+            {"title": "The Dark Knight", "year": 2008, "rating": 9.0, "genre": "Action, Crime", "director": "Christopher Nolan"},
+            {"title": "Pulp Fiction", "year": 1994, "rating": 8.9, "genre": "Crime, Drama", "director": "Quentin Tarantino"},
+            {"title": "Inception", "year": 2010, "rating": 8.8, "genre": "Sci-Fi, Action", "director": "Christopher Nolan"},
+            {"title": "Oppenheimer", "year": 2023, "rating": 8.9, "genre": "Biography, Drama", "director": "Christopher Nolan"},
+            {"title": "Interstellar", "year": 2014, "rating": 8.7, "genre": "Sci-Fi, Adventure", "director": "Christopher Nolan"}
+        ]
+        return pd.DataFrame(movies)
+
+    def search_movie(self, title):
+        return [{"title": title, "year": 2024, "rating": 8.5, "status": "Disponible en Cartelera"}]
+
+Cinemagoer = Cinemagoer
+IMDb = Cinemagoer
+`;
+
+const FASTAPI_WASM_SHIM = `
+class FastAPI:
+    def __init__(self, title="FastAPI Wasm App", version="1.0.0", **kwargs):
+        self.title = title
+        self.version = version
+        self.routes = []
+
+    def get(self, path, **kwargs):
+        def decorator(func):
+            self.routes.append(("GET", path, func))
+            return func
+        return decorator
+
+    def post(self, path, **kwargs):
+        def decorator(func):
+            self.routes.append(("POST", path, func))
+            return func
+        return decorator
+
+class APIRouter(FastAPI): pass
+`;
+
+const SMART_FALLBACK_PREPEND = `
+import sys
+from types import ModuleType
+import pandas as pd
+
+class _SmartMock(object):
+    def __init__(self, name=""): 
+        self._name = name
+    def __fspath__(self): 
+        return '/home/pyodide/' + (self._name if self._name else 'mock') + '.py'
+    def __str__(self): 
+        return str(self._name)
+    def __repr__(self): 
+        return f"<SmartMock: {self._name}>"
+    def __call__(self, *args, **kwargs): 
+        return self
+    def __getattr__(self, item):
+        if item.startswith("__") and item.endswith("__"):
+            raise AttributeError(item)
+        if item in ("df", "dataframe", "data"):
+            return pd.DataFrame({"id": [1, 2, 3], "estado": ["Activo", "En Proceso", "Completado"], "valor": [150.0, 220.0, 310.0]})
+        return _SmartMock(f"{self._name}.{item}")
+    def __getitem__(self, item): 
+        return _SmartMock(f"{self._name}[{item}]")
+    def __iter__(self): 
+        return iter([_SmartMock(f"{self._name}_1"), _SmartMock(f"{self._name}_2")])
+    def __len__(self): 
+        return 10
+    def __float__(self): 
+        return 100.0
+    def __int__(self): 
+        return 100
+    def __bool__(self): 
+        return True
+    def __format__(self, spec): 
+        return format(100.0, spec) if spec else str(self)
+
+class _SmartMetaLoader(object):
+    def create_module(self, spec):
+        m = ModuleType(spec.name)
+        m.__file__ = f"/home/pyodide/{spec.name}.py"
+        m.__loader__ = self
+        m.__spec__ = spec
+        m.__package__ = spec.name.rpartition('.')[0]
+        def _getattr(item):
+            if item.startswith("__") and item.endswith("__"):
+                raise AttributeError(item)
+            return _SmartMock(f"{spec.name}.{item}")
+        m.__getattr__ = _getattr
+        return m
+    def exec_module(self, module): 
+        pass
+
+class _SmartMetaFinder(object):
+    def find_spec(self, fullname, path, target=None):
+        from importlib.machinery import ModuleSpec
+        raiz = fullname.split('.')[0]
+        if hasattr(sys, 'stdlib_module_names') and (raiz in sys.stdlib_module_names or fullname in sys.stdlib_module_names):
+            return None
+        criticos = (
+            "sys", "os", "math", "time", "datetime", "json", "re", "io", "base64", 
+            "typing", "collections", "itertools", "functools", "pathlib", "js", 
+            "pyodide", "micropip", "streamlit", "pandas", "numpy", "matplotlib", 
+            "seaborn", "plotly", "altair", "sklearn", "scipy", "inspect", "posixpath",
+            "tokenize", "linecache", "warnings", "traceback", "threading", "enum", "copy"
+        )
+        if any(fullname == c or fullname.startswith(c + ".") for c in criticos):
+            return None
+        return ModuleSpec(fullname, _SmartMetaLoader())
+
+if not any(isinstance(f, _SmartMetaFinder) for f in sys.meta_path):
+    sys.meta_path.append(_SmartMetaFinder())
+`;
+
+const WASM_BUILTIN_SHIMS = {
+  "yfinance.py": YFINANCE_WASM_SHIM,
+  "pyowm.py": CLIMA_WASM_SHIM,
+  "weather.py": CLIMA_WASM_SHIM,
+  "coingecko.py": CRYPTO_WASM_SHIM,
+  "pycoingecko.py": CRYPTO_WASM_SHIM,
+  "cinemagoer.py": CINE_WASM_SHIM,
+  "imdb.py": CINE_WASM_SHIM,
+  "fastapi.py": FASTAPI_WASM_SHIM
+};
+
 // Fast-Boot Ultrarrápido: arranca en ~2 segundos con la base y permite ejecución inmediata
 async function bootWasm() {
   const badge = document.getElementById("badge-estado");
@@ -3186,6 +3819,9 @@ async function bootWasm() {
     badge.innerHTML = `<span class="spinner-border spinner-border-sm"></span> Cargando base científica...`;
     // Carga inicial mínima y rápida: NumPy, Pandas, Matplotlib, Micropip
     await pyodideInstance.loadPackage(["pandas", "numpy", "matplotlib", "micropip"]);
+    for (const [fn, content] of Object.entries(WASM_BUILTIN_SHIMS)) {
+      try { pyodideInstance.FS.writeFile(fn, content); } catch(eSh) {}
+    }
 
     // Configuración base de terminal, interceptores, auto-instalador AST y motor multivisor
     await pyodideInstance.runPythonAsync(`
@@ -3197,6 +3833,9 @@ import json
 import os
 import time
 import builtins
+import warnings
+warnings.filterwarnings("ignore", category=DeprecationWarning)
+warnings.filterwarnings("ignore", message=".*Pyarrow.*")
 import importlib.util
 from pyodide.http import open_url
 import matplotlib
@@ -3886,8 +4525,14 @@ async function ejecutarStreamlitApp(code) {
     }
   } catch(eFs) {}
 
-  archivosApp["srcdoc.py"] = code;
-  archivosApp["streamlit_app.py"] = code;
+  const appExecutableCode = SMART_FALLBACK_PREPEND + "\n" + code;
+  archivosApp["srcdoc.py"] = appExecutableCode;
+  archivosApp["streamlit_app.py"] = appExecutableCode;
+
+  // Inyección de suite maestra de shims nativos WebAssembly (Bolsa, Clima, Cripto, Cine, FastAPI)
+  for (const [fn, content] of Object.entries(WASM_BUILTIN_SHIMS)) {
+    archivosApp[fn] = content;
+  }
 
   // 2. Resolver dependencias requeridas para stlite
   const reqs = ["pandas", "numpy", "matplotlib"];
@@ -3897,6 +4542,22 @@ async function ejecutarStreamlitApp(code) {
   if (/(scikit-learn|sklearn)/i.test(code) && !reqs.includes("scikit-learn")) reqs.push("scikit-learn");
   if (/(scipy)/i.test(code) && !reqs.includes("scipy")) reqs.push("scipy");
   if (/(openpyxl|\.to_excel|\.read_excel)/i.test(code) && !reqs.includes("openpyxl")) reqs.push("openpyxl");
+
+  // Auto-detector dinámico de imports en código de usuario (excluyendo módulos integrados y shims Wasm)
+  const regexImportsSt = /(?:^|\n)\s*(?:import|from)\s+([a-zA-Z0-9_]+)/g;
+  const ignorarModsSt = new Set([
+    "streamlit", "sys", "os", "math", "time", "datetime", "json", "re", "random", 
+    "io", "base64", "typing", "collections", "itertools", "functools", "pathlib", 
+    "string", "hashlib", "yfinance", "curl_cffi", "curl-cffi", "pyowm", "weather",
+    "coingecko", "pycoingecko", "cinemagoer", "imdb", "fastapi"
+  ]);
+  let matchImpSt;
+  while ((matchImpSt = regexImportsSt.exec(code)) !== null) {
+    const mod = matchImpSt[1];
+    if (!ignorarModsSt.has(mod) && !reqs.includes(mod)) {
+      reqs.push(mod);
+    }
+  }
 
   const filesJson = JSON.stringify(archivosApp);
   const reqsJson = JSON.stringify(reqs);
