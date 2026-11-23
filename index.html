@@ -3876,6 +3876,7 @@ async function ejecutarStreamlitApp(code) {
     }
   } catch(eFs) {}
 
+  archivosApp["srcdoc.py"] = code;
   archivosApp["streamlit_app.py"] = code;
 
   // 2. Resolver dependencias requeridas para stlite
@@ -3928,26 +3929,49 @@ async function ejecutarStreamlitApp(code) {
   <script>
     (function() {
       try {
+        // Normalizar URL en caso de soporte History API
+        try {
+          if (window.history && window.history.replaceState) {
+            window.history.replaceState(null, "", "/");
+          }
+        } catch(eH) {}
+
         const appFiles = ${filesJson};
         const appReqs = ${reqsJson};
         stlite.mount({
           requirements: appReqs,
-          entrypoint: "streamlit_app.py",
+          entrypoint: "srcdoc.py",
           files: appFiles
         }, document.getElementById("root"));
 
-        const obs = new MutationObserver(() => {
+        // Ocultar loader cuando el contenido de Streamlit esté renderizado
+        const obsLoader = new MutationObserver(() => {
           const root = document.getElementById("root");
           if (root && root.children.length > 0) {
             const loader = document.getElementById("stlite-loader");
             if (loader) loader.style.display = "none";
-            obs.disconnect();
+            obsLoader.disconnect();
           }
         });
-        obs.observe(document.getElementById("root"), { childList: true, subtree: true });
+        obsLoader.observe(document.getElementById("root"), { childList: true, subtree: true });
+
+        // Erradicación quirúrgica de alertas espurias de enrutamiento por iframe (Page not found /srcdoc)
+        const limpiarAlertasSrcdoc = () => {
+          document.querySelectorAll('[data-testid="stAlert"], [data-testid="stNotification"]').forEach(el => {
+            const t = el.textContent || "";
+            if (t.includes("Page not found") || t.includes("/srcdoc") || t.includes("srcdoc")) {
+              el.remove();
+            }
+          });
+        };
+        limpiarAlertasSrcdoc();
+        const obsAlerts = new MutationObserver(limpiarAlertasSrcdoc);
+        obsAlerts.observe(document.body, { childList: true, subtree: true });
+
         setTimeout(() => {
           const loader = document.getElementById("stlite-loader");
           if (loader) loader.style.display = "none";
+          limpiarAlertasSrcdoc();
         }, 12000);
       } catch(err) {
         const loader = document.getElementById("stlite-loader");
