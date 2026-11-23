@@ -22,6 +22,9 @@
   <!-- html2canvas para Captura de Código Completo en PNG HD -->
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
+  <!-- JSZip para Descarga de Suite Completa -->
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+
   <!-- Pyodide Wasm -->
   <script src="https://cdn.jsdelivr.net/pyodide/v0.26.1/full/pyodide.js"></script>
 
@@ -968,6 +971,10 @@
         <i class="bi bi-camera-fill text-warning"></i> Captura Pantalla
       </button>
 
+      <button id="btn-descargar-suite" class="btn btn-sm btn-outline-success text-success fw-semibold btn-action" onclick="descargarSuiteGlobal()" title="Descargar Suite Completa: Código, Consola, Gráficos y Streamlit en un solo archivo">
+        <i class="bi bi-box-seam-fill text-warning"></i> Descargar Todo (Suite)
+      </button>
+
       <span id="badge-estado" class="badge bg-dark border border-warning text-warning d-flex align-items-center gap-2 px-3 py-1">
         <span class="spinner-border spinner-border-sm"></span> Cargando WebAssembly...
       </span>
@@ -1147,6 +1154,9 @@ print("\n💾 Archivo 'Reporte_Titanic_Descargado.csv' listo para descargar.")
 
           <!-- Herramientas Streamlit -->
           <div id="tools-streamlit" class="d-flex align-items-center gap-2 d-none">
+            <button id="btn-capturar-streamlit" class="btn btn-sm btn-dark text-warning border border-secondary py-0 px-2 fw-bold" onclick="capturarStreamlitPNG()" title="Capturar imagen PNG de la App Streamlit">
+              <i class="bi bi-camera-fill"></i>
+            </button>
             <button id="btn-open-streamlit-tab" class="btn btn-outline-danger btn-action" onclick="abrirStreamlitEnPestana()" title="Abrir Streamlit App en una pestaña nueva">
               <i class="bi bi-box-arrow-up-right"></i> Abrir en Pestaña
             </button>
@@ -4485,6 +4495,32 @@ async function capturarPantallaCompletaPNG() {
       ignoreElements: (el) => el.classList && el.classList.contains("modal-backdrop")
     });
 
+    // Inclusión directa de iframes interactivos (Streamlit / Folium / Plotly) si están activos
+    try {
+      const viewStreamlit = document.getElementById("tab-streamlit");
+      const stFrame = document.getElementById("streamlit-frame");
+      if (viewStreamlit && !viewStreamlit.classList.contains("d-none") && stFrame && stFrame.contentDocument) {
+        const rootEl = stFrame.contentDocument.getElementById("root") || stFrame.contentDocument.body;
+        if (rootEl) {
+          const stCanvas = await html2canvas(rootEl, { scale: 2, backgroundColor: "#0e1117", logging: false });
+          const rect = stFrame.getBoundingClientRect();
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(stCanvas, rect.left * 2, rect.top * 2, rect.width * 2, rect.height * 2);
+        }
+      }
+
+      const viewGraf = document.getElementById("tab-grafico");
+      const htmlFrame = document.getElementById("html-viz-frame");
+      if (viewGraf && !viewGraf.classList.contains("d-none") && htmlFrame && !htmlFrame.classList.contains("d-none") && htmlFrame.contentDocument) {
+        const hCanvas = await html2canvas(htmlFrame.contentDocument.body, { scale: 2, logging: false });
+        const rect = htmlFrame.getBoundingClientRect();
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(hCanvas, rect.left * 2, rect.top * 2, rect.width * 2, rect.height * 2);
+      }
+    } catch(eFrameComposite) {
+      console.warn("Aviso componiendo iframes:", eFrameComposite);
+    }
+
     const dataUrl = canvas.toDataURL("image/png");
     const a = document.createElement("a");
     const d = new Date();
@@ -4600,6 +4636,193 @@ async function capturarConsolaPNG() {
   }
 }
 
+async function capturarStreamlitPNG() {
+  const frame = document.getElementById("streamlit-frame");
+  const btn = document.getElementById("btn-capturar-streamlit");
+
+  if (!frame || frame.classList.contains("d-none") || !frame.contentDocument) {
+    alert("⚠️ No hay una aplicación de Streamlit activa para capturar. Ejecuta primero un código con Streamlit.");
+    return;
+  }
+
+  const doc = frame.contentDocument;
+  const root = doc.getElementById("root");
+  if (!root || !root.children.length) {
+    alert("⚠️ La aplicación de Streamlit aún se está cargando. Espera un momento y vuelve a intentar.");
+    return;
+  }
+
+  const origHTML = btn ? btn.innerHTML : "";
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = `<span class="spinner-border spinner-border-sm" style="width: 12px; height: 12px;"></span>`;
+  }
+
+  try {
+    const canvas = await html2canvas(doc.body, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: "#0e1117",
+      logging: false
+    });
+
+    const dataUrl = canvas.toDataURL("image/png");
+    const a = document.createElement("a");
+    const d = new Date();
+    const pad = (n) => String(n).padStart(2, "0");
+    const fecha = `${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`;
+    a.download = `JPV_PyStudio_Streamlit_${fecha}.png`;
+    a.href = dataUrl;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    return dataUrl;
+  } catch (err) {
+    console.error("Error al capturar Streamlit:", err);
+    alert("Hubo un detalle al capturar Streamlit: " + (err.message || err));
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = origHTML;
+    }
+  }
+}
+
+async function descargarSuiteGlobal() {
+  const btn = document.getElementById("btn-descargar-suite");
+  const origHTML = btn ? btn.innerHTML : "";
+
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = `<span class="spinner-border spinner-border-sm me-1"></span> Empaquetando Suite...`;
+  }
+
+  try {
+    if (typeof JSZip === "undefined") {
+      alert("La biblioteca JSZip se está inicializando. Por favor intenta de nuevo en un segundo.");
+      return;
+    }
+
+    const zip = new JSZip();
+    const carpeta = zip.folder("JPV_PyStudio_Suite_Completa");
+    const d = new Date();
+    const pad = (n) => String(n).padStart(2, "0");
+    const fecha = `${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`;
+
+    // 1. Archivo Python puro (.py)
+    const code = editor ? editor.value : "";
+    carpeta.file("01_codigo_fuente.py", code || "# Sin código");
+
+    // 2. Captura HD del Código Fuente (Tarjeta Mac)
+    if (code && code.trim()) {
+      try {
+        const renderContainer = document.createElement("div");
+        renderContainer.id = "captura-suite-temp";
+        renderContainer.style.position = "fixed";
+        renderContainer.style.left = "-99999px";
+        renderContainer.style.top = "0";
+        renderContainer.style.padding = "30px";
+        renderContainer.style.background = "linear-gradient(135deg, #091223 0%, #0f172a 50%, #080c14 100%)";
+
+        const card = document.createElement("div");
+        card.style.borderRadius = "10px";
+        card.style.overflow = "hidden";
+        card.style.backgroundColor = "#080c14";
+        card.style.border = "1px solid rgba(255, 255, 255, 0.12)";
+        card.style.fontFamily = "'JetBrains Mono', monospace";
+        card.style.fontSize = "13px";
+        card.style.padding = "20px";
+        card.style.color = "#f8fafc";
+        card.style.whiteSpace = "pre";
+        card.innerHTML = `<div style="display:flex;gap:8px;margin-bottom:14px;border-bottom:1px solid #1e293b;padding-bottom:10px;"><span style="width:11px;height:11px;border-radius:50%;background:#ff5f56;"></span><span style="width:11px;height:11px;border-radius:50%;background:#ffbd2e;"></span><span style="width:11px;height:11px;border-radius:50%;background:#27c93f;"></span><span style="color:#00f2fe;font-size:12px;margin-left:8px;">🐍 script.py • JPV PyStudio</span></div>` + (typeof Prism !== "undefined" ? Prism.highlight(code, Prism.languages.python, "python") : code.replace(/&/g, "&amp;").replace(/</g, "&lt;"));
+        
+        renderContainer.appendChild(card);
+        document.body.appendChild(renderContainer);
+        const codeCanvas = await html2canvas(renderContainer, { scale: 2, backgroundColor: "#06090f", logging: false });
+        document.body.removeChild(renderContainer);
+        const codeB64 = codeCanvas.toDataURL("image/png").replace(/^data:image\/png;base64,/, "");
+        carpeta.file("01_Captura_Codigo_HD.png", codeB64, { base64: true });
+      } catch(eCode) {}
+    }
+
+    // 3. Consola / Terminal HD (si tiene contenido)
+    const termEl = document.getElementById("tab-terminal");
+    const container = document.getElementById("tab-terminal-container");
+    const textoTerm = termEl ? termEl.textContent.trim() : "";
+    if (textoTerm && textoTerm !== "# Esperando inicio de WebAssembly..." && textoTerm !== "# Esperando inicio...") {
+      try {
+        const clon = container.cloneNode(true);
+        clon.style.height = "auto";
+        clon.style.maxHeight = "none";
+        clon.style.overflow = "visible";
+        clon.style.position = "fixed";
+        clon.style.left = "-99999px";
+        clon.style.top = "0";
+        clon.style.width = Math.max(container.clientWidth || 800, 780) + "px";
+        clon.style.backgroundColor = "#090e17";
+        clon.style.padding = "20px";
+        clon.style.borderRadius = "10px";
+        clon.style.border = "1px solid rgba(255, 255, 255, 0.12)";
+        clon.innerHTML = `<div style="display:flex;gap:8px;margin-bottom:12px;border-bottom:1px solid rgba(255,255,255,0.08);padding-bottom:10px;"><span style="width:11px;height:11px;border-radius:50%;background:#ff5f56;"></span><span style="width:11px;height:11px;border-radius:50%;background:#ffbd2e;"></span><span style="width:11px;height:11px;border-radius:50%;background:#27c93f;"></span><span style="color:#00f2fe;font-size:12px;margin-left:6px;">Consola de Resultados</span></div>` + clon.innerHTML;
+        document.body.appendChild(clon);
+        const termCanvas = await html2canvas(clon, { scale: 2, backgroundColor: "#06090f", logging: false });
+        document.body.removeChild(clon);
+        const termB64 = termCanvas.toDataURL("image/png").replace(/^data:image\/png;base64,/, "");
+        carpeta.file("02_Captura_Consola_HD.png", termB64, { base64: true });
+        carpeta.file("02_salida_consola.txt", textoTerm);
+      } catch(eTerm) {}
+    }
+
+    // 4. Gráficos / Visualizaciones (si existen)
+    if (typeof currentPlotB64 !== "undefined" && currentPlotB64) {
+      carpeta.file("03_Grafico_Matplotlib_HD.png", currentPlotB64, { base64: true });
+    }
+    if (typeof plotsBase64 !== "undefined" && plotsBase64 && plotsBase64.gif_b64) {
+      carpeta.file("03_Animacion_Generada.gif", plotsBase64.gif_b64, { base64: true });
+    }
+    if (typeof currentHtmlContent !== "undefined" && currentHtmlContent) {
+      carpeta.file("03_Grafico_Interactivo.html", currentHtmlContent);
+    }
+
+    // 5. Streamlit App (si está activa)
+    const stFrame = document.getElementById("streamlit-frame");
+    if (stFrame && !stFrame.classList.contains("d-none") && stFrame.contentDocument) {
+      try {
+        const rootEl = stFrame.contentDocument.getElementById("root") || stFrame.contentDocument.body;
+        const stCanvas = await html2canvas(rootEl, { scale: 2, backgroundColor: "#0e1117", logging: false });
+        const stB64 = stCanvas.toDataURL("image/png").replace(/^data:image\/png;base64,/, "");
+        carpeta.file("04_Captura_Streamlit_App_HD.png", stB64, { base64: true });
+      } catch(eStImg) {}
+    }
+    if (typeof ultimoStreamlitHTML !== "undefined" && ultimoStreamlitHTML) {
+      carpeta.file("04_Streamlit_App_Autonoma.html", ultimoStreamlitHTML);
+    }
+
+    // 6. Captura de Pantalla Completa del Entorno (Full Viewport)
+    try {
+      const fullCanvas = await html2canvas(document.body, { scale: 2, backgroundColor: "#06090f", logging: false });
+      const fullB64 = fullCanvas.toDataURL("image/png").replace(/^data:image\/png;base64,/, "");
+      carpeta.file("00_Pantalla_Completa_PyStudio.png", fullB64, { base64: true });
+    } catch(eFull) {}
+
+    // 7. Generar ZIP y descargar
+    const contenidoZip = await zip.generateAsync({ type: "blob" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(contenidoZip);
+    a.download = `JPV_PyStudio_Suite_Completa_${fecha}.zip`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  } catch (err) {
+    console.error("Error empaquetando suite:", err);
+    alert("Hubo un problema al empaquetar la suite: " + (err.message || err));
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = origHTML;
+    }
+  }
+}
 
 // =======================================================
 // MOTOR MAESTRO DE CAPTURA DEL CÓDIGO EN IMAGEN PNG HD
