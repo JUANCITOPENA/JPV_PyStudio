@@ -877,6 +877,10 @@
       background: #f8fafc !important;
     }
 
+    body.theme-light #tab-streamlit {
+      background: #ffffff !important;
+    }
+
     body.theme-light .modal-content.bg-dark {
       background-color: #ffffff !important;
       color: #0f172a !important;
@@ -916,7 +920,7 @@
            style="width: 30px; height: 30px; object-fit: cover; box-shadow: 0 0 8px rgba(0, 242, 254, 0.35);">
       <span class="fw-bold fs-6">JPV <span class="text-info">PyStudio</span></span>
       <span class="badge bg-dark border border-info text-info d-none d-lg-inline ms-1" style="font-size: 11px;">
-        <i class="bi bi-globe-americas text-info"></i> Folium Maps • Plotly • Seaborn • NetworkX • WordCloud • Excel
+        <i class="bi bi-globe-americas text-info"></i> Streamlit • Folium Maps • Plotly • Seaborn • NetworkX • WordCloud • Excel
       </span>
 
       <!-- Botón de Modo Oscuro / Modo Claro -->
@@ -947,6 +951,7 @@
         <option value="wordcloud">☁️ WordCloud (Nube de Palabras HD)</option>
         <option value="scipy">🔬 Scipy & Curvas Matemáticas</option>
         <option value="animacion">🎬 Animación Avanzada (Dashboard Titanic 8-en-1 GIF)</option>
+        <option value="streamlit">🎈 Streamlit (Dashboard Comercial Interactivo stlite)</option>
       </select>
 
       <input type="file" id="input-archivo-local" accept=".csv, .xlsx, .xls, .json, .txt, .parquet" style="display: none;" onchange="manejarSubidaArchivo(this)">
@@ -1090,6 +1095,10 @@ print("\n💾 Archivo 'Reporte_Titanic_Descargado.csv' listo para descargar.")
             <i class="bi bi-pie-chart"></i> Gráfico
             <span id="grafico-dot" class="badge rounded-pill bg-info p-1 d-none"></span>
           </button>
+          <button id="tab-btn-streamlit" class="tab-btn" onclick="cambiarTab('streamlit')">
+            <span style="font-size: 13px;">🎈</span> Streamlit App
+            <span id="streamlit-dot" class="badge rounded-pill bg-danger p-1 d-none"></span>
+          </button>
         </div>
 
         <div class="d-flex align-items-center gap-2">
@@ -1136,6 +1145,19 @@ print("\n💾 Archivo 'Reporte_Titanic_Descargado.csv' listo para descargar.")
             </div>
           </div>
 
+          <!-- Herramientas Streamlit -->
+          <div id="tools-streamlit" class="d-flex align-items-center gap-2 d-none">
+            <button id="btn-open-streamlit-tab" class="btn btn-outline-danger btn-action" onclick="abrirStreamlitEnPestana()" title="Abrir Streamlit App en una pestaña nueva">
+              <i class="bi bi-box-arrow-up-right"></i> Abrir en Pestaña
+            </button>
+            <button id="btn-dl-streamlit" class="btn btn-outline-info btn-action" onclick="descargarStreamlitHTML()" title="Descargar Dashboard Streamlit en HTML autónomo">
+              <i class="bi bi-download"></i> Guardar HTML
+            </button>
+            <button id="btn-reload-streamlit" class="btn btn-outline-warning btn-action" onclick="recargarStreamlitApp()" title="Recargar aplicación Streamlit">
+              <i class="bi bi-arrow-clockwise"></i> Recargar
+            </button>
+          </div>
+
           <button class="btn btn-sm btn-dark text-warning border border-secondary py-0 px-2 fw-bold" onclick="toggleMaximize('panel-output')" title="Maximizar panel">
             <i class="bi bi-arrows-fullscreen"></i>
           </button>
@@ -1161,6 +1183,16 @@ print("\n💾 Archivo 'Reporte_Titanic_Descargado.csv' listo para descargar.")
             <span class="text-warning small fw-semibold"><i class="bi bi-pie-chart"></i> Sin gráficos generados aún.</span>
           </div>
           <iframe id="html-viz-frame" class="d-none" style="width: 100%; height: 100%; border: none; background: #ffffff;"></iframe>
+        </div>
+
+        <!-- Viewport dedicado para Streamlit App (stlite WebAssembly) -->
+        <div id="tab-streamlit" class="d-none" style="flex: 1; min-height: 0; position: relative; background: #0e1117; display: flex; flex-direction: column;">
+          <div id="streamlit-loading-layer" class="d-flex flex-column align-items-center justify-content-center text-center p-4" style="height: 100%; background: #0e1117; color: #ffffff;">
+            <div class="spinner-border text-danger mb-3" style="width: 2.6rem; height: 2.6rem;" role="status"></div>
+            <h5 class="fw-bold mb-1"><span style="font-size: 1.4rem;">🎈</span> Iniciando Streamlit WebAssembly...</h5>
+            <p class="text-secondary small mb-0">Cargando motor interactivo y dependencias en tu navegador.</p>
+          </div>
+          <iframe id="streamlit-frame" style="width: 100%; height: 100%; border: none; flex: 1;" class="d-none"></iframe>
         </div>
       </div>
 
@@ -2492,7 +2524,51 @@ ax.set_title("Ecosistema Analítico & Visualización en JPV PyStudio", fontsize=
 ax.axis("off")
 plt.tight_layout()
 plt.show()
-print("✅ Nube de palabras generada con éxito.")`
+print("✅ Nube de palabras generada con éxito.")`,
+
+  streamlit: `import streamlit as st
+import pandas as pd
+import numpy as np
+
+# 1. Configuración de Lienzo y Título
+st.set_page_config(page_title="Cockpit Comercial Q4", page_icon="🎈", layout="wide")
+st.title("🎈 Cockpit Comercial & Analítica Q4")
+st.markdown("Dashboard interactivo impulsado por **Streamlit en WebAssembly (stlite)**. Corre 100% en tu navegador sin requerir servidor backend.")
+
+# 2. Barra lateral con filtros dinámicos
+st.sidebar.header("⚙️ Filtros de Control")
+meta_ventas = st.sidebar.slider("Meta Comercial Estimada (USD):", 10000, 100000, 50000, 5000)
+zona = st.sidebar.selectbox("Selecciona Región:", ["Todas", "Norte", "Sur", "Este", "Metropolitana"])
+
+# 3. Métricas clave (KPIs) en columnas
+col1, col2, col3 = st.columns(3)
+col1.metric("Objetivo Global", f"\${meta_ventas:,.0f}", "+14.2% vs Q3")
+col2.metric("Ventas Acumuladas", "\$58,450", "+8.5%")
+col3.metric("Tasa de Cierre", "108.2%", "Superada")
+
+# 4. Tabla y Datos de Vendedores
+st.subheader("📊 Desempeño del Equipo de Ventas")
+data = {
+    "Vendedor": ["Sofía Méndez", "Carlos Pérez", "Valeria Gómez", "Andrés Ruiz", "Elena Torres"],
+    "Zona": ["Norte", "Sur", "Este", "Metropolitana", "Norte"],
+    "Ventas_USD": [53900, 45850, 61215, 41085, 48510],
+    "Cierre_Pct": [107.8, 91.7, 111.3, 91.3, 107.8]
+}
+df = pd.DataFrame(data)
+
+if zona != "Todas":
+    df = df[df["Zona"] == zona]
+
+st.dataframe(df, use_container_width=True)
+
+# 5. Gráfico de barras interactivo
+st.subheader("📈 Comparativa de Cierre de Ventas")
+st.bar_chart(df.set_index("Vendedor")["Ventas_USD"])
+
+# 6. Acción interactiva
+if st.button("🎉 Celebrar Cierre de Ventas"):
+    st.balloons()
+    st.success("¡Meta comercial alcanzada con éxito en Q4!")`
 };
 
 function cargarPlantilla(tipo) {
@@ -2528,7 +2604,13 @@ const CATALOGO_SNIPPETS = [
   { trigger: "fori", label: "for i in range():", desc: "bucle de conteo", type: "snippet", text: "for i in range(10):\n    $0" },
   { trigger: "def", label: "def funcion():", desc: "definir función", type: "palabra clave", text: "def mi_funcion($0):\n    pass" },
   { trigger: "try", label: "try / except", desc: "control de excepciones", type: "snippet", text: "try:\n    $0\nexcept Exception as e:\n    print(f\"Error: {e}\")" },
-  { trigger: "import", label: "import", desc: "importar módulo", type: "palabra clave", text: "import $0" }
+  { trigger: "import", label: "import", desc: "importar módulo", type: "palabra clave", text: "import $0" },
+  { trigger: "st", label: "import streamlit as st", desc: "importar Streamlit Wasm", type: "snippet", text: "import streamlit as st\n$0" },
+  { trigger: "sttitle", label: "st.title()", desc: "título principal Streamlit", type: "snippet", text: 'st.title("$0")' },
+  { trigger: "stslider", label: "st.slider()", desc: "slider interactivo Streamlit", type: "snippet", text: 'valor = st.slider("$0", 0, 100, 50)' },
+  { trigger: "stmetric", label: "st.metric()", desc: "tarjeta KPI con delta", type: "snippet", text: 'st.metric(label="$1", value="$2", delta="$3")' },
+  { trigger: "stbutton", label: "st.button()", desc: "botón interactivo Streamlit", type: "snippet", text: 'if st.button("$0"):\n    st.write("¡Acción completada!")' },
+  { trigger: "stdf", label: "st.dataframe()", desc: "tabla interactiva Streamlit", type: "snippet", text: 'st.dataframe($0, use_container_width=True)' }
 ];
 
 const PALABRAS_CLAVE = [
@@ -3755,9 +3837,176 @@ pyodide_http.patch_all()
   }
 }
 
-async function ejecutarPython() {
-  if (!pyodideInstance) return;
+// =======================================================
+// MOTOR MAESTRO DE STREAMLIT WEBASSEMBLY (STLITE)
+// =======================================================
+function esCodigoStreamlit(code) {
+  return /^\s*(import\s+streamlit|from\s+streamlit)\b/m.test(code);
+}
 
+let ultimoStreamlitHTML = "";
+
+async function ejecutarStreamlitApp(code) {
+  const tiempoLbl = document.getElementById("tiempo-ejecucion");
+  const dotStreamlit = document.getElementById("streamlit-dot");
+  const loadingLayer = document.getElementById("streamlit-loading-layer");
+  const frame = document.getElementById("streamlit-frame");
+
+  const t0 = performance.now();
+  cambiarTab('streamlit');
+  if (loadingLayer) loadingLayer.classList.remove("d-none");
+  if (frame) frame.classList.add("d-none");
+
+  // 1. Extraer archivos en memoria (VFS) para que Streamlit pueda usarlos con pd.read_csv(...)
+  const archivosApp = {};
+  try {
+    if (pyodideInstance && pyodideInstance.FS) {
+      const lista = pyodideInstance.FS.readdir('.');
+      for (const item of lista) {
+        if (item !== '.' && item !== '..' && !item.startsWith('__')) {
+          try {
+            const stat = pyodideInstance.FS.stat(item);
+            if (pyodideInstance.FS.isFile(stat.mode) && stat.size < 10 * 1024 * 1024) {
+              const contenido = pyodideInstance.FS.readFile(item, { encoding: 'utf8' });
+              archivosApp[item] = contenido;
+            }
+          } catch(eStat) {}
+        }
+      }
+    }
+  } catch(eFs) {}
+
+  archivosApp["streamlit_app.py"] = code;
+
+  // 2. Resolver dependencias requeridas para stlite
+  const reqs = ["pandas", "numpy", "matplotlib"];
+  if (/(seaborn|sns\.)/i.test(code) && !reqs.includes("seaborn")) reqs.push("seaborn");
+  if (/(plotly|px\.|go\.)/i.test(code) && !reqs.includes("plotly")) reqs.push("plotly");
+  if (/(altair|alt\.)/i.test(code) && !reqs.includes("altair")) reqs.push("altair");
+  if (/(scikit-learn|sklearn)/i.test(code) && !reqs.includes("scikit-learn")) reqs.push("scikit-learn");
+  if (/(scipy)/i.test(code) && !reqs.includes("scipy")) reqs.push("scipy");
+  if (/(openpyxl|\.to_excel|\.read_excel)/i.test(code) && !reqs.includes("openpyxl")) reqs.push("openpyxl");
+
+  const filesJson = JSON.stringify(archivosApp);
+  const reqsJson = JSON.stringify(reqs);
+
+  // 3. Documento HTML autocontenido de Streamlit WebAssembly
+  const cdnCss = "https://cdn.jsdelivr.net/npm/@stlite/mountable@0.73.0/build/stlite.css";
+  const cdnJs = "https://cdn.jsdelivr.net/npm/@stlite/mountable@0.73.0/build/stlite.js";
+
+  const stliteDoc = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+  <title>Streamlit App - JPV PyStudio</title>
+  <link rel="stylesheet" href="${cdnCss}" />
+  <style>
+    body { margin: 0; padding: 0; background: #0e1117; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    #stlite-loader {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      background: #0e1117; color: #fafafa; font-family: sans-serif; z-index: 9999;
+    }
+    .st-spinner {
+      width: 40px; height: 40px; border: 3px solid rgba(255,75,75,0.25);
+      border-top-color: #ff4b4b; border-radius: 50%; animation: spin 0.8s linear infinite;
+      margin-bottom: 14px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <div id="stlite-loader">
+    <div class="st-spinner"></div>
+    <div style="font-size: 15px; font-weight: 700; color: #ff4b4b;">🎈 Iniciando Streamlit WebAssembly...</div>
+    <div style="font-size: 12px; color: #94a3b8; margin-top: 5px;">Renderizando widgets y componentes en tu navegador</div>
+  </div>
+  <div id="root"></div>
+  <script src="${cdnJs}"><` + `/script>
+  <script>
+    (function() {
+      try {
+        const appFiles = ${filesJson};
+        const appReqs = ${reqsJson};
+        stlite.mount({
+          requirements: appReqs,
+          entrypoint: "streamlit_app.py",
+          files: appFiles
+        }, document.getElementById("root"));
+
+        const obs = new MutationObserver(() => {
+          const root = document.getElementById("root");
+          if (root && root.children.length > 0) {
+            const loader = document.getElementById("stlite-loader");
+            if (loader) loader.style.display = "none";
+            obs.disconnect();
+          }
+        });
+        obs.observe(document.getElementById("root"), { childList: true, subtree: true });
+        setTimeout(() => {
+          const loader = document.getElementById("stlite-loader");
+          if (loader) loader.style.display = "none";
+        }, 12000);
+      } catch(err) {
+        const loader = document.getElementById("stlite-loader");
+        if (loader) loader.innerHTML = "<div style='color:#ff4b4b; padding:20px; text-align:center;'>❌ Error cargando Streamlit: " + err.message + "</div>";
+      }
+    })();
+  <` + `/script>
+</body>
+</html>`;
+
+  ultimoStreamlitHTML = stliteDoc;
+
+  // 4. Inyectar en el iframe
+  if (frame) {
+    frame.srcdoc = stliteDoc;
+    frame.onload = () => {
+      if (loadingLayer) loadingLayer.classList.add("d-none");
+      frame.classList.remove("d-none");
+    };
+  }
+
+  const t1 = performance.now();
+  if (tiempoLbl) {
+    tiempoLbl.innerText = `Streamlit listo en ${((t1 - t0) / 1000).toFixed(2)}s`;
+  }
+  if (dotStreamlit) dotStreamlit.classList.remove("d-none");
+}
+
+function abrirStreamlitEnPestana() {
+  if (!ultimoStreamlitHTML) {
+    alert("Ejecuta primero una aplicación Streamlit para abrirla en una pestaña nueva.");
+    return;
+  }
+  const blob = new Blob([ultimoStreamlitHTML], { type: "text/html;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  window.open(url, "_blank");
+}
+
+function descargarStreamlitHTML() {
+  if (!ultimoStreamlitHTML) {
+    alert("Ejecuta primero una aplicación Streamlit para descargarla.");
+    return;
+  }
+  const blob = new Blob([ultimoStreamlitHTML], { type: "text/html;charset=utf-8" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "streamlit_app_pystudio.html";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
+function recargarStreamlitApp() {
+  const code = editor ? editor.value : "";
+  if (!code.trim()) return;
+  ejecutarStreamlitApp(code);
+}
+
+async function ejecutarPython() {
   const btn = document.getElementById("btn-run");
   const spinner = document.getElementById("btn-spinner");
   const icon = document.getElementById("btn-icon");
@@ -3769,6 +4018,26 @@ async function ejecutarPython() {
     terminal.innerText = "# [Editor vacío]";
     return;
   }
+
+  // Interceptor para Streamlit Apps
+  if (esCodigoStreamlit(code)) {
+    btn.disabled = true;
+    spinner.classList.remove("d-none");
+    icon.classList.add("d-none");
+    try {
+      await ejecutarStreamlitApp(code);
+    } catch(errSt) {
+      console.error("Error ejecutando Streamlit:", errSt);
+      alert("Error al inicializar Streamlit: " + errSt.message);
+    } finally {
+      btn.disabled = false;
+      spinner.classList.add("d-none");
+      icon.classList.remove("d-none");
+    }
+    return;
+  }
+
+  if (!pyodideInstance) return;
 
   btn.disabled = true;
   spinner.classList.remove("d-none");
@@ -4082,28 +4351,35 @@ function generarDiagnosticoEducativo(diag, userCode, rawErr) {
 function cambiarTab(tab) {
   const btnTerm = document.getElementById("tab-btn-terminal");
   const btnGraf = document.getElementById("tab-btn-grafico");
+  const btnStreamlit = document.getElementById("tab-btn-streamlit");
   const viewTerm = document.getElementById("tab-terminal-container");
   const viewGraf = document.getElementById("tab-grafico");
-  const dot = document.getElementById("grafico-dot");
+  const viewStreamlit = document.getElementById("tab-streamlit");
+  const dotGraf = document.getElementById("grafico-dot");
+  const dotStreamlit = document.getElementById("streamlit-dot");
   
   const toolsTerm = document.getElementById("tools-consola");
   const toolsGraf = document.getElementById("tools-grafico");
+  const toolsStreamlit = document.getElementById("tools-streamlit");
+
+  [btnTerm, btnGraf, btnStreamlit].forEach(b => b && b.classList.remove("active"));
+  [viewTerm, viewGraf, viewStreamlit].forEach(v => v && v.classList.add("d-none"));
+  [toolsTerm, toolsGraf, toolsStreamlit].forEach(t => t && t.classList.add("d-none"));
 
   if (tab === 'terminal') {
-    btnTerm.classList.add("active");
-    btnGraf.classList.remove("active");
-    viewTerm.classList.remove("d-none");
-    viewGraf.classList.add("d-none");
-    toolsTerm.classList.remove("d-none");
-    toolsGraf.classList.add("d-none");
-  } else {
-    btnGraf.classList.add("active");
-    btnTerm.classList.remove("active");
-    viewGraf.classList.remove("d-none");
-    viewTerm.classList.add("d-none");
-    dot.classList.add("d-none");
-    toolsGraf.classList.remove("d-none");
-    toolsTerm.classList.add("d-none");
+    if (btnTerm) btnTerm.classList.add("active");
+    if (viewTerm) viewTerm.classList.remove("d-none");
+    if (toolsTerm) toolsTerm.classList.remove("d-none");
+  } else if (tab === 'grafico') {
+    if (btnGraf) btnGraf.classList.add("active");
+    if (viewGraf) viewGraf.classList.remove("d-none");
+    if (toolsGraf) toolsGraf.classList.remove("d-none");
+    if (dotGraf) dotGraf.classList.add("d-none");
+  } else if (tab === 'streamlit') {
+    if (btnStreamlit) btnStreamlit.classList.add("active");
+    if (viewStreamlit) viewStreamlit.classList.remove("d-none");
+    if (toolsStreamlit) toolsStreamlit.classList.remove("d-none");
+    if (dotStreamlit) dotStreamlit.classList.add("d-none");
   }
 }
 
@@ -4801,6 +5077,10 @@ function actualizarDeteccionCodigo() {
   if (/(animation\.|PillowWriter|FuncAnimation)/i.test(code)) {
     detectados.push("Animación");
     if (contexto === "custom") contexto = "animacion";
+  }
+  if (/(streamlit|st\.)/i.test(code)) {
+    detectados.push("🎈 Streamlit App");
+    if (contexto === "custom") contexto = "streamlit";
   }
   if (/(requests\.|urllib)/i.test(code)) {
     detectados.push("Requests HTTPS");
