@@ -17,6 +17,12 @@
 
 ---
 
+> ### 🚀 **Acceso Directo al Entorno en Vivo:**  
+> 👉 **[https://juancitopena.github.io/JPV_PyStudio/](https://juancitopena.github.io/JPV_PyStudio/)**  
+> *(Listo para codificar de inmediato: sin instalaciones, sin registro, 100% en tu navegador con WebAssembly)*
+
+---
+
 ## 📌 ¿Por qué JPV PyStudio? Para Estudiantes, Practicantes y Docentes
 
 El mayor obstáculo que enfrenta un estudiante, docente o profesional al aprender **Python y Ciencia de Datos** no es la lógica de programación: es el **infierno de la configuración del entorno local (*Environment Setup Hell*)**:
