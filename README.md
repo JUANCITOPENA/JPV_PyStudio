@@ -74,6 +74,34 @@ El mayor obstáculo que enfrenta un estudiante, docente o profesional al aprende
 
 ---
 
+## 🏛️ Arquitectura Modular y Desacople de Código (JS / CSS)
+
+Para maximizar la mantenibilidad, escalabilidad y rendimiento en el navegador, **JPV PyStudio** fue estructurado bajo una arquitectura modular limpia y desacoplada:
+
+```
+JPV_PyStudio/
+├── index.html                   # Interfaz de usuario y maquetación semántica principal
+├── css/
+│   └── styles.css               # Estilos globales, variables de color y temas (Dark / Light)
+├── js/
+│   ├── globals.js               # Estado global y referencias a elementos del DOM
+│   ├── layout.js                # Control de divisores (splitters), pestañas y maximización
+│   ├── editor.js                # Resaltado de sintaxis con Prism, autocompletado y atajos
+│   ├── terminal.js              # Consola de salida interactiva con formateo ANSI y tablas
+│   ├── vfs.js                   # Sistema de archivos virtual Pyodide (drag & drop y modal)
+│   ├── visualizer.js            # Visor interactivo de Matplotlib, Folium y gráficos HTML
+│   ├── templates.js             # Catálogo de plantillas maestras (Titanic, Scipy, Streamlit, Tokens)
+│   ├── diagnostics.js           # Análisis estático AST en tiempo real para detección de módulos
+│   ├── pyodide-engine.js        # Motor de inicialización y ejecución WebAssembly (CPython 3.12)
+│   ├── streamlit-engine.js      # Integración y montaje dinámico de Streamlit Wasm (stlite)
+│   ├── captures_engine_v7.js    # Motor Maestro V7 de Capturas HD (Pantalla, Código, Streamlit)
+│   └── app.js                   # Inicialización y arranque coordinado del estudio
+├── bridge_mercado.py            # Servidor puente CORS local opcional para APIs financieras
+└── INICIAR_PUENTE_MERCADO.bat   # Lanzador rápido en 1 clic para cotizaciones en vivo
+```
+
+---
+
 ## 📦 Suite de Capturas HD y Descarga Global en ZIP
 
 Hemos incorporado el botón maestro **`📦 Descargar Todo (Suite)`** en la barra superior del IDE, permitiéndote empaquetar en un único archivo comprimido `.zip` todos los resultados de tu sesión de trabajo con un solo clic:
@@ -237,14 +265,16 @@ Con **JPV PyStudio** dispones en una sola pestaña del navegador del ecosistema 
 ## 🗺️ Roadmap de Escalamiento e Innovación Futura
 
 - [x] Motor Pyodide v0.26.1 con soporte CPython 3.12.
+- [x] **Arquitectura Modular JS/CSS:** Desacople estructurado en módulos (`css/styles.css`, `js/globals.js`, `vfs.js`, `terminal.js`, `visualizer.js`, `templates.js`, `editor.js`, `layout.js`, `diagnostics.js`, `pyodide-engine.js`, `streamlit-engine.js`, `captures_engine_v7.js`, `app.js`).
 - [x] **Integración de Streamlit en WebAssembly (`stlite`) con visor reactivo.**
+- [x] **Plantilla Dashboard Dinámico:** Cotizaciones y minigráficos de tokens y empresas tech (`dashboard_tokens`) con soporte de puente CORS local (`bridge_mercado.py`).
 - [x] **Selector de Tema Dual (Modo Claro / Modo Oscuro) con accesibilidad WCAG 2.2 AAA.**
 - [x] **Suite de Descarga Global en ZIP con empaquetado de código, consola, gráficos y Streamlit.**
-- [x] **Captura de Pantalla Completa inteligente con composición de iframes activos.**
+- [x] **Motor Maestro de Captura HD V7 (`captures_engine_v7.js`):** Composición exacta 2D sin recortes, reinicio de matriz de transformación en `html2canvas` y captura fiel de apps Streamlit.
+- [x] **Modal de Captura de Código Global:** Snapshots de alta fidelidad con 5 temas visuales, números de línea, barra macOS y copia directa al portapapeles.
 - [x] Auto-detección sintáctica de dependencias vía AST con instalación dinámica `micropip`.
 - [x] Visor de gráficos unificado con fondos transparente/blanco/negro y descarga PNG.
 - [x] Sistema de Archivos Virtual (VFS) con drag & drop de archivos CSV/Excel.
-- [x] Captura Global del Código en Imagen PNG HD (2x Retina con temas, números de línea y marcos).
 - [x] Botón de Descarga Directa del Script Python (`.py`).
 - [ ] **Soporte PWA Offline-First:** Almacenamiento en caché de paquetes WebAssembly mediante Service Workers para programar en aviones o zonas sin internet.
 - [ ] **Integración de DuckDB-Wasm:** Consultas SQL analíticas ultrarrápidas sobre archivos Parquet y CSV de gigabytes en la RAM del navegador.
