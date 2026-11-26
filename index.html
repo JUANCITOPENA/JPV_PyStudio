@@ -22,6 +22,9 @@
   <!-- html2canvas para Captura de Código Completo en PNG HD -->
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
+  <!-- html2pdf.js para Exportación de Libros y Talleres en PDF Editorial A4 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
   <!-- JSZip para Descarga de Suite Completa -->
   <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 
@@ -89,6 +92,10 @@
       
       <!-- Botones de Acción Desktop (>= 992px) -->
       <div class="d-none d-lg-flex align-items-center gap-2">
+        <button id="btn-header-libros-pdf" class="btn btn-sm btn-outline-warning text-warning fw-semibold btn-action" onclick="cambiarTab('documentos')" title="Abrir Visor Editorial de Libros y Talleres Python">
+          <i class="bi bi-book-half"></i> <span class="d-none d-xl-inline">Libros & Talleres</span><span class="d-inline d-xl-none">Libros</span>
+        </button>
+
         <button class="btn btn-sm btn-outline-info btn-action" onclick="document.getElementById('input-archivo-local').click()" title="Cargar archivo local desde la PC">
           <i class="bi bi-upload"></i> Subir CSV / Excel
         </button>
@@ -112,6 +119,8 @@
           <i class="bi bi-tools"></i> <span class="d-none d-sm-inline">Herramientas</span>
         </button>
         <ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark border-secondary shadow-lg" aria-labelledby="dropdownMobileTools">
+          <li><a class="dropdown-item small d-flex align-items-center gap-2" href="javascript:void(0)" onclick="cambiarTab('documentos')"><i class="bi bi-book-half text-warning"></i> Libros & Talleres PDF</a></li>
+          <li><hr class="dropdown-divider border-secondary my-1"></li>
           <li><a class="dropdown-item small d-flex align-items-center gap-2" href="javascript:void(0)" onclick="document.getElementById('input-archivo-local').click()"><i class="bi bi-upload text-info"></i> Subir CSV / Excel</a></li>
           <li><a class="dropdown-item small d-flex align-items-center gap-2" href="javascript:void(0)" onclick="mostrarArchivosEnMemoria()"><i class="bi bi-folder2-open text-warning"></i> Archivos en Memoria (VFS)</a></li>
           <li><hr class="dropdown-divider border-secondary my-1"></li>
@@ -143,6 +152,9 @@
       <button id="btn-mobile-streamlit" type="button" class="mobile-segment-btn" onclick="cambiarVistaMovil('streamlit')" title="Ver Streamlit App">
         <span>🎈</span> <span>Streamlit</span>
         <span id="mobile-streamlit-dot" class="badge rounded-pill bg-danger p-1 d-none"></span>
+      </button>
+      <button id="btn-mobile-documentos" type="button" class="mobile-segment-btn" onclick="cambiarVistaMovil('documentos')" title="Ver Libros y Documentos PDF">
+        <i class="bi bi-book text-warning"></i> <span>Libros</span>
       </button>
     </div>
     
@@ -300,6 +312,10 @@ print("\n💾 Archivo 'Reporte_Titanic_Descargado.csv' listo para descargar.")
             <span style="font-size: 13px;">🎈</span> <span class="d-none d-sm-inline">Streamlit App</span><span class="d-inline d-sm-none">Streamlit</span>
             <span id="streamlit-dot" class="badge rounded-pill bg-danger p-1 d-none"></span>
           </button>
+          <button id="tab-btn-documentos" class="tab-btn" onclick="cambiarTab('documentos')">
+            <i class="bi bi-book-half text-warning"></i> <span class="d-none d-sm-inline">Libros & Talleres PDF</span><span class="d-inline d-sm-none">Libros</span>
+            <span id="documentos-dot" class="badge rounded-pill bg-warning p-1 d-none"></span>
+          </button>
         </div>
 
         <div class="d-flex align-items-center gap-1 gap-md-2">
@@ -362,6 +378,43 @@ print("\n💾 Archivo 'Reporte_Titanic_Descargado.csv' listo para descargar.")
             </button>
           </div>
 
+          <!-- Herramientas Visor Documentos & Libros PDF -->
+          <div id="tools-documentos" class="d-flex align-items-center gap-1 gap-md-2 d-none">
+            <!-- Selector de Documento -->
+            <div class="d-flex align-items-center gap-1 bg-dark border border-secondary rounded px-2 py-0" style="height: 28px;">
+              <span class="text-warning small fw-bold d-none d-sm-inline" style="font-size: 11px;"><i class="bi bi-journal-bookmark-fill"></i> Doc:</span>
+              <select id="select-doc-activo" class="form-select form-select-sm bg-dark text-warning border-0 p-0 shadow-none fw-bold" style="font-size: 11px; width: auto; cursor: pointer; max-width: 190px;" onchange="cambiarDocumentoActivo(this.value)" title="Elegir libro o taller editorial">
+                <option value="libro_python_maestro" selected>📖 Libro: Lo que nadie te enseña de Python</option>
+                <option value="taller_mapas_calor">🔥 Taller: Mapas de Calor Seaborn</option>
+                <option value="taller_apis_publicas">🌐 Taller: Consumo de APIs Públicas</option>
+              </select>
+            </div>
+
+            <!-- Buscador rápido en el documento -->
+            <div class="d-none d-md-flex align-items-center bg-dark border border-secondary rounded px-1" style="height: 28px;">
+              <i class="bi bi-search text-secondary small me-1"></i>
+              <input type="text" id="input-buscar-doc" placeholder="Buscar concepto..." class="bg-transparent text-light border-0 small p-0" style="font-size: 11px; width: 110px; outline: none;" onkeyup="filtrarContenidoDoc(this.value)">
+            </div>
+
+            <!-- Zoom toolbar -->
+            <div class="zoom-toolbar">
+              <button class="zoom-btn" onclick="zoomOutDoc()" title="Reducir zoom del texto"><i class="bi bi-dash"></i></button>
+              <span id="doc-zoom-label" class="zoom-label">100%</span>
+              <button class="zoom-btn" onclick="zoomInDoc()" title="Aumentar zoom del texto"><i class="bi bi-plus"></i></button>
+              <button class="zoom-btn d-none d-sm-flex" onclick="resetZoomDoc()" title="Restablecer tamaño"><i class="bi bi-arrow-counterclockwise"></i></button>
+            </div>
+
+            <!-- Botón Descargar PDF Oficial -->
+            <button id="btn-descargar-pdf-doc" class="btn btn-warning text-dark btn-action fw-bold px-2 py-0" style="height: 28px; font-size: 11.5px;" onclick="descargarDocumentoPDF()" title="Descargar libro o taller en PDF editorial limpio">
+              <i class="bi bi-file-earmark-pdf-fill"></i> <span class="d-none d-md-inline">Descargar PDF</span>
+            </button>
+
+            <!-- Botón Imprimir Nativo -->
+            <button class="btn btn-outline-light text-light btn-action py-0 px-2" style="height: 28px; font-size: 11px;" onclick="imprimirDocumentoNativo()" title="Imprimir directamente">
+              <i class="bi bi-printer"></i>
+            </button>
+          </div>
+
           <button class="btn btn-sm btn-dark text-warning border border-secondary py-0 px-2 fw-bold" onclick="toggleMaximize('panel-output')" title="Maximizar panel">
             <i class="bi bi-arrows-fullscreen"></i>
           </button>
@@ -397,6 +450,13 @@ print("\n💾 Archivo 'Reporte_Titanic_Descargado.csv' listo para descargar.")
             <p class="text-secondary small mb-0">Cargando motor interactivo y dependencias en tu navegador.</p>
           </div>
           <iframe id="streamlit-frame" style="width: 100%; height: 100%; border: none; flex: 1;" class="d-none"></iframe>
+        </div>
+
+        <!-- Viewport dedicado para Libros y Documentos Editoriales PDF -->
+        <div id="tab-documentos" class="d-none" style="flex: 1; min-height: 0; position: relative; background: #070b14; display: flex; flex-direction: column; overflow-y: auto; padding: 16px;">
+          <div id="documento-viewer-content" class="doc-viewer-wrapper mx-auto" style="width: 100%; max-width: 900px; font-size: 14px; transition: font-size 0.2s ease;">
+            <!-- Se inyecta dinámicamente desde js/pdf-viewer.js -->
+          </div>
         </div>
       </div>
 
@@ -602,6 +662,8 @@ print("\n💾 Archivo 'Reporte_Titanic_Descargado.csv' listo para descargar.")
   <script src="js/pyodide-engine.js?v=20261125_01"></script>
   <script src="js/streamlit-engine.js?v=20261124_06"></script>
   <script src="js/captures_engine_v7.js"></script>
+  <script src="js/editorial-content.js?v=20261126_01"></script>
+  <script src="js/pdf-viewer.js?v=20261126_01"></script>
   <script src="js/app.js?v=20261125_07"></script>
   <script>
     // Registro del Service Worker para Caché Persistente Wasm en < 200ms

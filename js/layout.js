@@ -66,7 +66,8 @@ function cambiarVistaMovil(vista) {
     editor: document.getElementById("btn-mobile-editor"),
     terminal: document.getElementById("btn-mobile-terminal"),
     grafico: document.getElementById("btn-mobile-grafico"),
-    streamlit: document.getElementById("btn-mobile-streamlit")
+    streamlit: document.getElementById("btn-mobile-streamlit"),
+    documentos: document.getElementById("btn-mobile-documentos")
   };
 
   Object.values(btns).forEach(b => b && b.classList.remove("active"));
@@ -182,21 +183,27 @@ function cambiarTab(tab) {
   const btnTerm = document.getElementById("tab-btn-terminal");
   const btnGraf = document.getElementById("tab-btn-grafico");
   const btnStreamlit = document.getElementById("tab-btn-streamlit");
+  const btnDoc = document.getElementById("tab-btn-documentos");
+
   const viewTerm = document.getElementById("tab-terminal-container");
   const viewGraf = document.getElementById("tab-grafico");
   const viewStreamlit = document.getElementById("tab-streamlit");
+  const viewDoc = document.getElementById("tab-documentos");
+
   const dotGraf = document.getElementById("grafico-dot");
   const dotStreamlit = document.getElementById("streamlit-dot");
+  const dotDoc = document.getElementById("documentos-dot");
   const mobDotGraf = document.getElementById("mobile-grafico-dot");
   const mobDotStreamlit = document.getElementById("mobile-streamlit-dot");
   
   const toolsTerm = document.getElementById("tools-consola");
   const toolsGraf = document.getElementById("tools-grafico");
   const toolsStreamlit = document.getElementById("tools-streamlit");
+  const toolsDoc = document.getElementById("tools-documentos");
 
-  [btnTerm, btnGraf, btnStreamlit].forEach(b => b && b.classList.remove("active"));
-  [viewTerm, viewGraf, viewStreamlit].forEach(v => v && v.classList.add("d-none"));
-  [toolsTerm, toolsGraf, toolsStreamlit].forEach(t => t && t.classList.add("d-none"));
+  [btnTerm, btnGraf, btnStreamlit, btnDoc].forEach(b => b && b.classList.remove("active"));
+  [viewTerm, viewGraf, viewStreamlit, viewDoc].forEach(v => v && v.classList.add("d-none"));
+  [toolsTerm, toolsGraf, toolsStreamlit, toolsDoc].forEach(t => t && t.classList.add("d-none"));
 
   if (tab === 'terminal') {
     if (btnTerm) btnTerm.classList.add("active");
@@ -214,6 +221,14 @@ function cambiarTab(tab) {
     if (toolsStreamlit) toolsStreamlit.classList.remove("d-none");
     if (dotStreamlit) dotStreamlit.classList.add("d-none");
     if (mobDotStreamlit) mobDotStreamlit.classList.add("d-none");
+  } else if (tab === 'documentos') {
+    if (btnDoc) btnDoc.classList.add("active");
+    if (viewDoc) viewDoc.classList.remove("d-none");
+    if (toolsDoc) toolsDoc.classList.remove("d-none");
+    if (dotDoc) dotDoc.classList.add("d-none");
+    if (typeof renderizarDocumentoEnVisor === 'function') {
+      renderizarDocumentoEnVisor();
+    }
   }
 
   // Sincronización con barra móvil en resoluciones < 992px
@@ -228,12 +243,14 @@ function cambiarTab(tab) {
       editor: document.getElementById("btn-mobile-editor"),
       terminal: document.getElementById("btn-mobile-terminal"),
       grafico: document.getElementById("btn-mobile-grafico"),
-      streamlit: document.getElementById("btn-mobile-streamlit")
+      streamlit: document.getElementById("btn-mobile-streamlit"),
+      documentos: document.getElementById("btn-mobile-documentos")
     };
     if (btns.editor) btns.editor.classList.remove("active");
     if (btns.terminal) btns.terminal.classList.remove("active");
     if (btns.grafico) btns.grafico.classList.remove("active");
     if (btns.streamlit) btns.streamlit.classList.remove("active");
+    if (btns.documentos) btns.documentos.classList.remove("active");
     if (btns[tab]) btns[tab].classList.add("active");
   }
 }

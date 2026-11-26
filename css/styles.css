@@ -1247,3 +1247,308 @@
     body.theme-light .btn-terminal-copy:hover {
       background: #cbd5e1;
     }
+
+    /* ======================================================= */
+    /* DISEÑO EDITORIAL Y VISOR PDF JPV PRO                     */
+    /* ======================================================= */
+    .doc-viewer-wrapper {
+      color: #e2e8f0;
+      line-height: 1.65;
+    }
+
+    .doc-portada-ceremonial {
+      background: linear-gradient(135deg, #090e1a 0%, #0d1527 50%, #172554 100%);
+      border: 2.5px solid #38bdf8;
+      border-radius: 12px;
+      padding: 36px 30px;
+      margin-bottom: 30px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 0 15px rgba(56, 189, 248, 0.2);
+    }
+    .doc-portada-ceremonial::before {
+      content: "";
+      position: absolute;
+      top: -60px;
+      right: -60px;
+      width: 220px;
+      height: 220px;
+      background: radial-gradient(circle, rgba(56, 189, 248, 0.15) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .doc-rubrica-box {
+      background: rgba(15, 23, 42, 0.85);
+      border-left: 4px solid #facc15;
+      border-radius: 8px;
+      padding: 16px 20px;
+      margin-top: 24px;
+      border-top: 1px solid #1e293b;
+      border-right: 1px solid #1e293b;
+      border-bottom: 1px solid #1e293b;
+    }
+
+    .doc-articulo-editorial {
+      background: #0b1120;
+      border: 1px solid #1e293b;
+      border-radius: 10px;
+      padding: 28px 24px;
+      margin-bottom: 28px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      page-break-inside: avoid;
+    }
+
+    .doc-articulo-editorial h3 {
+      color: #38bdf8;
+      font-weight: 700;
+      font-size: 1.35rem;
+      border-bottom: 2px solid #1e293b;
+      padding-bottom: 10px;
+      margin-bottom: 18px;
+    }
+
+    .doc-articulo-editorial h4 {
+      color: #facc15;
+      font-weight: 600;
+      font-size: 1.1rem;
+      margin-top: 22px;
+      margin-bottom: 12px;
+    }
+
+    .doc-modulo-badge {
+      display: inline-block;
+      background: #1e3a8a;
+      color: #93c5fd;
+      font-weight: 700;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 3px 10px;
+      border-radius: 20px;
+      border: 1px solid #3b82f6;
+      margin-bottom: 8px;
+    }
+
+    .doc-codigo-wrapper {
+      background: #050811;
+      border: 1.5px solid #1e293b;
+      border-radius: 8px;
+      margin: 16px 0 20px 0;
+      overflow: hidden;
+      page-break-inside: avoid;
+    }
+
+    .doc-codigo-header {
+      background: #0d1527;
+      padding: 6px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #1e293b;
+      font-size: 11.5px;
+      font-weight: 600;
+      color: #94a3b8;
+    }
+
+    .doc-codigo-body {
+      padding: 14px;
+      margin: 0;
+      overflow-x: auto;
+      font-family: var(--code-font);
+      font-size: 12.5px;
+      line-height: 1.55;
+      color: #f8fafc;
+    }
+
+    .doc-reto-card {
+      background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%);
+      border: 2px dashed #a855f7;
+      border-radius: 10px;
+      padding: 20px;
+      margin: 24px 0 16px 0;
+      position: relative;
+      page-break-inside: avoid;
+    }
+    .doc-reto-badge {
+      background: #7e22ce;
+      color: #ffffff;
+      font-weight: 700;
+      font-size: 10.5px;
+      padding: 3px 8px;
+      border-radius: 4px;
+      letter-spacing: 0.5px;
+    }
+
+    .doc-callout {
+      background: rgba(30, 41, 59, 0.7);
+      border-left: 4px solid #38bdf8;
+      border-radius: 4px 8px 8px 4px;
+      padding: 12px 16px;
+      margin: 16px 0;
+      font-size: 13px;
+    }
+    .doc-callout-warning {
+      border-left-color: #f59e0b;
+      background: rgba(69, 26, 3, 0.2);
+    }
+    .doc-callout-success {
+      border-left-color: #10b981;
+      background: rgba(6, 78, 59, 0.2);
+    }
+
+    /* Tablas en visor documental */
+    .table-doc {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 12.5px;
+    }
+    .table-doc th {
+      background: #1e293b;
+      color: #f8fafc;
+      padding: 8px 12px;
+      text-align: left;
+      border: 1px solid #334155;
+      font-weight: 600;
+    }
+    .table-doc td {
+      padding: 8px 12px;
+      border: 1px solid #1e293b;
+      color: #cbd5e1;
+    }
+    .table-doc tr:nth-child(even) td {
+      background: rgba(15, 23, 42, 0.6);
+    }
+
+    /* Modo Claro para Documentos */
+    body.theme-light .doc-viewer-wrapper {
+      color: #1e293b;
+    }
+    body.theme-light .doc-portada-ceremonial {
+      background: linear-gradient(135deg, #f8fafc 0%, #eff6ff 50%, #dbeafe 100%);
+      border-color: #0284c7;
+      box-shadow: 0 4px 15px rgba(2, 132, 199, 0.15);
+    }
+    body.theme-light .doc-rubrica-box {
+      background: #ffffff;
+      border-color: #cbd5e1;
+      border-left-color: #d97706;
+    }
+    body.theme-light .doc-articulo-editorial {
+      background: #ffffff;
+      border-color: #e2e8f0;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+    body.theme-light .doc-articulo-editorial h3 {
+      color: #0284c7;
+      border-bottom-color: #e2e8f0;
+    }
+    body.theme-light .doc-articulo-editorial h4 {
+      color: #b45309;
+    }
+    body.theme-light .doc-codigo-wrapper {
+      background: #f8fafc;
+      border-color: #cbd5e1;
+    }
+    body.theme-light .doc-codigo-header {
+      background: #f1f5f9;
+      border-bottom-color: #cbd5e1;
+      color: #475569;
+    }
+    body.theme-light .doc-codigo-body {
+      color: #0f172a;
+    }
+    body.theme-light .doc-reto-card {
+      background: linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%);
+      border-color: #9333ea;
+    }
+    body.theme-light .table-doc th {
+      background: #e2e8f0;
+      color: #0f172a;
+      border-color: #cbd5e1;
+    }
+    body.theme-light .table-doc td {
+      border-color: #e2e8f0;
+      color: #334155;
+    }
+    body.theme-light .table-doc tr:nth-child(even) td {
+      background: #f8fafc;
+    }
+
+    /* ======================================================= */
+    /* REGLAS OFICIALES DE IMPRESIÓN Y EXPORTACIÓN PDF A4       */
+    /* ======================================================= */
+    @media print {
+      @page {
+        size: A4 portrait;
+        margin: 12mm 15mm 15mm 15mm;
+      }
+      body {
+        background: #ffffff !important;
+        color: #000000 !important;
+        font-family: 'Outfit', sans-serif !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      header, 
+      #mobile-view-nav, 
+      #drag-gutter, 
+      #panel-editor, 
+      .panel-toolbar, 
+      .panel-footer, 
+      .modal, 
+      #drag-overlay, 
+      #tools-documentos, 
+      .btn-doc-accion, 
+      .zoom-toolbar {
+        display: none !important;
+      }
+      #viewport, .app-viewport, #split-container, #panel-output, .output-viewport, #tab-documentos {
+        display: block !important;
+        position: static !important;
+        width: 100% !important;
+        height: auto !important;
+        overflow: visible !important;
+        background: #ffffff !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        border: none !important;
+      }
+      .doc-viewer-wrapper {
+        max-width: 100% !important;
+        color: #0f172a !important;
+      }
+      .doc-portada-ceremonial {
+        background: #f8fafc !important;
+        border: 2px solid #0284c7 !important;
+        box-shadow: none !important;
+        padding: 20px !important;
+        page-break-after: always;
+      }
+      .doc-articulo-editorial {
+        background: #ffffff !important;
+        border: 1px solid #cbd5e1 !important;
+        box-shadow: none !important;
+        page-break-inside: avoid;
+        margin-bottom: 20px !important;
+        padding: 16px !important;
+      }
+      .doc-codigo-wrapper {
+        background: #f8fafc !important;
+        border: 1px solid #94a3b8 !important;
+        page-break-inside: avoid;
+      }
+      .doc-codigo-body {
+        color: #0f172a !important;
+        font-size: 11px !important;
+      }
+      .doc-reto-card {
+        background: #faf5ff !important;
+        border: 1.5px dashed #9333ea !important;
+        page-break-inside: avoid;
+      }
+      a {
+        text-decoration: none !important;
+        color: #0284c7 !important;
+      }
+    }
