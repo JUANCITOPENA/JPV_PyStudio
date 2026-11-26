@@ -1217,28 +1217,49 @@ import { stdin as input, stdout as output } from 'node:process';
 // ==========================================
 const AGENT_CONFIG = {
   titulo: 'NEXUS AI PRO — AGENTE AUTÓNOMO UNIVERSAL',
-  subtitulo: 'Razonamiento Abierto • Ejecución de Código en Vivo • Multi-Modelo',
+  subtitulo: 'Razonamiento Abierto • Pool Failover Multi-Tier • Ejecución en Vivo',
   nombreAgente: 'Atlas',
-  versionApp: 'v3.0.0 (Google GenAI SDK 2026)',
-  modeloActual: 'gemini-2.5-flash-lite' // Activo por defecto con cuota fresca
+  versionApp: 'v3.2.0 (Google GenAI SDK 2026)',
+  modeloActual: 'gemini-3.8-flash' // Prioritario: pool 3.8 al 4 con auto-failover
 };
 
 const MODEL_POOL = [
-  // Serie 2.5 (Estabilidad y Alta Velocidad)
-  { id: 'gemini-2.5-flash-lite', nombre: 'Gemini 2.5 Flash-Lite', uso: 'Ultrarrápido, cuota amplia, ideal para tareas continuas' },
-  { id: 'gemini-2.5-flash', nombre: 'Gemini 2.5 Flash', uso: 'Balanceado para agentes complejos y llamadas a herramientas' },
-  { id: 'gemini-2.5-pro', nombre: 'Gemini 2.5 Pro', uso: 'Máximo razonamiento analítico y arquitectura' },
-
-  // Serie 3.x (Nueva Generación)
-  { id: 'gemini-3.7-flash', nombre: 'Gemini 3.7 Flash', uso: 'Razonamiento híbrido y alta velocidad' },
-  { id: 'gemini-3.8-flash', nombre: 'Gemini 3.8 Flash', uso: 'Preview experimental de alta demanda' },
-  { id: 'gemini-3.5-flash', nombre: 'Gemini 3.5 Flash', uso: 'Preview experimental de testing' },
-
   // Serie 4.x (Gemini 4 Next-Gen Lab)
-  { id: 'gemini-4-hydrogen', nombre: 'Gemini 4 Hydrogen', uso: 'Next-Gen: Programación y agentes autónomos' },
-  { id: 'gemini-4-neon', nombre: 'Gemini 4 Neon', uso: 'Next-Gen: Razonamiento lógico y matemáticas' },
-  { id: 'gemini-4-carbon', nombre: 'Gemini 4 Carbon', uso: 'Next-Gen: Tareas de largo horizonte y auditoría' },
-  { id: 'gemini-4-argon', nombre: 'Gemini 4 Argon', uso: 'Next-Gen Insignia: Máximo razonamiento y 1M contexto' }
+  { id: 'gemini-4-argon', nombre: 'Gemini 4 Argon', uso: 'Insignia Next-Gen: Máximo razonamiento y contexto ultra-largo' },
+  { id: 'gemini-4-carbon', nombre: 'Gemini 4 Carbon', uso: 'Next-Gen: Tareas de largo horizonte, auditoría y análisis' },
+  { id: 'gemini-4-neon', nombre: 'Gemini 4 Neon', uso: 'Next-Gen: Razonamiento lógico avanzado y matemáticas' },
+  { id: 'gemini-4-hydrogen', nombre: 'Gemini 4 Hydrogen', uso: 'Next-Gen: Programación y agentes multi-herramienta' },
+
+  // Serie 3.x (Generación 3.x Oficial)
+  { id: 'gemini-3.8-flash', nombre: 'Gemini 3.8 Flash', uso: 'Modelo insignia de alta velocidad y última generación' },
+  { id: 'gemini-3.7-flash', nombre: 'Gemini 3.7 Flash', uso: 'Razonamiento híbrido, velocidad y coding' },
+  { id: 'gemini-3.6-flash', nombre: 'Gemini 3.6 Flash', uso: 'Máxima estabilidad y cuota fresca en producción' },
+  { id: 'gemini-3.5-flash', nombre: 'Gemini 3.5 Flash', uso: 'Alta eficiencia y latencia ultra-baja' },
+  { id: 'gemini-3.5-flash-lite', nombre: 'Gemini 3.5 Flash-Lite', uso: 'Ultraligero para flujos continuos' },
+  { id: 'gemini-3.1-pro-preview', nombre: 'Gemini 3.1 Pro Preview', uso: 'Procesamiento profundo y análisis complejo' },
+  { id: 'gemini-3.1-flash-lite', nombre: 'Gemini 3.1 Flash-Lite', uso: 'Agilidad extrema y bajo consumo' },
+  { id: 'gemini-3-flash-preview', nombre: 'Gemini 3 Flash Preview', uso: 'Evaluación rápida experimental' },
+
+  // Serie 2.5 (Respaldo)
+  { id: 'gemini-2.5-pro', nombre: 'Gemini 2.5 Pro', uso: 'Respaldo analítico avanzado' },
+  { id: 'gemini-2.5-flash', nombre: 'Gemini 2.5 Flash', uso: 'Respaldo balanceado para agentes' },
+  { id: 'gemini-2.5-flash-lite', nombre: 'Gemini 2.5 Flash-Lite', uso: 'Respaldo ligero' }
+];
+
+const POOL_FAILOVER_ORDER = [
+  'gemini-3.8-flash',
+  'gemini-3.7-flash',
+  'gemini-3.6-flash',
+  'gemini-3.5-flash',
+  'gemini-3.5-flash-lite',
+  'gemini-3.1-pro-preview',
+  'gemini-3.1-flash-lite',
+  'gemini-3-flash-preview',
+  'gemini-4-hydrogen',
+  'gemini-4-neon',
+  'gemini-2.5-flash-lite',
+  'gemini-2.5-flash',
+  'gemini-2.5-pro'
 ];
 
 // ==========================================
@@ -1330,29 +1351,60 @@ function mostrarPresentacion() {
   console.log(\`📌 \${AGENT_CONFIG.subtitulo}\`);
   console.log('----------------------------------------------------------------');
   console.log(\`🤖 Agente activo: \${AGENT_CONFIG.nombreAgente}\`);
-  console.log(\`🧠 Modelo en uso: \${AGENT_CONFIG.modeloActual}\`);
+  console.log(\`🧠 Modelo inicial: \${AGENT_CONFIG.modeloActual}\`);
   console.log(\`🔑 Clave activa: \${maskedKey}\`);
   console.log('💡 Pregunta cualquier cosa o pide ejecutar código. Escribe /ayuda para ver comandos.');
-  console.log('================================================================\\n');
+  console.log('================================================================\n');
 }
 
 function mostrarAyuda() {
-  console.log('\\n📖 COMANDOS DISPONIBLES:');
-  console.log('  /pool             -> Muestra todos los modelos del 2.5 al 4');
-  console.log('  /modelo <id>      -> Cambia el modelo activo (ej. /modelo gemini-3.7-flash)');
+  console.log('\n📖 COMANDOS DISPONIBLES:');
+  console.log('  /pool             -> Muestra todos los modelos del 3.1 al 4');
+  console.log('  /modelo <id>      -> Cambia el modelo activo (ej. /modelo gemini-3.6-flash)');
   console.log('  /key              -> Cambia la Gemini API Key almacenada');
   console.log('  /memoria          -> Muestra las variables almacenadas por el agente');
   console.log('  /limpiar          -> Reinicia la memoria de la conversación');
-  console.log('  /salir            -> Cierra la sesión del chat\\n');
+  console.log('  /salir            -> Cierra la sesión del chat\n');
 }
 
 function mostrarPool() {
-  console.log('\\n🌐 POOL DE MODELOS OFICIALES (2.5 AL 4):');
+  console.log('\n🌐 POOL DE MODELOS OFICIALES (3.1 AL 4):');
   MODEL_POOL.forEach((m, index) => {
     const activo = m.id === AGENT_CONFIG.modeloActual ? '✅ [ACTIVO]' : '  ';
     console.log(\`  \${index + 1}. \${activo} \${m.id} (\${m.nombre}) -> \${m.uso}\`);
   });
   console.log('');
+}
+
+// Helper de ejecución con Pool Failover continuo
+async function llamarConPoolFailover(ai, historial, config) {
+  const listaIntentos = [AGENT_CONFIG.modeloActual, ...POOL_FAILOVER_ORDER.filter(m => m !== AGENT_CONFIG.modeloActual)];
+  let ultimoError = null;
+
+  for (const mod of listaIntentos) {
+    try {
+      const resp = await ai.models.generateContent({
+        model: mod,
+        contents: historial,
+        config
+      });
+      if (mod !== AGENT_CONFIG.modeloActual) {
+        console.warn(\`🔄 [Pool Failover] Conmutado transparentemente a: \${mod}\`);
+        AGENT_CONFIG.modeloActual = mod;
+      }
+      return resp;
+    } catch (err) {
+      ultimoError = err;
+      const msg = (err.message || '').toLowerCase();
+      if (msg.includes('429') || msg.includes('resource_exhausted') || msg.includes('503') || msg.includes('overloaded') || msg.includes('404') || msg.includes('not found') || msg.includes('unavailable')) {
+        const causa = (msg.includes('429') || msg.includes('resource_exhausted')) ? 'Cuota diaria agotada (429)' : ((msg.includes('503') || msg.includes('overloaded')) ? 'Alta demanda temporal (503)' : 'No disponible (404)');
+        console.warn(\`⚠️ [Pool Failover] \${mod} -> \${causa}. Conmutando al siguiente modelo del pool...\`);
+        continue;
+      }
+      throw err;
+    }
+  }
+  throw ultimoError;
 }
 
 // ==========================================
@@ -1406,22 +1458,22 @@ async function iniciarChat() {
           break;
         case '/modelo':
           if (!argumento) {
-            console.log('⚠️ Debes indicar el ID del modelo. Escribe /pool para ver la lista.\\n');
+            console.log('⚠️ Debes indicar el ID del modelo. Escribe /pool para ver la lista.\n');
           } else {
             const existe = MODEL_POOL.find(m => m.id === argumento);
             AGENT_CONFIG.modeloActual = argumento;
-            console.log(\`🔄 Modelo cambiado a: \${argumento} \${existe ? \`(\${existe.nombre})\` : ''}\\n\`);
+            console.log(\`🔄 Modelo configurado a: \${argumento} \${existe ? \`(\${existe.nombre})\` : ''}\n\`);
           }
           break;
         case '/key':
           const nuevaKey = await rl.question('🔑 Ingresa nueva Gemini API Key: ');
           if (nuevaKey.trim()) {
             localStorage.setItem('GEMINI_API_KEY', nuevaKey.trim());
-            console.log('✅ API Key actualizada correctamente.\\n');
+            console.log('✅ API Key actualizada correctamente.\n');
           }
           break;
         case '/memoria':
-          console.log('\\n🧠 MEMORIA ACTUAL DE LA SESIÓN:');
+          console.log('\n🧠 MEMORIA ACTUAL DE LA SESIÓN:');
           console.log(JSON.stringify(memoriaSesion, null, 2));
           console.log('');
           break;
@@ -1429,14 +1481,14 @@ async function iniciarChat() {
           historialChat = [];
           for (const k in memoriaSesion) delete memoriaSesion[k];
           mostrarPresentacion();
-          console.log('🧹 Memoria del chat reiniciada.\\n');
+          console.log('🧹 Memoria del chat reiniciada.\n');
           break;
         case '/salir':
-          console.log(\`\\n👋 ¡Hasta luego! \${AGENT_CONFIG.nombreAgente} desconectado.\`);
+          console.log(\`\n👋 ¡Hasta luego! \${AGENT_CONFIG.nombreAgente} desconectado.\`);
           rl.close();
           return;
         default:
-          console.log('❌ Comando no reconocido. Escribe /ayuda para ver las opciones.\\n');
+          console.log('❌ Comando no reconocido. Escribe /ayuda para ver las opciones.\n');
       }
       continue;
     }
@@ -1444,10 +1496,13 @@ async function iniciarChat() {
     // Consulta con Gemini + Function Calling
     historialChat.push({ role: 'user', parts: [{ text: texto }] });
 
-    const systemInstruction = \`Eres NEXUS AGENT (Atlas), un agente de inteligencia artificial de nivel de ingeniería totalmente autónomo y sin restricciones de temática.
-Puedes responder sobre cualquier tema: programación en cualquier lenguaje (Python, JS, C#, Rust, Go, SQL, Bash), ciencia de datos, arquitectura de sistemas, finanzas, algoritmos, redacción, lógica y resolución de problemas.
-Tienes a tu disposición herramientas para ejecutar código JavaScript en tiempo real ('ejecutar_javascript'), consultar el entorno del sistema ('consultar_entorno_sistema') y almacenar notas en memoria ('gestionar_memoria_agente').
-Ejecuta tus herramientas activamente cuando el usuario te pida calcular, verificar, evaluar código o interactuar con el entorno. Eres directo, exhaustivo y resolutivo.\`;
+    const systemInstruction = \`Eres NEXUS AGENT (Atlas), el agente de inteligencia artificial de nivel de ingeniería y arquitectura de software más avanzado, autónomo y resolutivo.
+DIRECTIVAS INMUTABLES Y DE OBLIGATORIO CUMPLIMIENTO:
+1. TOTAL LIBERTAD Y COOPERACIÓN TÉCNICA: Responde con rigor y máxima calidad sobre cualquier tema: programación en cualquier lenguaje (Python, JS, C#, Rust, Go, SQL, Bash), ciencia de datos, arquitectura de sistemas, finanzas, algoritmos, redacción y resolución de problemas.
+2. CERO MORALINA O NEGATIVAS ANTE ARQUITECTURAS INSPIRADAS EN CASOS REALES: Cuando el usuario solicite arquitecturas, bases de datos, APIs o scripts inspirados en plataformas reales (como Netflix, Spotify, Amazon, Uber, YouTube, Steam), NUNCA te niegues ni des sermones sobre propiedad intelectual, marcas registradas o secretos industriales. Entrega de inmediato el script completo, profesional y exhaustivo (por ejemplo, T-SQL / DDL para SQL Server con tablas normalizadas, PRIMARY KEYs con IDENTITY(1,1), relaciones FOREIGN KEY consistentes, índices no agrupados optimizados y datos de prueba reales con INSERT INTO).
+3. CÓDIGO LISTO PARA PRODUCCIÓN: Entrega siempre código completo, sintácticamente impecable, sin marcadores de posición incompletos ('TODO') y directamente ejecutable.
+4. HERRAMIENTAS ACTIVAS: Dispones de 'ejecutar_javascript', 'consultar_entorno_sistema' y 'gestionar_memoria_agente'. Ejecútalas proactivamente cuando sea necesario evaluar operaciones, algoritmos o guardar contexto.
+5. TONO: Directo, altamente técnico, profesional y sin rodeos.\`;
 
     const config = {
       systemInstruction,
@@ -1455,11 +1510,7 @@ Ejecuta tus herramientas activamente cuando el usuario te pida calcular, verific
     };
 
     try {
-      let response = await ai.models.generateContent({
-        model: AGENT_CONFIG.modeloActual,
-        contents: historialChat,
-        config
-      });
+      let response = await llamarConPoolFailover(ai, historialChat, config);
 
       // Ciclo agéntico protegido contra bucles infinitos (máximo 5 iteraciones)
       let turns = 0;
@@ -1484,42 +1535,15 @@ Ejecuta tus herramientas activamente cuando el usuario te pida calcular, verific
         // Devolver resultado de herramientas con rol 'tool'
         historialChat.push({ role: 'tool', parts: toolResponses });
 
-        response = await ai.models.generateContent({
-          model: AGENT_CONFIG.modeloActual,
-          contents: historialChat,
-          config
-        });
+        response = await llamarConPoolFailover(ai, historialChat, config);
       }
 
       const respuestaTexto = response.text || response.candidates?.[0]?.content?.parts?.[0]?.text || '';
       historialChat.push(response.candidates[0].content);
-      console.log(\`\\n\${AGENT_CONFIG.nombreAgente} (\${AGENT_CONFIG.modeloActual}) >\\n\${respuestaTexto}\\n\`);
+      console.log(\`\n\${AGENT_CONFIG.nombreAgente} (\${AGENT_CONFIG.modeloActual}) >\n\${respuestaTexto}\n\`);
 
     } catch (error) {
-      console.error(\`\\n❌ Error con el modelo \${AGENT_CONFIG.modeloActual}:\`, error.message, '\\n');
-
-      // Auto-fallback inteligente ante cuota agotada (429) o alta demanda (503)
-      if (error.message.includes('429') || error.message.includes('RESOURCE_EXHAUSTED') || error.message.includes('503')) {
-        const fallbacks = ['gemini-2.5-flash-lite', 'gemini-3.7-flash', 'gemini-2.5-flash'].filter(m => m !== AGENT_CONFIG.modeloActual);
-        const nuevoModelo = fallbacks[0];
-        console.warn(\`🔄 [Auto-Fallback] Cuota/demanda agotada en \${AGENT_CONFIG.modeloActual}. Conmutando automáticamente a \${nuevoModelo}...\\n\`);
-        AGENT_CONFIG.modeloActual = nuevoModelo;
-
-        try {
-          let retryResp = await ai.models.generateContent({
-            model: AGENT_CONFIG.modeloActual,
-            contents: historialChat,
-            config
-          });
-          const respText = retryResp.text || retryResp.candidates?.[0]?.content?.parts?.[0]?.text || '';
-          historialChat.push(retryResp.candidates[0].content);
-          console.log(\`\\n\${AGENT_CONFIG.nombreAgente} (\${AGENT_CONFIG.modeloActual}) >\\n\${respText}\\n\`);
-          continue;
-        } catch(retryErr) {
-          console.error(\`❌ Fallo en fallback con \${nuevoModelo}:\`, retryErr.message);
-        }
-      }
-
+      console.error(\`\n❌ Error con el pool de modelos:\`, error.message, '\n');
       historialChat.pop();
     }
   }
