@@ -605,12 +605,34 @@ async def __asegurar_imports_instalados(tree):
 
 # 3. EJECUTOR CON AUTO-RESOLUCIÓN NATIVA EN PYTHON
 async def __ejecutar_codigo_usuario(code_str):
-    import micropip
+    import micropip, textwrap
     __archivos_escritos_en_ejecucion__.clear()
     __plotly_htmls_capturados__.clear()
     plt.close("all")
 
-    tree = ast.parse(code_str)
+    # Auto-corrección inteligente de indentación accidental al copiar/pegar
+    try:
+        tree = ast.parse(code_str)
+    except IndentationError:
+        code_dedented = textwrap.dedent(code_str)
+        try:
+            tree = ast.parse(code_dedented)
+            code_str = code_dedented
+        except IndentationError:
+            lineas = code_str.splitlines()
+            while lineas and not lineas[0].strip():
+                lineas.pop(0)
+            if lineas and lineas[0].startswith((" ", "\t")):
+                lineas[0] = lineas[0].lstrip()
+                code_fixed = "\n".join(lineas)
+                try:
+                    tree = ast.parse(code_fixed)
+                    code_str = code_fixed
+                except Exception:
+                    raise
+            else:
+                raise
+
     await __asegurar_imports_instalados(tree)
 
     class InputReplacer(ast.NodeTransformer):
