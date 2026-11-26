@@ -158,7 +158,8 @@ async function ejecutarCodigoJavaScript(code) {
 
     const origFetch = window.fetch;
     window.fetch = async function(resource, init) {
-      const urlStr = String(resource);
+      let urlStr = typeof resource === "string" ? resource : (resource && resource.url ? resource.url : String(resource));
+
       if (urlStr.includes("math_skill.wasm")) {
         console.info("⚡ [Virtual Wasm VFS] Interceptando carga de './math_skill.wasm' desde memoria (55 bytes f64.mul)");
         const hex = "${WASM_SKILL_HEX}";
@@ -168,7 +169,19 @@ async function ejecutarCodigoJavaScript(code) {
           headers: { "Content-Type": "application/wasm" }
         });
       }
-      return origFetch.apply(this, arguments);
+
+      // Auto-reescritura de versión v1 a v1beta para Function Calling en Google GenAI
+      if (urlStr.includes("generativelanguage.googleapis.com/v1/models") && !urlStr.includes("v1beta")) {
+        urlStr = urlStr.replace("/v1/models", "/v1beta/models");
+        console.info("🔄 [Gemini Auto-Version] Conmutando endpoint a 'v1beta' para habilitar Function Calling sin errores.");
+        if (typeof resource === "string") {
+          resource = urlStr;
+        } else if (resource && resource.url) {
+          resource = new Request(urlStr, init || resource);
+        }
+      }
+
+      return origFetch.apply(this, [resource, init]);
     };
 
     window.addEventListener("error", (e) => {

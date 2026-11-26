@@ -1211,8 +1211,12 @@ if len(tickers_validos) > 1:
   gemini_wasm: `import { GoogleGenAI, Type } from '@google/genai';
 
 // 1. Inicializar el cliente de Gemini (SDK Oficial 2026)
-// Nota: Coloca tu API Key de Google AI Studio para llamadas en vivo
-const ai = new GoogleGenAI({ apiKey: 'TU_API_KEY_AQUI' });
+// Nota: Coloca tu API Key de Google AI Studio para llamadas en vivo.
+// En v1beta se habilita el soporte de Function Calling agéntico con WebAssembly.
+const ai = new GoogleGenAI({
+  apiKey: 'TU_API_KEY_AQUI',
+  httpOptions: { apiVersion: 'v1beta' }
+});
 
 // 2. Cargar e instanciar el módulo WebAssembly
 async function cargarWasmSkill() {
@@ -1278,6 +1282,7 @@ async function ejecutarAgenteConWasm(promptUsuario) {
         const { monto, tasa } = call.args;
         console.log(\`⚡ Agente invocando Wasm con: monto=\${monto}, tasa=\${tasa}\`);
         const resultadoWasm = wasmExports.calcular_impuesto(monto, tasa);
+        console.log(\`✅ Resultado Wasm calculado: \${resultadoWasm}\`);
 
         const finalResponse = await ai.models.generateContent({
           model: 'gemini-2.5-flash',
@@ -1285,20 +1290,21 @@ async function ejecutarAgenteConWasm(promptUsuario) {
             { role: 'user', parts: [{ text: promptUsuario }] },
             response.candidates[0].content,
             {
-              role: 'user',
+              role: 'tool',
               parts: [{ functionResponse: { name: 'calcular_impuesto_wasm', response: { resultado: resultadoWasm } } }]
             }
           ],
           config: { tools: [{ functionDeclarations: [wasmSkillDeclaration] }] },
         });
 
-        console.log("✨ Respuesta final del agente:", finalResponse.text);
+        const respuestaTexto = finalResponse.text || finalResponse.candidates?.[0]?.content?.parts?.[0]?.text;
+        console.log("✨ Respuesta final del agente:", respuestaTexto);
       }
     } else {
       console.log("💬 Respuesta directa:", response.text);
     }
   } catch(errApi) {
-    console.error("Error al consultar API de Gemini:", errApi.message);
+    console.error("Error al consultar API de Gemini:", errApi.message || errApi);
   }
 }
 
