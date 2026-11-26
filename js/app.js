@@ -284,4 +284,31 @@ window.addEventListener("DOMContentLoaded", () => {
   sincronizarPrism();
   actualizarDeteccionCodigo();
   bootWasm();
+
+  // Inicializar modo responsive si la pantalla es móvil (< 992px)
+  if (window.innerWidth < 992) {
+    if (typeof cambiarVistaMovil === "function") {
+      cambiarVistaMovil("editor");
+    }
+  }
+
+  // Listener adaptativo para redimensionamiento de ventana
+  window.addEventListener("resize", () => {
+    const splitEl = document.getElementById("split-container");
+    if (!splitEl) return;
+    if (window.innerWidth >= 992) {
+      splitEl.classList.remove("view-editor", "view-output", "mobile-split-vertical");
+      const pEditor = document.getElementById("panel-editor");
+      const pOutput = document.getElementById("panel-output");
+      if (pEditor) pEditor.style.display = "";
+      if (pOutput) pOutput.style.display = "";
+    } else {
+      if (!splitEl.classList.contains("mobile-split-vertical")) {
+        splitEl.classList.add("mobile-tab-mode");
+        if (typeof cambiarVistaMovil === "function") {
+          cambiarVistaMovil(typeof activeMobileView !== "undefined" ? activeMobileView : "editor");
+        }
+      }
+    }
+  });
 });

@@ -1,83 +1,180 @@
 // =======================================================
-// GUTTER SPLITTER
+// GUTTER SPLITTER (MOUSE + TOUCH RESPONSIVE)
 // =======================================================
 const gutter = document.getElementById("drag-gutter");
 const container = document.getElementById("split-container");
 const panelEditor = document.getElementById("panel-editor");
 let isDraggingGutter = false;
 
-gutter.addEventListener("mousedown", (e) => {
+function onGutterDragStart(e) {
   isDraggingGutter = true;
   gutter.classList.add("dragging");
-  document.body.style.cursor = "col-resize";
-  e.preventDefault();
-});
+  const isVertical = container && container.classList.contains("mobile-split-vertical");
+  document.body.style.cursor = isVertical ? "row-resize" : "col-resize";
+  if (e.cancelable && e.type !== "touchstart") e.preventDefault();
+}
 
-window.addEventListener("mousemove", (e) => {
+function onGutterDragMove(e) {
   if (!isDraggingGutter) return;
+  const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+  const clientY = e.touches ? e.touches[0].clientY : e.clientY;
   const rect = container.getBoundingClientRect();
-  const offset = e.clientX - rect.left;
-  const total = rect.width;
+  const isVertical = container && container.classList.contains("mobile-split-vertical");
 
-  if (offset >= 70 && offset <= total - 70) { /* Permite disminuir lo mínimo a ambos lados */
-    panelEditor.style.width = `${(offset / total) * 100}%`;
+  if (isVertical) {
+    const offset = clientY - rect.top;
+    const total = rect.height;
+    if (offset >= 60 && offset <= total - 60) {
+      panelEditor.style.height = `${(offset / total) * 100}%`;
+    }
+  } else {
+    const offset = clientX - rect.left;
+    const total = rect.width;
+    if (offset >= 70 && offset <= total - 70) { /* Permite disminuir lo mínimo a ambos lados */
+      panelEditor.style.width = `${(offset / total) * 100}%`;
+    }
   }
-});
+}
 
-window.addEventListener("mouseup", () => {
+function onGutterDragEnd() {
   if (isDraggingGutter) {
     isDraggingGutter = false;
     gutter.classList.remove("dragging");
     document.body.style.cursor = "default";
   }
-});
+}
+
+if (gutter) {
+  gutter.addEventListener("mousedown", onGutterDragStart);
+  window.addEventListener("mousemove", onGutterDragMove);
+  window.addEventListener("mouseup", onGutterDragEnd);
+
+  gutter.addEventListener("touchstart", onGutterDragStart, { passive: true });
+  window.addEventListener("touchmove", onGutterDragMove, { passive: true });
+  window.addEventListener("touchend", onGutterDragEnd);
+}
 
 // =======================================================
-// PAN & ZOOM GRÁFICO
+// MOBILE WORKSPACE VIEW SWITCHER
+// =======================================================
+let mobileLayoutMode = "tab"; // "tab" o "split"
+let activeMobileView = "editor"; // "editor", "terminal", "grafico", "streamlit"
+
+function cambiarVistaMovil(vista) {
+  activeMobileView = vista;
+  const btns = {
+    editor: document.getElementById("btn-mobile-editor"),
+    terminal: document.getElementById("btn-mobile-terminal"),
+    grafico: document.getElementById("btn-mobile-grafico"),
+    streamlit: document.getElementById("btn-mobile-streamlit")
+  };
+
+  Object.values(btns).forEach(b => b && b.classList.remove("active"));
+  if (btns[vista]) btns[vista].classList.add("active");
+
+  const splitEl = document.getElementById("split-container");
+  if (!splitEl) return;
+
+  if (vista === "editor") {
+    splitEl.classList.add("view-editor");
+    splitEl.classList.remove("view-output");
+  } else {
+    splitEl.classList.add("view-output");
+    splitEl.classList.remove("view-editor");
+    cambiarTab(vista);
+  }
+}
+
+function toggleLayoutModoMovil() {
+  const splitEl = document.getElementById("split-container");
+  const iconEl = document.getElementById("icono-layout-mobile");
+  if (!splitEl) return;
+
+  if (mobileLayoutMode === "tab") {
+    mobileLayoutMode = "split";
+    splitEl.classList.remove("mobile-tab-mode", "view-editor", "view-output");
+    splitEl.classList.add("mobile-split-vertical");
+    if (iconEl) iconEl.className = "bi bi-square text-warning";
+    if (panelEditor) panelEditor.style.display = "flex";
+    const panelOut = document.getElementById("panel-output");
+    if (panelOut) panelOut.style.display = "flex";
+  } else {
+    mobileLayoutMode = "tab";
+    splitEl.classList.remove("mobile-split-vertical");
+    splitEl.classList.add("mobile-tab-mode");
+    if (iconEl) iconEl.className = "bi bi-layout-split text-info";
+    cambiarVistaMovil(activeMobileView);
+  }
+}
+
+// =======================================================
+// PAN & ZOOM GRÁFICO (MOUSE + TOUCH)
 // =======================================================
 const chartViewport = document.getElementById("tab-grafico");
 const dragLayer = document.getElementById("chart-drag-layer");
 
-chartViewport.addEventListener("mousedown", (e) => {
-  if (currentPlotType === "html" || e.button !== 0) return;
-  isPanning = true;
-  startX = e.clientX - panX;
-  startY = e.clientY - panY;
-  chartViewport.style.cursor = "grabbing";
-});
+if (chartViewport && dragLayer) {
+  chartViewport.addEventListener("mousedown", (e) => {
+    if (currentPlotType === "html" || e.button !== 0) return;
+    isPanning = true;
+    startX = e.clientX - panX;
+    startY = e.clientY - panY;
+    chartViewport.style.cursor = "grabbing";
+  });
 
-window.addEventListener("mousemove", (e) => {
-  if (!isPanning) return;
-  panX = e.clientX - startX;
-  panY = e.clientY - startY;
-  dragLayer.style.transform = `translate(${panX}px, ${panY}px) scale(${scaleGrafico})`;
-});
+  window.addEventListener("mousemove", (e) => {
+    if (!isPanning) return;
+    panX = e.clientX - startX;
+    panY = e.clientY - startY;
+    dragLayer.style.transform = `translate(${panX}px, ${panY}px) scale(${scaleGrafico})`;
+  });
 
-window.addEventListener("mouseup", () => {
-  isPanning = false;
-  chartViewport.style.cursor = "grab";
-});
+  window.addEventListener("mouseup", () => {
+    isPanning = false;
+    chartViewport.style.cursor = "grab";
+  });
 
-chartViewport.addEventListener("wheel", (e) => {
-  if (currentPlotType === "html") return;
-  e.preventDefault();
-  scaleGrafico = Math.min(Math.max(scaleGrafico + (e.deltaY < 0 ? 0.12 : -0.12), 0.4), 4.0);
-  dragLayer.style.transform = `translate(${panX}px, ${panY}px) scale(${scaleGrafico})`;
-  document.getElementById("grafico-zoom-label").innerText = Math.round(scaleGrafico * 100) + "%";
-}, { passive: false });
+  chartViewport.addEventListener("touchstart", (e) => {
+    if (currentPlotType === "html" || e.touches.length !== 1) return;
+    isPanning = true;
+    startX = e.touches[0].clientX - panX;
+    startY = e.touches[0].clientY - panY;
+  }, { passive: true });
+
+  window.addEventListener("touchmove", (e) => {
+    if (!isPanning || !e.touches || e.touches.length !== 1) return;
+    panX = e.touches[0].clientX - startX;
+    panY = e.touches[0].clientY - startY;
+    dragLayer.style.transform = `translate(${panX}px, ${panY}px) scale(${scaleGrafico})`;
+  }, { passive: true });
+
+  window.addEventListener("touchend", () => {
+    isPanning = false;
+  });
+
+  chartViewport.addEventListener("wheel", (e) => {
+    if (currentPlotType === "html") return;
+    e.preventDefault();
+    scaleGrafico = Math.min(Math.max(scaleGrafico + (e.deltaY < 0 ? 0.12 : -0.12), 0.4), 4.0);
+    dragLayer.style.transform = `translate(${panX}px, ${panY}px) scale(${scaleGrafico})`;
+    document.getElementById("grafico-zoom-label").innerText = Math.round(scaleGrafico * 100) + "%";
+  }, { passive: false });
+}
 
 function resetZoomGrafico() {
   scaleGrafico = 1.0;
   panX = 0;
   panY = 0;
-  dragLayer.style.transform = "translate(0px, 0px) scale(1)";
-  document.getElementById("grafico-zoom-label").innerText = "100%";
+  if (dragLayer) dragLayer.style.transform = "translate(0px, 0px) scale(1)";
+  const label = document.getElementById("grafico-zoom-label");
+  if (label) label.innerText = "100%";
 }
 
 function ajustarZoomGrafico(delta) {
   scaleGrafico = Math.min(Math.max(scaleGrafico + delta, 0.4), 4.0);
-  dragLayer.style.transform = `translate(${panX}px, ${panY}px) scale(${scaleGrafico})`;
-  document.getElementById("grafico-zoom-label").innerText = Math.round(scaleGrafico * 100) + "%";
+  if (dragLayer) dragLayer.style.transform = `translate(${panX}px, ${panY}px) scale(${scaleGrafico})`;
+  const label = document.getElementById("grafico-zoom-label");
+  if (label) label.innerText = Math.round(scaleGrafico * 100) + "%";
 }
 
 
@@ -90,6 +187,8 @@ function cambiarTab(tab) {
   const viewStreamlit = document.getElementById("tab-streamlit");
   const dotGraf = document.getElementById("grafico-dot");
   const dotStreamlit = document.getElementById("streamlit-dot");
+  const mobDotGraf = document.getElementById("mobile-grafico-dot");
+  const mobDotStreamlit = document.getElementById("mobile-streamlit-dot");
   
   const toolsTerm = document.getElementById("tools-consola");
   const toolsGraf = document.getElementById("tools-grafico");
@@ -108,11 +207,33 @@ function cambiarTab(tab) {
     if (viewGraf) viewGraf.classList.remove("d-none");
     if (toolsGraf) toolsGraf.classList.remove("d-none");
     if (dotGraf) dotGraf.classList.add("d-none");
+    if (mobDotGraf) mobDotGraf.classList.add("d-none");
   } else if (tab === 'streamlit') {
     if (btnStreamlit) btnStreamlit.classList.add("active");
     if (viewStreamlit) viewStreamlit.classList.remove("d-none");
     if (toolsStreamlit) toolsStreamlit.classList.remove("d-none");
     if (dotStreamlit) dotStreamlit.classList.add("d-none");
+    if (mobDotStreamlit) mobDotStreamlit.classList.add("d-none");
+  }
+
+  // Sincronización con barra móvil en resoluciones < 992px
+  if (window.innerWidth < 992 && mobileLayoutMode === "tab") {
+    const splitEl = document.getElementById("split-container");
+    if (activeMobileView !== "editor" && splitEl) {
+      splitEl.classList.add("view-output");
+      splitEl.classList.remove("view-editor");
+    }
+    const btns = {
+      terminal: document.getElementById("btn-mobile-terminal"),
+      grafico: document.getElementById("btn-mobile-grafico"),
+      streamlit: document.getElementById("btn-mobile-streamlit")
+    };
+    if (btns[tab]) {
+      const mobEditorBtn = document.getElementById("btn-mobile-editor");
+      if (mobEditorBtn && activeMobileView !== "editor") mobEditorBtn.classList.remove("active");
+      Object.values(btns).forEach(b => b && b.classList.remove("active"));
+      btns[tab].classList.add("active");
+    }
   }
 }
 

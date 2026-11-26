@@ -9,6 +9,7 @@
 
     html, body {
       height: 100vh;
+      height: 100dvh;
       width: 100vw;
       margin: 0;
       padding: 0;
@@ -23,8 +24,10 @@
       display: flex;
       flex-direction: column;
       height: 100vh;
+      height: 100dvh;
       padding: 10px 16px;
       gap: 10px;
+      box-sizing: border-box;
     }
 
     header {
@@ -870,4 +873,245 @@
     }
     body.theme-light ::-webkit-scrollbar-thumb:hover {
       background: #94a3b8;
+    }
+
+    /* =======================================================
+       RESPONSIVE DESIGN SYSTEM (MOBILE, TABLET & DESKTOP)
+       ======================================================= */
+
+    .mobile-nav-bar {
+      flex-shrink: 0;
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 8px;
+      gap: 8px;
+      overflow-x: auto;
+      user-select: none;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+    }
+
+    .mobile-segmented-group {
+      display: flex;
+      background: rgba(0, 0, 0, 0.35);
+      padding: 3px;
+      border-radius: 6px;
+      border: 1px solid var(--panel-border);
+      gap: 3px;
+      flex: 1;
+      overflow-x: auto;
+    }
+
+    .mobile-segment-btn {
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      font-family: var(--code-font);
+      font-size: 11.5px;
+      font-weight: 600;
+      padding: 6px 10px;
+      border-radius: 5px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      white-space: nowrap;
+      transition: all 0.2s ease;
+      flex: 1;
+      min-height: 36px;
+    }
+
+    .mobile-segment-btn:hover {
+      color: #f1f5f9;
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .mobile-segment-btn.active {
+      background: var(--panel-bg);
+      color: var(--cyan-neon) !important;
+      box-shadow: 0 0 10px var(--cyan-neon-glow);
+      border: 1px solid var(--cyan-neon);
+    }
+
+    /* Tabs de Salida con Scroll Horizontal Oculto */
+    .output-tabs-scroll {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      overflow-x: auto;
+      white-space: nowrap;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    .output-tabs-scroll::-webkit-scrollbar {
+      display: none;
+    }
+
+    /* Breakpoint para Tablets y Móviles (< 992px) */
+    @media (max-width: 991.98px) {
+      .app-viewport {
+        height: 100vh;
+        height: 100dvh;
+        padding: 6px 8px;
+        gap: 6px;
+      }
+
+      header {
+        height: auto;
+        min-height: 48px;
+        padding: 6px 12px;
+        gap: 8px;
+      }
+
+      #select-plantillas {
+        max-width: 160px;
+      }
+
+      /* Modo Pestañas en Móvil (Un panel activo a la vez) */
+      .split-container.mobile-tab-mode {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .split-container.mobile-tab-mode #drag-gutter {
+        display: none !important;
+      }
+
+      .split-container.mobile-tab-mode.view-editor #panel-editor {
+        display: flex !important;
+        width: 100% !important;
+        height: 100% !important;
+        flex: 1;
+      }
+      .split-container.mobile-tab-mode.view-editor #panel-output {
+        display: none !important;
+      }
+
+      .split-container.mobile-tab-mode.view-output #panel-editor {
+        display: none !important;
+      }
+      .split-container.mobile-tab-mode.view-output #panel-output {
+        display: flex !important;
+        width: 100% !important;
+        height: 100% !important;
+        flex: 1;
+      }
+
+      /* Modo Dividido Vertical (Opcional para Tablets / Pantallas horizontales) */
+      .split-container.mobile-split-vertical {
+        display: flex;
+        flex-direction: column;
+      }
+      .split-container.mobile-split-vertical #panel-editor {
+        display: flex !important;
+        width: 100% !important;
+        height: 48% !important;
+      }
+      .split-container.mobile-split-vertical #drag-gutter {
+        display: flex !important;
+        width: 100% !important;
+        height: 10px !important;
+        cursor: row-resize;
+      }
+      .split-container.mobile-split-vertical #drag-gutter::after {
+        width: 40px !important;
+        height: 2px !important;
+      }
+      .split-container.mobile-split-vertical #panel-output {
+        display: flex !important;
+        width: 100% !important;
+        flex: 1;
+      }
+
+      .panel-toolbar {
+        height: auto;
+        min-height: 40px;
+        padding: 4px 8px;
+        gap: 6px;
+      }
+
+      .panel-footer {
+        height: auto;
+        min-height: 44px;
+        padding: 6px 10px;
+      }
+
+      .btn-run {
+        padding: 8px 18px;
+        min-height: 40px;
+        font-size: 13px;
+      }
+
+      .zoom-toolbar {
+        padding: 1px 3px;
+      }
+      .zoom-btn {
+        padding: 2px 6px;
+      }
+
+      /* Modales Responsivos */
+      .modal-dialog {
+        margin: 0.5rem;
+      }
+    }
+
+    /* Breakpoint para Móviles Pequeños (< 576px) */
+    @media (max-width: 575.98px) {
+      .app-viewport {
+        padding: 4px;
+        gap: 4px;
+      }
+
+      header {
+        padding: 4px 8px;
+      }
+
+      #select-plantillas {
+        max-width: 125px;
+        font-size: 11px;
+      }
+
+      .mobile-segment-btn {
+        font-size: 10.5px;
+        padding: 4px 6px;
+      }
+
+      .panel-toolbar {
+        padding: 3px 6px;
+      }
+
+      .zoom-toolbar {
+        padding: 1px 2px;
+      }
+      .zoom-btn {
+        padding: 2px 4px;
+        font-size: 11px;
+      }
+      .zoom-label {
+        min-width: 30px;
+        font-size: 10.5px;
+      }
+    }
+
+    /* Modo Claro - Adaptaciones Responsive */
+    body.theme-light .mobile-nav-bar {
+      background: #ffffff !important;
+      border-color: #cbd5e1 !important;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05) !important;
+    }
+    body.theme-light .mobile-segmented-group {
+      background: #f1f5f9 !important;
+      border-color: #cbd5e1 !important;
+    }
+    body.theme-light .mobile-segment-btn {
+      color: #475569 !important;
+    }
+    body.theme-light .mobile-segment-btn:hover {
+      color: #0f172a !important;
+      background: #e2e8f0 !important;
+    }
+    body.theme-light .mobile-segment-btn.active {
+      background: #ffffff !important;
+      color: #0284c7 !important;
+      border-color: #0284c7 !important;
+      box-shadow: 0 1px 4px rgba(2, 132, 199, 0.2) !important;
     }

@@ -1,37 +1,24 @@
 # 🐍 CHECKPOINT MAESTRO: JPV PYSTUDIO (EDICIÓN ESTÁNDAR HTML/CSS/JS)
-> **Fecha de Actualización:** 24 de Noviembre de 2026 - 12:57 PM  
+> **Fecha de Actualización:** 25 de Noviembre de 2026 - 10:30 PM  
 > **Proyecto:** JPV PyStudio // WebAssembly Pro Studio  
 > **Ubicación:** `C:\Users\User\Desktop\CARPETA DE TRABAJO DE ANTIGRAVITY CLI-JPV\JPV_PyStudio`  
-> **Arquitectura:** Modular Web App (HTML5 Semántico, CSS3 Modular, JS Vanilla ES6+, Pyodide 0.26.1 Wasm, stlite Streamlit)  
-> **Estructura Modular:** `index.html` (540 líneas), `css/styles.css` (873 líneas), 12 módulos JavaScript en `js/`  
+> **Arquitectura:** Modular Web App Responsive (HTML5 Semántico, CSS3 Responsive Grid/Flexbox, JS Vanilla ES6+, Pyodide 0.26.1 Wasm, stlite Streamlit)  
+> **Estructura Modular:** `index.html` (600 líneas), `css/styles.css` (1,115 líneas), 12 módulos JavaScript en `js/`  
 > **Autor & Creador:** Ing. Juancito Peña Vizcaíno  
 > **Repositorio:** `https://github.com/JUANCITOPENA/JPV_PyStudio`  
 > **Despliegue en Vivo:** `https://juancitopena.github.io/JPV_PyStudio/`  
 
 ---
 
-## 📍 1. RESUMEN EJECUTIVO DE LA MODULARIZACIÓN
+## 📍 1. RESUMEN EJECUTIVO DE LA MODULARIZACIÓN Y RESPONSIVE PRO
 
-El código del proyecto ha sido **dividido y estructurado al 100%** de forma limpia, desacoplada y mantenible, conservando con total exactitud cada funcionalidad, estilo visual, atajo de teclado, comportamiento interactivo y adaptabilidad:
+El código del proyecto ha sido **completamente optimizado para diseño responsive tipo profesional** desde dispositivos móviles (320px - 480px) hasta monitores UltraWide (+1920px):
 
-* **`index.html`** (540 líneas): Reducido de 6,633 líneas monolíticas a un documento declarativo limpio, ordenado y semántico, con enlaces a las hojas de estilo y módulos de script.
-* **`css/styles.css`** (873 líneas): Contiene todas las variables CSS, estilos de workspace, layout responsivo 100vh, paneles, pestañas, modal de captura HD, badges AST y temas (Dark Studio / Light WCAG AAA).
-* **`js/` (12 Módulos Especializados)**:
-  1. `js/globals.js`: Estado reactivo global y referencias cacheadas al DOM.
-  2. `js/vfs.js`: Virtual File System, subida de archivos, Drag & Drop y explorador de memoria RAM.
-  3. `js/terminal.js`: Salida interactiva en tiempo real y solicitud de `input()` por consola.
-  4. `js/visualizer.js`: Renderizado unificado de gráficos, selector de fondos (blanco, oscuro, transparente), descargas PNG/HTML/CSV.
-  5. `js/templates.js`: Catálogo de 13 plantillas maestras Python/Streamlit completas, con la plantilla `dashboard_tokens` actualizada con soporte para streaming en vivo vía puente CORS y datos reales de NVDA ($150.88 / cierre $165.05 / pico $171.50).
-  6. `js/editor.js`: Resaltador Prism Okaidia, autocompletado inteligente, snippets y atajos de teclado.
-  7. `js/layout.js`: Splitter de paneles, zoom de editor/consola/gráficos, maximizado y cambio de pestañas.
-  8. `js/diagnostics.js`: Parser pedagógico de tracebacks Python y generador de sugerencias amigables.
-  9. `js/pyodide-engine.js`: Motor WebAssembly Pyodide 0.26.1, resolución automática de paquetes con micropip filtrando módulos de la librería estándar (`sys.stdlib_module_names`) para evitar fallos de rueda pura.
-  10. `js/streamlit-engine.js`: Detección y ejecución en iframe aislado de Streamlit (stlite) con lista negra de exclusión de módulos de librería estándar (`urllib`, `urllib3`, `http`, `csv`, etc.) para prevenir errores de `micropip`.
-  11. `js/captures.js`: Suite completa de capturas HD (código Okaidia, terminal, streamlit, pantalla completa y empaquetado ZIP).
-  12. `js/app.js`: Descarga de script `.py`, detección AST en tiempo real, selector de plantillas, modos de inicio, toggle de tema y arranque en `DOMContentLoaded`.
-* **Herramientas de Puente de Datos en Vivo**:
-  * `bridge_mercado.py`: Servidor HTTP multihilo local (`http://127.0.0.1:8088/api/chart`) con inyección de cabeceras CORS (`Access-Control-Allow-Origin: *`) y retransmisión oficial de Yahoo Finance con User-Agent seguro.
-  * `INICIAR_PUENTE_MERCADO.bat`: Lanzador en un clic para Windows.
+* **`index.html`** (600 líneas): Header dinámico con menú dropdown de herramientas en pantallas reducidas, barra de navegación móvil segmentada (`#mobile-view-nav`), toolbars adaptativas para editor y paneles de salida con scroll horizontal invisible y soporte WCAG 2.2 AA.
+* **`css/styles.css`** (1,115 líneas): Dynamic Viewport Height (`100dvh`), sistema de breakpoints (`< 576px`, `< 992px`, `>= 992px`), soporte completo para modo pestañas móvil (`.mobile-tab-mode`) y modo dividido vertical (`.mobile-split-vertical`), y compatibilidad perfecta en Dark Studio y Light Mode (WCAG AAA).
+* **`js/layout.js`**: Incorporación de gestos táctiles (`touchstart`, `touchmove`, `touchend`) para el redimensionamiento del splitter en tablets/iPads y pan/zoom en gráficos; funciones de cambio de vista segmentada móvil (`cambiarVistaMovil`) y alternancia de layout móvil (`toggleLayoutModoMovil`).
+* **`js/app.js`**: Detección reactiva de resolución en `DOMContentLoaded` y listener adaptativo en `window.onresize`.
+* **`js/pyodide-engine.js`**: Badges de estado WebAssembly compactos y responsivos para móviles (`Listo` / `Wasm...`).
 
 ---
 
@@ -55,7 +42,8 @@ El código del proyecto ha sido **dividido y estructurado al 100%** de forma lim
 
 Todos los puntos de restauración críticos se encuentran resguardados en `C:\Users\User\Desktop\CARPETA DE TRABAJO DE ANTIGRAVITY CLI-JPV\JPV_PyStudio\.backup\`:
 
-1. `index.html.bak_ACTUAL_STATUS_20261124_1248` ⬅️ **[ESTADO ACTUAL COMPLETO]** (270,307 bytes)
+0. `pre_responsive_20261125_2222/` ⬅️ **[PUNTO DE RESTAURACIÓN PRE-RESPONSIVE]** (`index.html`, `css/`, `js/`)
+1. `index.html.bak_ACTUAL_STATUS_20261124_1248` (270,307 bytes)
 2. `index.html.bak_20261124_124700` (270,307 bytes)
 3. `index.html.bak_20261123_175720_fix_captura_streamlit_graficos` (259,602 bytes)
 4. `index.html.bak_20261123_144100` (234,430 bytes)

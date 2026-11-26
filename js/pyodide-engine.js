@@ -443,10 +443,10 @@ async function bootWasm() {
   const btn = document.getElementById("btn-run");
 
   try {
-    badge.innerHTML = `<span class="spinner-border spinner-border-sm"></span> Iniciando Wasm Core...`;
+    badge.innerHTML = `<span class="spinner-border spinner-border-sm"></span> <span class="d-none d-md-inline">Iniciando Wasm Core...</span><span class="d-inline d-md-none">Wasm...</span>`;
     pyodideInstance = await loadPyodide();
 
-    badge.innerHTML = `<span class="spinner-border spinner-border-sm"></span> Cargando base científica...`;
+    badge.innerHTML = `<span class="spinner-border spinner-border-sm"></span> <span class="d-none d-md-inline">Cargando base científica...</span><span class="d-inline d-md-none">Base...</span>`;
     // Carga inicial mínima y rápida: NumPy, Pandas, Matplotlib, Micropip
     await pyodideInstance.loadPackage(["pandas", "numpy", "matplotlib", "micropip"]);
     for (const [fn, content] of Object.entries(WASM_BUILTIN_SHIMS)) {
@@ -1082,8 +1082,9 @@ def __exportar_df_csv(df_name):
     `);
 
     // Listo de inmediato
-    badge.className = "badge bg-dark border border-success text-success px-3 py-1";
-    badge.innerHTML = `<i class="bi bi-check-circle-fill"></i> Motor Wasm Listo (Auto-Detección Activa)`;
+    badge.className = "badge bg-dark border border-success text-success d-flex align-items-center gap-1 px-2 px-md-3 py-1";
+    badge.title = "Motor Wasm Listo (Auto-Detección Activa)";
+    badge.innerHTML = `<i class="bi bi-check-circle-fill"></i> <span class="d-none d-md-inline">Motor Wasm Listo (Auto-Detección Activa)</span><span class="d-inline d-md-none">Listo</span>`;
     btn.disabled = false;
     
     terminal.textContent = `# 🐍 JPV PyStudio Pro inicializado con éxito.

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <link rel="icon" type="image/png" href="https://silentinstallhq.com/wp-content/uploads/2025/09/Python.png">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
   <title>JPV PyStudio // WebAssembly Pro Studio (Folium • Plotly • Seaborn • NetworkX • Excel)</title>
   
   <!-- Bootstrap 5 CSS & JS -->
@@ -48,7 +48,7 @@
            class="rounded-circle border border-info" 
            style="width: 30px; height: 30px; object-fit: cover; box-shadow: 0 0 8px rgba(0, 242, 254, 0.35);">
       <span class="fw-bold fs-6">JPV <span class="text-info">PyStudio</span></span>
-      <span class="badge bg-dark border border-info text-info d-none d-lg-inline ms-1" style="font-size: 11px;">
+      <span class="badge bg-dark border border-info text-info d-none d-xl-inline ms-1" style="font-size: 11px;">
         <i class="bi bi-globe-americas text-info"></i> Streamlit • Folium Maps • Plotly • Seaborn • NetworkX • WordCloud • Excel
       </span>
 
@@ -59,7 +59,7 @@
               onclick="toggleModoTema()" 
               title="Cambiar a Modo Claro">
         <i id="icono-tema" class="bi bi-sun-fill text-warning"></i>
-        <span id="texto-tema" class="text-light">Modo Claro</span>
+        <span id="texto-tema" class="text-light d-none d-sm-inline">Modo Claro</span>
       </button>
     </div>
 
@@ -86,29 +86,71 @@
 
       <input type="file" id="input-archivo-local" accept=".csv, .xlsx, .xls, .json, .txt, .parquet" style="display: none;" onchange="manejarSubidaArchivo(this)">
       
-      <button class="btn btn-sm btn-outline-info btn-action" onclick="document.getElementById('input-archivo-local').click()" title="Cargar archivo local desde la PC">
-        <i class="bi bi-upload"></i> Subir CSV / Excel
-      </button>
+      <!-- Botones de Acción Desktop (>= 992px) -->
+      <div class="d-none d-lg-flex align-items-center gap-2">
+        <button class="btn btn-sm btn-outline-info btn-action" onclick="document.getElementById('input-archivo-local').click()" title="Cargar archivo local desde la PC">
+          <i class="bi bi-upload"></i> Subir CSV / Excel
+        </button>
 
-      <button class="btn btn-sm btn-outline-warning text-warning fw-semibold btn-action" onclick="mostrarArchivosEnMemoria()" title="Ver y gestionar archivos en la memoria virtual">
-        <i class="bi bi-folder2-open"></i> Archivos (VFS)
-      </button>
+        <button class="btn btn-sm btn-outline-warning text-warning fw-semibold btn-action" onclick="mostrarArchivosEnMemoria()" title="Ver y gestionar archivos en la memoria virtual">
+          <i class="bi bi-folder2-open"></i> Archivos (VFS)
+        </button>
 
-      <button id="btn-captura-pantalla" class="btn btn-sm btn-outline-light text-light fw-semibold btn-action" onclick="capturarPantallaCompletaPNG()" title="Capturar pantalla completa de PyStudio en imagen PNG HD">
-        <i class="bi bi-camera-fill text-warning"></i> Captura Pantalla
-      </button>
+        <button id="btn-captura-pantalla" class="btn btn-sm btn-outline-light text-light fw-semibold btn-action" onclick="capturarPantallaCompletaPNG()" title="Capturar pantalla completa de PyStudio en imagen PNG HD">
+          <i class="bi bi-camera-fill text-warning"></i> Captura Pantalla
+        </button>
 
-      <button id="btn-descargar-suite" class="btn btn-sm btn-outline-success text-success fw-semibold btn-action" onclick="descargarSuiteGlobal()" title="Descargar Suite Completa: Código, Consola, Gráficos y Streamlit en un solo archivo">
-        <i class="bi bi-box-seam-fill text-warning"></i> Descargar Todo (Suite)
-      </button>
+        <button id="btn-descargar-suite" class="btn btn-sm btn-outline-success text-success fw-semibold btn-action" onclick="descargarSuiteGlobal()" title="Descargar Suite Completa: Código, Consola, Gráficos y Streamlit en un solo archivo">
+          <i class="bi bi-box-seam-fill text-warning"></i> Descargar Todo (Suite)
+        </button>
+      </div>
 
-      <span id="badge-estado" class="badge bg-dark border border-warning text-warning d-flex align-items-center gap-2 px-3 py-1">
-        <span class="spinner-border spinner-border-sm"></span> Cargando WebAssembly...
+      <!-- Menú Desplegable Herramientas Móvil (< 992px) -->
+      <div class="dropdown d-inline-block d-lg-none">
+        <button class="btn btn-sm btn-outline-info dropdown-toggle btn-action py-1 px-2 fw-semibold" type="button" id="dropdownMobileTools" data-bs-toggle="dropdown" aria-expanded="false" title="Herramientas y Acciones">
+          <i class="bi bi-tools"></i> <span class="d-none d-sm-inline">Herramientas</span>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark border-secondary shadow-lg" aria-labelledby="dropdownMobileTools">
+          <li><a class="dropdown-item small d-flex align-items-center gap-2" href="javascript:void(0)" onclick="document.getElementById('input-archivo-local').click()"><i class="bi bi-upload text-info"></i> Subir CSV / Excel</a></li>
+          <li><a class="dropdown-item small d-flex align-items-center gap-2" href="javascript:void(0)" onclick="mostrarArchivosEnMemoria()"><i class="bi bi-folder2-open text-warning"></i> Archivos en Memoria (VFS)</a></li>
+          <li><hr class="dropdown-divider border-secondary my-1"></li>
+          <li><a class="dropdown-item small d-flex align-items-center gap-2" href="javascript:void(0)" onclick="capturarPantallaCompletaPNG()"><i class="bi bi-camera-fill text-warning"></i> Capturar Pantalla Completa</a></li>
+          <li><a class="dropdown-item small d-flex align-items-center gap-2" href="javascript:void(0)" onclick="descargarSuiteGlobal()"><i class="bi bi-box-seam-fill text-success"></i> Descargar Todo (Suite Completa)</a></li>
+        </ul>
+      </div>
+
+      <span id="badge-estado" class="badge bg-dark border border-warning text-warning d-flex align-items-center gap-2 px-2 px-md-3 py-1" title="Estado de WebAssembly">
+        <span class="spinner-border spinner-border-sm"></span>
+        <span class="d-none d-md-inline" id="badge-estado-texto">Cargando WebAssembly...</span>
       </span>
     </div>
   </header>
 
-  <main class="split-container" id="split-container">
+  <!-- Navegación Segmentada Móvil (< 992px) -->
+  <nav id="mobile-view-nav" class="mobile-nav-bar d-flex d-lg-none align-items-center justify-content-between px-2 py-1" aria-label="Navegación de Workspace Móvil">
+    <div class="mobile-segmented-group" role="group">
+      <button id="btn-mobile-editor" type="button" class="mobile-segment-btn active" onclick="cambiarVistaMovil('editor')" title="Ver Editor de Código">
+        <i class="bi bi-code-slash text-info"></i> <span>Editor</span>
+      </button>
+      <button id="btn-mobile-terminal" type="button" class="mobile-segment-btn" onclick="cambiarVistaMovil('terminal')" title="Ver Consola y Tablas">
+        <i class="bi bi-terminal text-info"></i> <span>Consola</span>
+      </button>
+      <button id="btn-mobile-grafico" type="button" class="mobile-segment-btn" onclick="cambiarVistaMovil('grafico')" title="Ver Gráficos">
+        <i class="bi bi-pie-chart text-info"></i> <span>Gráficos</span>
+        <span id="mobile-grafico-dot" class="badge rounded-pill bg-info p-1 d-none"></span>
+      </button>
+      <button id="btn-mobile-streamlit" type="button" class="mobile-segment-btn" onclick="cambiarVistaMovil('streamlit')" title="Ver Streamlit App">
+        <span>🎈</span> <span>Streamlit</span>
+        <span id="mobile-streamlit-dot" class="badge rounded-pill bg-danger p-1 d-none"></span>
+      </button>
+    </div>
+    
+    <button id="btn-toggle-layout-mobile" class="btn btn-sm btn-outline-secondary py-1 px-2 ms-2" onclick="toggleLayoutModoMovil()" title="Alternar entre Vista de Pestañas y Dividida Vertical">
+      <i id="icono-layout-mobile" class="bi bi-layout-split text-info"></i>
+    </button>
+  </nav>
+
+  <main class="split-container mobile-tab-mode view-editor" id="split-container">
     
     <!-- Panel Editor -->
     <section id="panel-editor" class="ide-panel">
@@ -121,25 +163,42 @@
           </span>
         </div>
 
-        <div class="d-flex align-items-center gap-2">
-          <button class="btn btn-sm btn-outline-info py-0 px-2 fw-semibold" onclick="activarLienzoVacio()" title="Dejar el editor vacío para pegar tu propio código" style="font-size: 11px;">
-            <i class="bi bi-file-earmark-plus"></i> Lienzo Vacío
-          </button>
-          <button class="btn btn-sm btn-dark text-info border border-secondary py-0 px-2" onclick="cargarEjemploPractica()" title="Cargar código de ejemplo para practicar" style="font-size: 11px;">
-            <i class="bi bi-play-circle"></i> Ejemplo Práctica
-          </button>
-          <button id="btn-capturar-codigo-png" class="btn btn-sm btn-outline-warning py-0 px-2 fw-semibold d-flex align-items-center gap-1" onclick="abrirModalCapturaCodigo()" title="Capturar el código completo en una imagen PNG descargable" style="font-size: 11px;">
-            <i class="bi bi-camera-fill"></i> <span>Capturar en PNG</span>
-          </button>
-          <button id="btn-descargar-script-py" class="btn btn-sm btn-outline-success py-0 px-2 fw-semibold d-flex align-items-center gap-1" onclick="descargarScriptPython()" title="Descargar código fuente actual (.py)" style="font-size: 11px;">
-            <i class="bi bi-download"></i> <span>Descargar .py</span>
-          </button>
+        <div class="d-flex align-items-center gap-1 gap-md-2">
+          <!-- Botones de Acción Desktop (>= 768px) -->
+          <div class="d-none d-md-flex align-items-center gap-1 gap-md-2">
+            <button class="btn btn-sm btn-outline-info py-0 px-2 fw-semibold" onclick="activarLienzoVacio()" title="Dejar el editor vacío para pegar tu propio código" style="font-size: 11px;">
+              <i class="bi bi-file-earmark-plus"></i> <span class="d-none d-xl-inline">Lienzo Vacío</span>
+            </button>
+            <button class="btn btn-sm btn-dark text-info border border-secondary py-0 px-2" onclick="cargarEjemploPractica()" title="Cargar código de ejemplo para practicar" style="font-size: 11px;">
+              <i class="bi bi-play-circle"></i> <span class="d-none d-xl-inline">Ejemplo Práctica</span>
+            </button>
+            <button id="btn-capturar-codigo-png" class="btn btn-sm btn-outline-warning py-0 px-2 fw-semibold d-flex align-items-center gap-1" onclick="abrirModalCapturaCodigo()" title="Capturar el código completo en una imagen PNG descargable" style="font-size: 11px;">
+              <i class="bi bi-camera-fill"></i> <span class="d-none d-lg-inline">Capturar en PNG</span>
+            </button>
+            <button id="btn-descargar-script-py" class="btn btn-sm btn-outline-success py-0 px-2 fw-semibold d-flex align-items-center gap-1" onclick="descargarScriptPython()" title="Descargar código fuente actual (.py)" style="font-size: 11px;">
+              <i class="bi bi-download"></i> <span class="d-none d-lg-inline">Descargar .py</span>
+            </button>
+          </div>
+
+          <!-- Menú Desplegable Acciones Móvil (< 768px) -->
+          <div class="dropdown d-inline-block d-md-none">
+            <button class="btn btn-sm btn-outline-secondary py-0 px-2 text-light" type="button" id="dropdownEditorActions" data-bs-toggle="dropdown" aria-expanded="false" title="Acciones de Editor">
+              <i class="bi bi-three-dots"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-dark border-secondary shadow-lg" aria-labelledby="dropdownEditorActions">
+              <li><a class="dropdown-item small d-flex align-items-center gap-2" href="javascript:void(0)" onclick="activarLienzoVacio()"><i class="bi bi-file-earmark-plus text-info"></i> Lienzo Vacío</a></li>
+              <li><a class="dropdown-item small d-flex align-items-center gap-2" href="javascript:void(0)" onclick="cargarEjemploPractica()"><i class="bi bi-play-circle text-success"></i> Ejemplo Práctica</a></li>
+              <li><hr class="dropdown-divider border-secondary my-1"></li>
+              <li><a class="dropdown-item small d-flex align-items-center gap-2" href="javascript:void(0)" onclick="abrirModalCapturaCodigo()"><i class="bi bi-camera-fill text-warning"></i> Capturar Código en PNG</a></li>
+              <li><a class="dropdown-item small d-flex align-items-center gap-2" href="javascript:void(0)" onclick="descargarScriptPython()"><i class="bi bi-download text-success"></i> Descargar Script (.py)</a></li>
+            </ul>
+          </div>
 
           <div class="zoom-toolbar">
             <button class="zoom-btn" onclick="ajustarZoomEditor(-1)" title="Reducir fuente"><i class="bi bi-dash"></i></button>
             <span id="editor-zoom-label" class="zoom-label">13px</span>
             <button class="zoom-btn" onclick="ajustarZoomEditor(1)" title="Aumentar fuente"><i class="bi bi-plus"></i></button>
-            <button class="zoom-btn" onclick="resetZoomEditor()" title="Resetear"><i class="bi bi-arrow-counterclockwise"></i></button>
+            <button class="zoom-btn d-none d-sm-flex" onclick="resetZoomEditor()" title="Resetear"><i class="bi bi-arrow-counterclockwise"></i></button>
           </div>
 
           <button class="btn btn-sm btn-dark text-warning border border-secondary py-0 px-2 fw-bold" onclick="toggleMaximize('panel-editor')" title="Maximizar panel">
@@ -221,25 +280,25 @@ print("\n💾 Archivo 'Reporte_Titanic_Descargado.csv' listo para descargar.")
     <!-- Panel Salida -->
     <section id="panel-output" class="ide-panel">
       <div class="panel-header panel-toolbar">
-        <div class="d-flex align-items-center gap-1">
+        <div class="output-tabs-scroll d-flex align-items-center gap-1 me-auto">
           <button id="tab-btn-terminal" class="tab-btn active" onclick="cambiarTab('terminal')">
-            <i class="bi bi-terminal"></i> Consola / Tablas
+            <i class="bi bi-terminal"></i> <span class="d-none d-sm-inline">Consola / Tablas</span><span class="d-inline d-sm-none">Consola</span>
           </button>
           <button id="tab-btn-grafico" class="tab-btn" onclick="cambiarTab('grafico')">
             <i class="bi bi-pie-chart"></i> Gráfico
             <span id="grafico-dot" class="badge rounded-pill bg-info p-1 d-none"></span>
           </button>
           <button id="tab-btn-streamlit" class="tab-btn" onclick="cambiarTab('streamlit')">
-            <span style="font-size: 13px;">🎈</span> Streamlit App
+            <span style="font-size: 13px;">🎈</span> <span class="d-none d-sm-inline">Streamlit App</span><span class="d-inline d-sm-none">Streamlit</span>
             <span id="streamlit-dot" class="badge rounded-pill bg-danger p-1 d-none"></span>
           </button>
         </div>
 
-        <div class="d-flex align-items-center gap-2">
+        <div class="d-flex align-items-center gap-1 gap-md-2">
           <!-- Herramientas Consola -->
           <div id="tools-consola" class="d-flex align-items-center gap-1">
             <button id="btn-dl-table" class="btn btn-outline-success btn-action" onclick="descargarTablaCSV()" title="Descargar DataFrame o CSV">
-              <i class="bi bi-file-earmark-excel"></i> Descargar Excel / CSV
+              <i class="bi bi-file-earmark-excel"></i> <span class="d-none d-md-inline">Descargar Excel / CSV</span>
             </button>
             <div class="zoom-toolbar">
               <button class="zoom-btn" onclick="ajustarZoomConsola(-1)" title="Reducir fuente"><i class="bi bi-dash"></i></button>
@@ -249,10 +308,10 @@ print("\n💾 Archivo 'Reporte_Titanic_Descargado.csv' listo para descargar.")
           </div>
 
           <!-- Herramientas Gráficos -->
-          <div id="tools-grafico" class="d-flex align-items-center gap-2 d-none">
+          <div id="tools-grafico" class="d-flex align-items-center gap-1 gap-md-2 d-none">
             <!-- Selector de Fondo (Presentar / Descargar) -->
             <div id="contenedor-selector-fondo" class="d-flex align-items-center gap-1 bg-dark border border-secondary rounded px-2 py-0" style="height: 28px;">
-              <span class="text-warning small fw-bold" style="font-size: 11.5px;"><i class="bi bi-palette"></i> Fondo:</span>
+              <span class="text-warning small fw-bold d-none d-sm-inline" style="font-size: 11.5px;"><i class="bi bi-palette"></i> Fondo:</span>
               <select id="select-fondo-grafico" class="form-select form-select-sm bg-dark text-warning border-0 p-0 shadow-none fw-bold" style="font-size: 11px; width: auto; cursor: pointer;" onchange="cambiarFondoGrafico(this.value)" title="Elegir fondo para presentar y descargar el gráfico">
                 <option value="negro" selected>🌙 Negro</option>
                 <option value="blanco">☀️ Blanco</option>
@@ -261,37 +320,37 @@ print("\n💾 Archivo 'Reporte_Titanic_Descargado.csv' listo para descargar.")
             </div>
 
             <button id="btn-open-html-tab" class="btn btn-outline-warning btn-action d-none" onclick="abrirVisualizacionEnPestana()" title="Abrir visualización interactiva en una pestaña nueva">
-              <i class="bi bi-box-arrow-up-right"></i> Abrir en Pestaña
+              <i class="bi bi-box-arrow-up-right"></i> <span class="d-none d-md-inline">Abrir</span>
             </button>
 
             <button id="btn-dl-html" class="btn btn-outline-primary text-info border-info btn-action d-none" onclick="descargarVisualizacionHTML()" title="Descargar archivo HTML interactivo">
-              <i class="bi bi-filetype-html"></i> Guardar HTML
+              <i class="bi bi-filetype-html"></i> <span class="d-none d-md-inline">Guardar HTML</span>
             </button>
 
             <button id="btn-dl-plot" class="btn btn-outline-info btn-action" onclick="descargarGraficoPNG()" title="Guardar imagen PNG del gráfico" disabled>
-              <i class="bi bi-download"></i> Guardar PNG
+              <i class="bi bi-download"></i> <span class="d-none d-md-inline">Guardar PNG</span>
             </button>
             <div id="zoom-toolbar-grafico" class="zoom-toolbar">
               <button class="zoom-btn" onclick="ajustarZoomGrafico(-0.15)" title="Alejar"><i class="bi bi-zoom-out"></i></button>
               <span id="grafico-zoom-label" class="zoom-label">100%</span>
               <button class="zoom-btn" onclick="ajustarZoomGrafico(0.15)" title="Acercar"><i class="bi bi-zoom-in"></i></button>
-              <button class="zoom-btn" onclick="resetZoomGrafico()" title="Centrar"><i class="bi bi-arrows-collapse"></i></button>
+              <button class="zoom-btn d-none d-sm-flex" onclick="resetZoomGrafico()" title="Centrar"><i class="bi bi-arrows-collapse"></i></button>
             </div>
           </div>
 
           <!-- Herramientas Streamlit -->
-          <div id="tools-streamlit" class="d-flex align-items-center gap-2 d-none">
+          <div id="tools-streamlit" class="d-flex align-items-center gap-1 gap-md-2 d-none">
             <button id="btn-capturar-streamlit" class="btn btn-sm btn-dark text-warning border border-secondary py-0 px-2 fw-bold" onclick="capturarStreamlitPNG()" title="Capturar imagen PNG de la App Streamlit">
               <i class="bi bi-camera-fill"></i>
             </button>
             <button id="btn-open-streamlit-tab" class="btn btn-outline-danger btn-action" onclick="abrirStreamlitEnPestana()" title="Abrir Streamlit App en una pestaña nueva">
-              <i class="bi bi-box-arrow-up-right"></i> Abrir en Pestaña
+              <i class="bi bi-box-arrow-up-right"></i> <span class="d-none d-md-inline">Abrir</span>
             </button>
             <button id="btn-dl-streamlit" class="btn btn-outline-info btn-action" onclick="descargarStreamlitHTML()" title="Descargar Dashboard Streamlit en HTML autónomo">
-              <i class="bi bi-download"></i> Guardar HTML
+              <i class="bi bi-download"></i> <span class="d-none d-md-inline">Guardar HTML</span>
             </button>
             <button id="btn-reload-streamlit" class="btn btn-outline-warning btn-action" onclick="recargarStreamlitApp()" title="Recargar aplicación Streamlit">
-              <i class="bi bi-arrow-clockwise"></i> Recargar
+              <i class="bi bi-arrow-clockwise"></i> <span class="d-none d-md-inline">Recargar</span>
             </button>
           </div>
 
@@ -461,15 +520,15 @@ print("\n💾 Archivo 'Reporte_Titanic_Descargado.csv' listo para descargar.")
         <div class="small text-secondary" style="font-size: 11px;">
           <i class="bi bi-check2-circle text-success"></i> Captura del 100% de las líneas del editor sin cortes de scroll.
         </div>
-        <div class="d-flex align-items-center gap-2">
+        <div class="d-flex flex-wrap align-items-center gap-2">
           <button type="button" class="btn btn-sm btn-dark text-secondary border-secondary" data-bs-dismiss="modal">
             Cerrar
           </button>
           <button type="button" id="btn-copiar-captura" class="btn btn-sm btn-outline-info d-flex align-items-center gap-1" onclick="copiarImagenCapturaPortapapeles()">
-            <i class="bi bi-clipboard2-check"></i> <span>Copiar Imagen</span>
+            <i class="bi bi-clipboard2-check"></i> <span>Copiar</span>
           </button>
           <button type="button" id="btn-descargar-captura" class="btn btn-sm btn-warning text-dark fw-bold px-3 shadow d-flex align-items-center gap-1" onclick="descargarImagenCapturaCodigo()">
-            <i class="bi bi-download"></i> <span>Descargar Imagen PNG</span>
+            <i class="bi bi-download"></i> <span>Descargar PNG</span>
           </button>
         </div>
       </div>
