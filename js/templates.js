@@ -1220,46 +1220,34 @@ const AGENT_CONFIG = {
   subtitulo: 'Razonamiento Abierto • Pool Failover Multi-Tier • Descarga de Archivos en Vivo',
   nombreAgente: 'Atlas',
   versionApp: 'v3.3.0 (Google GenAI SDK 2026)',
-  modeloActual: 'gemini-3.8-flash' // Prioritario: pool 3.8 al 4 con auto-failover
+  modeloActual: 'gemini-2.5-flash' // Modelo de alta velocidad y compatibilidad en Google AI Studio
 };
 
 const MODEL_POOL = [
-  // Serie 4.x (Gemini 4 Next-Gen Lab)
-  { id: 'gemini-4-argon', nombre: 'Gemini 4 Argon', uso: 'Insignia Next-Gen: Máximo razonamiento y contexto ultra-largo' },
-  { id: 'gemini-4-carbon', nombre: 'Gemini 4 Carbon', uso: 'Next-Gen: Tareas de largo horizonte, auditoría y análisis' },
-  { id: 'gemini-4-neon', nombre: 'Gemini 4 Neon', uso: 'Next-Gen: Razonamiento lógico avanzado y matemáticas' },
-  { id: 'gemini-4-hydrogen', nombre: 'Gemini 4 Hydrogen', uso: 'Next-Gen: Programación y agentes multi-herramienta' },
+  // Serie 2.5 (Oficial en Google AI Studio)
+  { id: 'gemini-2.5-flash', nombre: 'Gemini 2.5 Flash', uso: 'Insignia de alta velocidad, razonamiento y tool-calling' },
+  { id: 'gemini-2.5-pro', nombre: 'Gemini 2.5 Pro', uso: 'Máximo razonamiento analítico y resolución compleja' },
+  { id: 'gemini-2.5-flash-lite', nombre: 'Gemini 2.5 Flash-Lite', uso: 'Ultraligero para flujos continuos' },
 
-  // Serie 3.x (Generación 3.x Oficial)
-  { id: 'gemini-3.8-flash', nombre: 'Gemini 3.8 Flash', uso: 'Modelo insignia de alta velocidad y última generación' },
-  { id: 'gemini-3.7-flash', nombre: 'Gemini 3.7 Flash', uso: 'Razonamiento híbrido, velocidad y coding' },
-  { id: 'gemini-3.6-flash', nombre: 'Gemini 3.6 Flash', uso: 'Máxima estabilidad y cuota fresca en producción' },
-  { id: 'gemini-3.5-flash', nombre: 'Gemini 3.5 Flash', uso: 'Alta eficiencia y latencia ultra-baja' },
-  { id: 'gemini-3.5-flash-lite', nombre: 'Gemini 3.5 Flash-Lite', uso: 'Ultraligero para flujos continuos' },
-  { id: 'gemini-3.1-pro-preview', nombre: 'Gemini 3.1 Pro Preview', uso: 'Procesamiento profundo y análisis complejo' },
-  { id: 'gemini-3.1-flash-lite', nombre: 'Gemini 3.1 Flash-Lite', uso: 'Agilidad extrema y bajo consumo' },
-  { id: 'gemini-3-flash-preview', nombre: 'Gemini 3 Flash Preview', uso: 'Evaluación rápida experimental' },
+  // Serie 2.0 & 1.5 (Respaldo probado)
+  { id: 'gemini-2.0-flash', nombre: 'Gemini 2.0 Flash', uso: 'Respaldo ágil de generación 2' },
+  { id: 'gemini-1.5-flash', nombre: 'Gemini 1.5 Flash', uso: 'Respaldo estándar de alta disponibilidad' },
+  { id: 'gemini-1.5-pro', nombre: 'Gemini 1.5 Pro', uso: 'Respaldo avanzado con ventana de contexto de 2M tokens' },
 
-  // Serie 2.5 (Respaldo)
-  { id: 'gemini-2.5-pro', nombre: 'Gemini 2.5 Pro', uso: 'Respaldo analítico avanzado' },
-  { id: 'gemini-2.5-flash', nombre: 'Gemini 2.5 Flash', uso: 'Respaldo balanceado para agentes' },
-  { id: 'gemini-2.5-flash-lite', nombre: 'Gemini 2.5 Flash-Lite', uso: 'Respaldo ligero' }
+  // Serie 3.x (Experimental)
+  { id: 'gemini-3.7-flash', nombre: 'Gemini 3.7 Flash', uso: 'Razonamiento híbrido experimental' },
+  { id: 'gemini-3.8-flash', nombre: 'Gemini 3.8 Flash', uso: 'Generación 3 experimental' }
 ];
 
 const POOL_FAILOVER_ORDER = [
-  'gemini-3.8-flash',
-  'gemini-3.7-flash',
-  'gemini-3.6-flash',
-  'gemini-3.5-flash',
-  'gemini-3.5-flash-lite',
-  'gemini-3.1-pro-preview',
-  'gemini-3.1-flash-lite',
-  'gemini-3-flash-preview',
-  'gemini-4-hydrogen',
-  'gemini-4-neon',
-  'gemini-2.5-flash-lite',
   'gemini-2.5-flash',
-  'gemini-2.5-pro'
+  'gemini-2.5-pro',
+  'gemini-2.5-flash-lite',
+  'gemini-2.0-flash',
+  'gemini-1.5-flash',
+  'gemini-1.5-pro',
+  'gemini-3.7-flash',
+  'gemini-3.8-flash'
 ];
 
 // ==========================================
@@ -1465,25 +1453,48 @@ async function llamarConPoolFailover(ai, historial, config) {
 async function iniciarChat() {
   const rl = readline.createInterface({ input, output });
 
-  // Validador universal de API Key de Google Gemini (sin restricciones arbitrarias: min 15 caracteres y sin espacios)
-  const esKeyValida = (k) => typeof k === 'string' && k.trim().length >= 15 && !/\s/.test(k.trim());
+  // Limpieza profunda de cualquier espacio, salto de línea, comillas o caracteres no imprimibles
+  const limpiarKey = (txt) => {
+    if (!txt || typeof txt !== 'string') return '';
+    return txt.replace(/[\r\n\t\f\v\u00A0\u200B-\u200D\uFEFF]/g, '').replace(/^["'\u0060]|["'\u0060]$/g, '').trim();
+  };
 
-  // 1. Validar y solicitar la API Key si no existe o si es inválida
-  let apiKey = localStorage.getItem('GEMINI_API_KEY');
-  if (apiKey && !esKeyValida(apiKey)) {
-    console.log('⚠️ La clave almacenada en memoria era inválida o texto corrupto. Se ha limpiado.');
-    localStorage.removeItem('GEMINI_API_KEY');
-    apiKey = null;
+  const esKeyValida = (k) => {
+    const lim = limpiarKey(k);
+    return lim.length >= 15;
+  };
+
+  // 1. Obtener clave desde inyección directa, iframe o ventana padre
+  let apiKey = '';
+  if (typeof window !== 'undefined' && typeof window.__GEMINI_API_KEY__ === 'string' && esKeyValida(window.__GEMINI_API_KEY__)) {
+    apiKey = limpiarKey(window.__GEMINI_API_KEY__);
+  } else {
+    try {
+      const kLocal = localStorage.getItem('GEMINI_API_KEY');
+      const kParent = (typeof window !== 'undefined' && window.parent && window.parent.localStorage) ? window.parent.localStorage.getItem('GEMINI_API_KEY') : null;
+      apiKey = limpiarKey(kLocal || kParent || '');
+    } catch(e) {}
   }
 
+  // Si había texto corrupto en memoria, limpiarlo
+  if (apiKey && !esKeyValida(apiKey)) {
+    try {
+      localStorage.removeItem('GEMINI_API_KEY');
+      if (window.parent && window.parent.localStorage) window.parent.localStorage.removeItem('GEMINI_API_KEY');
+    } catch(e) {}
+    apiKey = '';
+  }
+
+  // 2. Si no hay clave, solicitarla con limpieza automática
   if (!apiKey) {
-    console.log('🔐 No se detectó una Gemini API Key válida configurada.');
+    console.log('🔐 Para usar Nexus AI necesitas tu Google Gemini API Key.');
     console.log('💡 Obtén tu clave gratuita en: https://aistudio.google.com/app/apikey');
+    console.log('💡 También puedes guardarla haciendo clic en el botón superior "🔑 Gemini Key".');
     console.log('');
 
     while (!esKeyValida(apiKey)) {
-      apiKey = await rl.question('👉 Ingresa tu Gemini API Key: ');
-      apiKey = (apiKey || '').trim();
+      const entrada = await rl.question('👉 Pega tu Gemini API Key: ');
+      apiKey = limpiarKey(entrada);
 
       if (!apiKey || apiKey === '/salir' || apiKey === '/cancelar') {
         console.log('Sesión cancelada. Pulsa "Ejecutar" cuando desees iniciar el agente.');
@@ -1492,24 +1503,36 @@ async function iniciarChat() {
       }
 
       if (!esKeyValida(apiKey)) {
-        console.log('❌ El texto ingresado no parece una API Key válida (contiene espacios o es muy corto).');
-        console.log('👉 Asegúrate de copiar tu API Key oficial de Google AI Studio.');
+        console.log('❌ La clave ingresada es muy corta (debe tener al menos 15 caracteres). Intenta pegarla nuevamente:');
         console.log('');
-        apiKey = null;
+        apiKey = '';
       }
     }
-    localStorage.setItem('GEMINI_API_KEY', apiKey);
-    console.log('✅ API Key guardada localmente con éxito.');
+
+    try {
+      localStorage.setItem('GEMINI_API_KEY', apiKey);
+      if (window.parent && window.parent.localStorage) {
+        window.parent.localStorage.setItem('GEMINI_API_KEY', apiKey);
+      }
+      if (window.parent && typeof window.parent.actualizarBadgeApiKeyHeader === 'function') {
+        window.parent.actualizarBadgeApiKeyHeader();
+      }
+    } catch(e) {}
+    console.log('✅ API Key verificada y guardada con éxito.');
+    console.log('');
+  } else {
+    const masked = apiKey.length > 10 ? apiKey.substring(0, 6) + '...' + apiKey.substring(apiKey.length - 4) : '***';
+    console.log('🔑 Clave activa detectada: ' + masked + ' (' + apiKey.length + ' caracteres).');
     console.log('');
   }
 
-  // 2. Inicializar cliente con v1beta para soporte de tools
+  // 3. Inicializar cliente con v1beta para soporte de tools
   const ai = new GoogleGenAI({
     apiKey: apiKey,
     httpOptions: { apiVersion: 'v1beta' }
   });
 
-  // 3. Cargar la interfaz de consola
+  // 4. Cargar la interfaz de consola
   mostrarPresentacion();
 
   let historialChat = [];

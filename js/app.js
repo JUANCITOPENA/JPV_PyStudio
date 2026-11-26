@@ -409,7 +409,9 @@ function abrirModalApiKey() {
 function guardarApiKeyDesdeModal() {
   const inputKey = document.getElementById("input-gemini-key-modal");
   if (!inputKey) return;
-  const key = (inputKey.value || "").trim();
+  const rawValue = inputKey.value || "";
+  // Limpieza profunda de espacios, saltos de línea y comillas
+  const key = rawValue.replace(/[\r\n\t\f\v\u00A0\u200B-\u200D\uFEFF]/g, "").replace(/^["'`]|["'`]$/g, "").trim();
 
   if (!key) {
     alert("⚠️ Por favor pega una Gemini API Key antes de guardar.");
@@ -417,8 +419,8 @@ function guardarApiKeyDesdeModal() {
     return;
   }
 
-  if (key.length < 15 || /\s/.test(key)) {
-    alert("❌ La clave ingresada no parece válida (es muy corta o contiene espacios). Asegúrate de copiar tu clave completa de Google AI Studio.");
+  if (key.length < 15) {
+    alert("❌ La clave ingresada es muy corta (debe tener al menos 15 caracteres). Asegúrate de copiar tu clave completa de Google AI Studio.");
     inputKey.focus();
     return;
   }
@@ -434,8 +436,15 @@ function guardarApiKeyDesdeModal() {
 
   if (typeof notificarUsuario === "function") {
     notificarUsuario("✅ Google Gemini API Key guardada correctamente. ¡Nexus AI está listo para operar!");
-  } else {
-    alert("✅ Google Gemini API Key guardada correctamente.");
+  }
+
+  // Si el editor tiene cargado el agente Nexus AI, iniciar la ejecución automáticamente
+  if (typeof editor !== "undefined" && editor.value && editor.value.includes("@google/genai")) {
+    setTimeout(() => {
+      if (typeof ejecutarCodigo === "function") {
+        ejecutarCodigo();
+      }
+    }, 350);
   }
 }
 

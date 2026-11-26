@@ -236,6 +236,29 @@ async function ejecutarCodigoJavaScript(code) {
     iframeJsRunner.parentNode.removeChild(iframeJsRunner);
     iframeJsRunner = null;
   }
+
+  // Pre-validación de API Key si el script requiere Google GenAI
+  const keyLocalRaw = localStorage.getItem("GEMINI_API_KEY") || "";
+  const keyLocal = keyLocalRaw.replace(/[\r\n\t\f\v\u00A0\u200B-\u200D\uFEFF]/g, "").replace(/^["'`]|["'`]$/g, "").trim();
+
+  if (code.includes("@google/genai") && keyLocal.length < 15) {
+    ejecutandoJsActivo = false;
+    cambiarTab('terminal');
+    terminal.className = "";
+    terminal.textContent = `⚡ =======================================================
+⚡ MOTOR NATIVO JAVASCRIPT, ES MODULES & WEBASSEMBLY
+⚡ Proyecto: NEXUS AI PRO (Agente Autónomo)
+⚡ =======================================================
+
+🔐 Se requiere tu Google Gemini API Key para iniciar el agente.
+👉 Ingresa tu clave en la ventana emergente y pulsa 'Guardar y Aplicar'.
+💡 Consigue tu clave gratuita en: https://aistudio.google.com/app/apikey\n`;
+    if (typeof abrirModalApiKey === "function") {
+      abrirModalApiKey();
+    }
+    return;
+  }
+
   ejecutandoJsActivo = true;
 
   const btn = document.getElementById("btn-run");
@@ -332,6 +355,13 @@ async function ejecutarCodigoJavaScript(code) {
   }
   <` + `/script>
   <script>
+    window.__GEMINI_API_KEY__ = ${JSON.stringify(keyLocal)};
+    try {
+      if (window.parent && window.parent.localStorage) {
+        window.localStorage = window.parent.localStorage;
+      }
+    } catch(e) {}
+
     window.__inputPromises = {};
     window.addEventListener("message", (ev) => {
       if (ev.data && ev.data.type === "js_input_response" && window.__inputPromises[ev.data.id]) {
