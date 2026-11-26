@@ -74,6 +74,41 @@ El mayor obstáculo que enfrenta un estudiante, docente o profesional al aprende
 
 ---
 
+## 📱 Experiencia Responsive Pro: Móvil, Tablet y Escritorio
+
+**JPV PyStudio** ha sido optimizado con una arquitectura responsive de nivel profesional que se adapta fluidamente desde pantallas móviles (320px) hasta tablets y monitores de alta resolución:
+
+<div align="center">
+  <table width="100%">
+    <tr>
+      <td width="33%" align="center">
+        <img src="assets/pystudio_mobile_editor.png" alt="JPV PyStudio Móvil - Editor de Código" width="100%" style="border-radius: 8px; border: 1.5px solid #00f2fe;">
+        <br><sub>📱 <b>Móvil: Editor de Código</b><br>Header compacto y selector rápido segmentado</sub>
+      </td>
+      <td width="33%" align="center">
+        <img src="assets/pystudio_mobile_console.png" alt="JPV PyStudio Móvil - Consola y Tablas" width="100%" style="border-radius: 8px; border: 1.5px solid #38bdf8;">
+        <br><sub>💻 <b>Móvil: Consola & Tablas</b><br>Salida interactiva con datos en tiempo real</sub>
+      </td>
+      <td width="33%" align="center">
+        <img src="assets/pystudio_mobile_chart.png" alt="JPV PyStudio Móvil - Gráficos Analíticos" width="100%" style="border-radius: 8px; border: 1.5px solid #10b981;">
+        <br><sub>📊 <b>Móvil: Gráficos Analíticos</b><br>Visualizaciones Matplotlib y selector de fondo</sub>
+      </td>
+    </tr>
+  </table>
+  <br>
+  <img src="assets/pystudio_tablet_ui.png" alt="JPV PyStudio Tablet - Modo Dividido Vertical" width="95%" style="border-radius: 10px; border: 2px solid #f59e0b; box-shadow: 0 8px 30px rgba(245, 158, 11, 0.25);">
+  <p><em>📟 <strong>Modo Tablet / iPad:</strong> Espacio de trabajo dividido verticalmente con splitter táctil y toolbars ergonómicas.</em></p>
+</div>
+
+### 🌟 Características de la Arquitectura Responsive:
+- **Navegación Móvil Segmentada (`Mobile View Switcher`):** En smartphones, conmuta con un solo toque entre `[ 📝 Editor ]`, `[ 💻 Consola ]`, `[ 📊 Gráficos ]` y `[ 🎈 Streamlit ]`, maximizando el área útil de trabajo sin scroll horizontal.
+- **Modo Dividido Vertical para Tablets:** Permite alternar entre pestañas móviles y vista dividida vertical (`mobile-split-vertical`), aprovechando el formato vertical u horizontal de tablets y iPads.
+- **Soporte Táctil Completo (`Touch Gestures`):** Divisor de paneles y visor de gráficos redimensionables con gestos táctiles directos (`touchstart`, `touchmove`, `touchend`).
+- **Dynamic Viewport Height (`100dvh`):** Cero desbordamientos o solapamientos con las barras de navegación de iOS Safari y Android Chrome.
+- **Accesibilidad WCAG 2.2 AA:** Botón de ejecución y controles principales con zonas de toque táctiles de al menos 44px de alto.
+
+---
+
 ## 🏛️ Arquitectura Modular y Desacople de Código (JS / CSS)
 
 Para maximizar la mantenibilidad, escalabilidad y rendimiento en el navegador, **JPV PyStudio** fue estructurado bajo una arquitectura modular limpia y desacoplada:
