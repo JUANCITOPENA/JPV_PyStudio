@@ -1,0 +1,22 @@
+{
+  "version": "1.0.0",
+  "timestamp": "20261126_141729",
+  "etapa_actual": "FASE_0_COMPLETADA",
+  "libros": {
+    "libro_1": {
+      "nombre": "01_LIBRO_PYTHON_FUNDAMENTOS_POO_SQL_IA_PRO.pdf",
+      "estado": "PENDIENTE_COMPILACION"
+    },
+    "libro_2": {
+      "nombre": "02_LIBRO_ANALISIS_DATOS_GRAFICOS_SEABORN_MATPLOTLIB_PRO.pdf",
+      "estado": "PENDIENTE_COMPILACION"
+    },
+    "libro_3": {
+      "nombre": "03_LIBRO_CONSUMO_APIS_PUBLICAS_PYTHON_SIN_KEY_PRO.pdf",
+      "estado": "PENDIENTE_COMPILACION"
+    }
+  },
+  "visor_webview": {
+    "estado": "PENDIENTE_INTEGRACION"
+  }
+}
