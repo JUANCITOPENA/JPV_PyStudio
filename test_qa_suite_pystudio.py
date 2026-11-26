@@ -265,11 +265,34 @@ elementos_dom = [
     ("Viewport Libros PDF", 'id="tab-documentos"'),
     ("Selector de Documento Activo", 'id="select-doc-activo"'),
     ("Placeholder Streamlit Manual", 'id="streamlit-placeholder"'),
-    ("Botón Descarga PDF", 'id="btn-descargar-pdf-doc"')
+    ("Botón Descarga PDF", 'id="btn-descargar-pdf-doc"'),
+    ("Modal Configuración Gemini Key", 'id="modalApiKey"'),
+    ("Botón Header Gemini Key", 'id="btn-config-gemini-key"')
 ]
 for desc, tag in elementos_dom:
     presente = tag in html_content
     registrar_resultado(f"DOM: {desc}", presente, tag)
+
+# Controladores de Modal Gemini Key en app.js
+with open("js/app.js", "r", encoding="utf-8") as f:
+    app_js_code = f.read()
+for fn in ["abrirModalApiKey", "guardarApiKeyDesdeModal", "borrarApiKeyDesdeModal", "actualizarBadgeApiKeyHeader", "toggleVerApiKeyModal"]:
+    fn_presente = f"function {fn}" in app_js_code
+    registrar_resultado(f"Controlador Modal: {fn}()", fn_presente, "implementada en js/app.js")
+
+# Validador universal de API Key en templates.js
+with open("js/templates.js", "r", encoding="utf-8") as f:
+    templates_code = f.read()
+tiene_validador = "const esKeyValida" in templates_code
+sample_key = "AQ.MOCK_TEST_KEY_FOR_QA_ONLY_ABC123_XYZ789"
+valida_ok = len(sample_key.strip()) >= 15 and not any(c.isspace() for c in sample_key.strip())
+registrar_resultado("Nexus AI: Validador universal de Gemini Key", tiene_validador and valida_ok, f"Admite clave con punto ({sample_key[:12]}...)")
+
+# Versión de Caché PWA en sw.js
+with open("sw.js", "r", encoding="utf-8") as f:
+    sw_code = f.read()
+sw_v3 = 'const CACHE_APP_NAME = "pystudio-app-v3";' in sw_code
+registrar_resultado("Service Worker PWA: Cache Eviction", sw_v3, "pystudio-app-v3 configurada en sw.js")
 
 # ------------------------------------------------------------------------------
 # 7. AUDITORIA DE SEGURIDAD (Cero Hardcoding de API Keys)

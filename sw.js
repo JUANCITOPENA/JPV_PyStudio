@@ -2,7 +2,7 @@
 // JPV PYSTUDIO - SERVICE WORKER DE ALTO RENDIMIENTO (WASMCORP CACHE)
 // =======================================================
 const CACHE_WASM_NAME = "pystudio-wasm-v1";
-const CACHE_APP_NAME = "pystudio-app-v1";
+const CACHE_APP_NAME = "pystudio-app-v3";
 
 const WASM_URLS_PATTERNS = [
   "cdn.jsdelivr.net/pyodide",

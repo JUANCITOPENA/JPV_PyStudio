@@ -96,6 +96,10 @@
           <i class="bi bi-book-half"></i> <span class="d-none d-xl-inline">Libros & Talleres</span><span class="d-inline d-xl-none">Libros</span>
         </button>
 
+        <button id="btn-config-gemini-key" class="btn btn-sm btn-outline-info text-info fw-semibold btn-action" onclick="abrirModalApiKey()" title="Configurar Google Gemini API Key">
+          <i class="bi bi-key-fill text-warning"></i> <span class="d-none d-xl-inline">Gemini Key</span>
+        </button>
+
         <button class="btn btn-sm btn-outline-info btn-action" onclick="document.getElementById('input-archivo-local').click()" title="Cargar archivo local desde la PC">
           <i class="bi bi-upload"></i> Subir CSV / Excel
         </button>
@@ -119,6 +123,7 @@
           <i class="bi bi-tools"></i> <span class="d-none d-sm-inline">Herramientas</span>
         </button>
         <ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark border-secondary shadow-lg" aria-labelledby="dropdownMobileTools">
+          <li><a class="dropdown-item small d-flex align-items-center gap-2" href="javascript:void(0)" onclick="abrirModalApiKey()"><i class="bi bi-key-fill text-warning"></i> Configurar Gemini API Key</a></li>
           <li><a class="dropdown-item small d-flex align-items-center gap-2" href="javascript:void(0)" onclick="cambiarTab('documentos')"><i class="bi bi-book-half text-warning"></i> Libros & Talleres PDF</a></li>
           <li><hr class="dropdown-divider border-secondary my-1"></li>
           <li><a class="dropdown-item small d-flex align-items-center gap-2" href="javascript:void(0)" onclick="document.getElementById('input-archivo-local').click()"><i class="bi bi-upload text-info"></i> Subir CSV / Excel</a></li>
@@ -655,29 +660,73 @@ print("\n💾 Archivo 'Reporte_Titanic_Descargado.csv' listo para descargar.")
   </div>
 </div>
 
+<!-- Modal Configuración Gemini API Key -->
+<div class="modal fade" id="modalApiKey" tabindex="-1" aria-labelledby="modalApiKeyLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content bg-dark border border-info shadow-lg text-light" style="background-color: #0b1120 !important; border-radius: 12px;">
+      <div class="modal-header border-secondary py-2">
+        <h6 class="modal-title fw-bold text-info" id="modalApiKeyLabel">
+          <i class="bi bi-key-fill text-warning"></i> Configuración de Google Gemini API Key
+        </h6>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body py-3">
+        <p class="small text-secondary mb-2">
+          La API Key se guarda exclusivamente en el <code>localStorage</code> de tu navegador para que el agente autónomo <strong>Nexus AI Pro</strong> pueda procesar consultas, razonar y ejecutar herramientas.
+        </p>
+        <div class="mb-3">
+          <label for="input-gemini-key-modal" class="form-label small fw-bold text-warning mb-1">Tu Gemini API Key:</label>
+          <div class="input-group">
+            <input type="password" id="input-gemini-key-modal" class="form-control bg-black text-light border-secondary font-monospace" placeholder="Pega tu clave (AIzaSy... o AQ.Ab8...)" style="font-size: 13px;">
+            <button class="btn btn-outline-secondary" type="button" onclick="toggleVerApiKeyModal()" title="Mostrar u ocultar clave">
+              <i id="icono-ver-key" class="bi bi-eye"></i>
+            </button>
+          </div>
+          <div id="status-key-modal" class="small mt-1 text-secondary" style="font-size: 11px;">
+            Estado: Verificando...
+          </div>
+        </div>
+        <div class="alert alert-dark border border-secondary p-2 small mb-0" style="font-size: 11.5px; background: rgba(15, 23, 42, 0.7);">
+          💡 <strong>¿No tienes clave gratuita?</strong> Consigue una en Google AI Studio en 10 segundos:<br>
+          👉 <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-info text-decoration-none fw-bold">https://aistudio.google.com/app/apikey <i class="bi bi-box-arrow-up-right"></i></a>
+        </div>
+      </div>
+      <div class="modal-footer border-secondary py-2 d-flex justify-content-between">
+        <button type="button" class="btn btn-sm btn-outline-danger" onclick="borrarApiKeyDesdeModal()">
+          <i class="bi bi-trash3"></i> Borrar Clave
+        </button>
+        <div class="d-flex gap-2">
+          <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+          <button type="button" class="btn btn-sm btn-success fw-bold px-3" onclick="guardarApiKeyDesdeModal()">
+            <i class="bi bi-check2-circle"></i> Guardar y Aplicar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-python.min.js"></script>
 
-
   <!-- ======================================================= -->
   <!-- MODULOS JAVASCRIPT JPV PYSTUDIO                         -->
   <!-- ======================================================= -->
-  <script src="js/globals.js?v=20261124_05"></script>
-  <script src="js/vfs.js?v=20261124_05"></script>
-  <script src="js/terminal.js?v=20261124_05"></script>
-  <script src="js/visualizer.js?v=20261124_05"></script>
-  <script src="js/templates.js?v=20261125_07"></script>
-  <script src="js/editor.js?v=20261124_05"></script>
-  <script src="js/layout.js?v=20261124_05"></script>
-  <script src="js/diagnostics.js?v=20261124_05"></script>
-  <script src="js/javascript-engine.js?v=20261125_04"></script>
-  <script src="js/pyodide-engine.js?v=20261125_01"></script>
-  <script src="js/streamlit-engine.js?v=20261124_06"></script>
-  <script src="js/captures_engine_v7.js"></script>
-  <script src="js/editorial-content.js?v=20261126_01"></script>
-  <script src="js/pdf-viewer.js?v=20261126_01"></script>
-  <script src="js/app.js?v=20261125_07"></script>
+  <script src="js/globals.js?v=20261126_03"></script>
+  <script src="js/vfs.js?v=20261126_03"></script>
+  <script src="js/terminal.js?v=20261126_03"></script>
+  <script src="js/visualizer.js?v=20261126_03"></script>
+  <script src="js/templates.js?v=20261126_03"></script>
+  <script src="js/editor.js?v=20261126_03"></script>
+  <script src="js/layout.js?v=20261126_03"></script>
+  <script src="js/diagnostics.js?v=20261126_03"></script>
+  <script src="js/javascript-engine.js?v=20261126_03"></script>
+  <script src="js/pyodide-engine.js?v=20261126_03"></script>
+  <script src="js/streamlit-engine.js?v=20261126_03"></script>
+  <script src="js/captures_engine_v7.js?v=20261126_03"></script>
+  <script src="js/editorial-content.js?v=20261126_03"></script>
+  <script src="js/pdf-viewer.js?v=20261126_03"></script>
+  <script src="js/app.js?v=20261126_03"></script>
   <script>
     // Registro del Service Worker para Caché Persistente Wasm en < 200ms
     if ('serviceWorker' in navigator && (window.location.protocol === 'https:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {

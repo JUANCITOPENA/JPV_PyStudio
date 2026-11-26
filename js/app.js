@@ -348,4 +348,122 @@ window.addEventListener("DOMContentLoaded", () => {
       }
     }
   });
+
+  // Inicializar estado de insignia Gemini API Key en barra superior
+  actualizarBadgeApiKeyHeader();
 });
+
+// =======================================================
+// GESTIÓN Y ENCAPSULACIÓN VISUAL DE GEMINI API KEY
+// =======================================================
+function actualizarBadgeApiKeyHeader() {
+  const btn = document.getElementById("btn-config-gemini-key");
+  if (!btn) return;
+  const key = localStorage.getItem("GEMINI_API_KEY");
+  const esValida = typeof key === "string" && key.trim().length >= 15 && !/\s/.test(key.trim());
+  if (esValida) {
+    btn.classList.remove("btn-outline-info", "text-info");
+    btn.classList.add("btn-outline-success", "text-success");
+    btn.innerHTML = `<i class="bi bi-key-fill text-warning"></i> <span class="d-none d-xl-inline">Key Configurada</span><span class="d-inline d-xl-none">Key ✓</span>`;
+    btn.title = "Google Gemini API Key activa y configurada";
+  } else {
+    btn.classList.remove("btn-outline-success", "text-success");
+    btn.classList.add("btn-outline-info", "text-info");
+    btn.innerHTML = `<i class="bi bi-key-fill text-warning"></i> <span class="d-none d-xl-inline">Gemini Key</span>`;
+    btn.title = "Configurar Google Gemini API Key";
+  }
+}
+
+function abrirModalApiKey() {
+  const modalEl = document.getElementById("modalApiKey");
+  if (!modalEl) return;
+  const inputKey = document.getElementById("input-gemini-key-modal");
+  const statusEl = document.getElementById("status-key-modal");
+  const currentKey = localStorage.getItem("GEMINI_API_KEY") || "";
+  
+  if (inputKey) {
+    inputKey.value = currentKey;
+    inputKey.type = "password";
+  }
+  const iconoVer = document.getElementById("icono-ver-key");
+  if (iconoVer) iconoVer.className = "bi bi-eye";
+
+  if (statusEl) {
+    if (currentKey.trim().length >= 15 && !/\s/.test(currentKey.trim())) {
+      const masked = currentKey.length > 10 ? currentKey.substring(0, 6) + "..." + currentKey.substring(currentKey.length - 4) : "***";
+      statusEl.className = "small mt-1 text-success fw-bold";
+      statusEl.innerHTML = `✅ Clave activa en memoria: <code>${masked}</code> (${currentKey.length} caracteres)`;
+    } else {
+      statusEl.className = "small mt-1 text-secondary";
+      statusEl.textContent = "Estado: No configurada o vacía";
+    }
+  }
+
+  if (typeof bootstrap !== "undefined" && bootstrap.Modal) {
+    const bsModal = bootstrap.Modal.getOrCreateInstance(modalEl);
+    bsModal.show();
+    setTimeout(() => { if (inputKey) inputKey.focus(); }, 350);
+  }
+}
+
+function guardarApiKeyDesdeModal() {
+  const inputKey = document.getElementById("input-gemini-key-modal");
+  if (!inputKey) return;
+  const key = (inputKey.value || "").trim();
+
+  if (!key) {
+    alert("⚠️ Por favor pega una Gemini API Key antes de guardar.");
+    inputKey.focus();
+    return;
+  }
+
+  if (key.length < 15 || /\s/.test(key)) {
+    alert("❌ La clave ingresada no parece válida (es muy corta o contiene espacios). Asegúrate de copiar tu clave completa de Google AI Studio.");
+    inputKey.focus();
+    return;
+  }
+
+  localStorage.setItem("GEMINI_API_KEY", key);
+  actualizarBadgeApiKeyHeader();
+
+  const modalEl = document.getElementById("modalApiKey");
+  if (modalEl && typeof bootstrap !== "undefined" && bootstrap.Modal) {
+    const bsModal = bootstrap.Modal.getInstance(modalEl);
+    if (bsModal) bsModal.hide();
+  }
+
+  if (typeof notificarUsuario === "function") {
+    notificarUsuario("✅ Google Gemini API Key guardada correctamente. ¡Nexus AI está listo para operar!");
+  } else {
+    alert("✅ Google Gemini API Key guardada correctamente.");
+  }
+}
+
+function borrarApiKeyDesdeModal() {
+  if (!confirm("¿Deseas eliminar la Gemini API Key guardada en este navegador?")) return;
+  localStorage.removeItem("GEMINI_API_KEY");
+  const inputKey = document.getElementById("input-gemini-key-modal");
+  if (inputKey) inputKey.value = "";
+  const statusEl = document.getElementById("status-key-modal");
+  if (statusEl) {
+    statusEl.className = "small mt-1 text-secondary";
+    statusEl.textContent = "Estado: Clave eliminada";
+  }
+  actualizarBadgeApiKeyHeader();
+  if (typeof notificarUsuario === "function") {
+    notificarUsuario("🗑️ API Key eliminada de la memoria local.");
+  }
+}
+
+function toggleVerApiKeyModal() {
+  const inputKey = document.getElementById("input-gemini-key-modal");
+  const icono = document.getElementById("icono-ver-key");
+  if (!inputKey) return;
+  if (inputKey.type === "password") {
+    inputKey.type = "text";
+    if (icono) icono.className = "bi bi-eye-slash";
+  } else {
+    inputKey.type = "password";
+    if (icono) icono.className = "bi bi-eye";
+  }
+}
