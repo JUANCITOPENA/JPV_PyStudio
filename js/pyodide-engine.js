@@ -622,9 +622,9 @@ async def __ejecutar_codigo_usuario(code_str):
             lineas = code_str.splitlines()
             while lineas and not lineas[0].strip():
                 lineas.pop(0)
-            if lineas and lineas[0].startswith((" ", "\t")):
+            if lineas and (lineas[0].startswith(" ") or lineas[0].startswith(chr(9))):
                 lineas[0] = lineas[0].lstrip()
-                code_fixed = "\n".join(lineas)
+                code_fixed = chr(10).join(lineas)
                 try:
                     tree = ast.parse(code_fixed)
                     code_str = code_fixed
