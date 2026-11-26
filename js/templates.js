@@ -1465,18 +1465,42 @@ async function llamarConPoolFailover(ai, historial, config) {
 async function iniciarChat() {
   const rl = readline.createInterface({ input, output });
 
-  // 1. Solicitar la API Key al inicio si no existe en memoria
+  // Validador de formato de API Key de Google Gemini
+  const esKeyValida = (k) => typeof k === 'string' && k.trim().length >= 20 && !k.trim().includes(' ') && /^[A-Za-z0-9_-]{20,}$/.test(k.trim());
+
+  // 1. Validar y solicitar la API Key si no existe o si es inválida
   let apiKey = localStorage.getItem('GEMINI_API_KEY');
+  if (apiKey && !esKeyValida(apiKey)) {
+    console.log('⚠️ La clave almacenada en memoria era inválida o texto corrupto. Se ha limpiado.');
+    localStorage.removeItem('GEMINI_API_KEY');
+    apiKey = null;
+  }
+
   if (!apiKey) {
-    console.log('🔐 No se detectó clave de Gemini API configurada.');
-    apiKey = await rl.question('👉 Ingresa tu Gemini API Key para iniciar el agente: ');
-    apiKey = (apiKey || '').trim();
-    if (!apiKey) {
-      console.error('❌ Error: Se requiere una API Key para conectar con Google AI Studio.');
-      rl.close();
-      return;
+    console.log('🔐 No se detectó una Gemini API Key válida configurada.');
+    console.log('💡 Obtén tu clave gratuita en: https://aistudio.google.com/app/apikey');
+    console.log('');
+
+    while (!esKeyValida(apiKey)) {
+      apiKey = await rl.question('👉 Ingresa tu Gemini API Key (empieza con AIzaSy...): ');
+      apiKey = (apiKey || '').trim();
+
+      if (!apiKey || apiKey === '/salir' || apiKey === '/cancelar') {
+        console.log('Sesión cancelada. Pulsa "Ejecutar" cuando desees iniciar el agente.');
+        rl.close();
+        return;
+      }
+
+      if (!esKeyValida(apiKey)) {
+        console.log('❌ El texto ingresado no parece una API Key válida (contiene espacios o es muy corto).');
+        console.log('👉 Asegúrate de copiar tu API Key oficial de Google AI Studio.');
+        console.log('');
+        apiKey = null;
+      }
     }
     localStorage.setItem('GEMINI_API_KEY', apiKey);
+    console.log('✅ API Key guardada localmente con éxito.');
+    console.log('');
   }
 
   // 2. Inicializar cliente con v1beta para soporte de tools
@@ -1521,11 +1545,22 @@ async function iniciarChat() {
           break;
         case '/key':
           const nuevaKey = await rl.question('🔑 Ingresa nueva Gemini API Key: ');
-          if (nuevaKey.trim()) {
-            localStorage.setItem('GEMINI_API_KEY', nuevaKey.trim());
+          const limpioKey = (nuevaKey || '').trim();
+          if (esKeyValida(limpioKey)) {
+            localStorage.setItem('GEMINI_API_KEY', limpioKey);
+            apiKey = limpioKey;
             console.log('✅ API Key actualizada correctamente.');
             console.log('');
+          } else {
+            console.log('❌ Formato de API Key no válido (debe tener al menos 20 caracteres y sin espacios).');
+            console.log('');
           }
+          break;
+        case '/borrarkey':
+        case '/resetkey':
+          localStorage.removeItem('GEMINI_API_KEY');
+          console.log('🗑️ API Key eliminada de la memoria local.');
+          console.log('');
           break;
         case '/memoria':
           console.log('');
@@ -1640,7 +1675,14 @@ DIRECTIVAS INMUTABLES Y DE OBLIGATORIO CUMPLIMIENTO:
 
     } catch (error) {
       console.log('');
-      console.error(\`❌ Error con el pool de modelos:\`, error.message);
+      const errMsg = (error && error.message) ? error.message : String(error);
+      if (errMsg.includes('API key not valid') || errMsg.includes('API_KEY_INVALID') || errMsg.includes('INVALID_ARGUMENT')) {
+        localStorage.removeItem('GEMINI_API_KEY');
+        console.error('❌ La Gemini API Key almacenada fue rechazada por Google AI Studio.');
+        console.log('💡 La clave inválida se ha borrado de la memoria. Escribe /key para ingresar tu API Key válida.');
+      } else {
+        console.error(\`❌ Error con el pool de modelos:\`, errMsg);
+      }
       console.log('');
       historialChat.pop();
     }
