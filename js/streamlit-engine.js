@@ -10,13 +10,18 @@ let ultimoStreamlitHTML = "";
 async function ejecutarStreamlitApp(code) {
   const tiempoLbl = document.getElementById("tiempo-ejecucion");
   const dotStreamlit = document.getElementById("streamlit-dot");
+  const placeholder = document.getElementById("streamlit-placeholder");
   const loadingLayer = document.getElementById("streamlit-loading-layer");
   const frame = document.getElementById("streamlit-frame");
 
   const t0 = performance.now();
   cambiarTab('streamlit');
+  if (placeholder) placeholder.classList.add("d-none");
   if (loadingLayer) loadingLayer.classList.remove("d-none");
-  if (frame) frame.classList.add("d-none");
+  if (frame) {
+    frame.classList.add("d-none");
+    frame.srcdoc = "";
+  }
 
   // 1. Extraer archivos en memoria (VFS) para que Streamlit pueda usarlos con pd.read_csv(...)
   const archivosApp = {};
@@ -235,6 +240,50 @@ function descargarStreamlitHTML() {
 
 let ejecutandoStreamlitActivo = false;
 
+// Función global para detener cualquier proceso en curso (Streamlit o JavaScript Runner)
+function detenerEjecucionActual() {
+  // 1. Detener iframe de Streamlit
+  const frameSt = document.getElementById("streamlit-frame");
+  if (frameSt) {
+    try {
+      frameSt.srcdoc = "";
+      frameSt.src = "about:blank";
+      frameSt.classList.add("d-none");
+    } catch(e) {}
+  }
+  const loadingSt = document.getElementById("streamlit-loading-layer");
+  if (loadingSt) loadingSt.classList.add("d-none");
+  const placeholderSt = document.getElementById("streamlit-placeholder");
+  if (placeholderSt) placeholderSt.classList.remove("d-none");
+  ejecutandoStreamlitActivo = false;
+
+  // 2. Detener Runner de JavaScript / Nexus AI
+  if (typeof iframeJsRunner !== "undefined" && iframeJsRunner && iframeJsRunner.parentNode) {
+    try {
+      iframeJsRunner.parentNode.removeChild(iframeJsRunner);
+    } catch(e) {}
+    iframeJsRunner = null;
+  }
+  if (typeof ejecutandoJsActivo !== "undefined") {
+    ejecutandoJsActivo = false;
+  }
+
+  // 3. Restaurar botones de ejecución inmediatamente
+  const btn = document.getElementById("btn-run");
+  const spinner = document.getElementById("btn-spinner");
+  const icon = document.getElementById("btn-icon");
+  const btnMob = document.getElementById("btn-mobile-run");
+  const spinnerMob = document.getElementById("btn-mobile-spinner");
+  const iconMob = document.getElementById("btn-mobile-icon");
+
+  if (btn) btn.disabled = false;
+  if (spinner) spinner.classList.add("d-none");
+  if (icon) icon.classList.remove("d-none");
+  if (btnMob) btnMob.disabled = false;
+  if (spinnerMob) spinnerMob.classList.add("d-none");
+  if (iconMob) iconMob.classList.remove("d-none");
+}
+
 window.addEventListener("message", (e) => {
   if (e.data && e.data.type === "stlite_ready") {
     const loadingLayer = document.getElementById("streamlit-loading-layer");
@@ -282,8 +331,10 @@ async function ejecutarPython() {
     return;
   }
 
-  // Prevenir ejecuciones múltiples simultáneas
-  if (ejecutandoStreamlitActivo || (typeof ejecutandoJsActivo !== "undefined" && ejecutandoJsActivo)) return;
+  // Si había una ejecución en curso previa, cancelarla limpiamente para dar paso a la nueva orden del usuario
+  if (ejecutandoStreamlitActivo || (typeof ejecutandoJsActivo !== "undefined" && ejecutandoJsActivo)) {
+    detenerEjecucionActual();
+  }
 
   // Interceptor para JavaScript, ES Modules & WebAssembly nativo
   if (typeof esCodigoJavaScript === "function" && esCodigoJavaScript(code)) {
@@ -301,7 +352,7 @@ async function ejecutarPython() {
     if (spinnerMob) spinnerMob.classList.remove("d-none");
     if (iconMob) iconMob.classList.add("d-none");
 
-    // Conmutar inmediatamente a la vista de Streamlit (Móvil y Escritorio)
+    // Conmutar a la vista de Streamlit solo cuando el usuario ejecuta
     if (typeof cambiarVistaMovil === "function" && window.innerWidth < 992) {
       cambiarVistaMovil("streamlit");
     } else {
@@ -314,15 +365,9 @@ async function ejecutarPython() {
       console.error("Error ejecutando Streamlit:", errSt);
       alert("Error al inicializar Streamlit: " + errSt.message);
       ejecutandoStreamlitActivo = false;
-      if (btn) btn.disabled = false;
-      if (spinner) spinner.classList.add("d-none");
-      if (icon) icon.classList.remove("d-none");
-      if (btnMob) btnMob.disabled = false;
-      if (spinnerMob) spinnerMob.classList.add("d-none");
-      if (iconMob) iconMob.classList.remove("d-none");
     }
 
-    // Timeout de seguridad para evitar que el botón quede bloqueado
+    // Restaurar inmediatamente el botón para que el usuario NUNCA quede bloqueado y pueda reiniciar cuando desee
     setTimeout(() => {
       ejecutandoStreamlitActivo = false;
       if (btn) btn.disabled = false;
@@ -331,7 +376,7 @@ async function ejecutarPython() {
       if (btnMob) btnMob.disabled = false;
       if (spinnerMob) spinnerMob.classList.add("d-none");
       if (iconMob) iconMob.classList.remove("d-none");
-    }, 35000);
+    }, 1200);
     return;
   }
 

@@ -1652,16 +1652,18 @@ await iniciarChat();`
 
 function cargarPlantilla(tipo) {
   if (PLANTILLAS[tipo]) {
+    // Si había un proceso en curso, detenerlo limpiamente para liberar el botón Ejecutar
+    if (typeof detenerEjecucionActual === "function") {
+      detenerEjecucionActual();
+    }
+
     editor.value = PLANTILLAS[tipo];
     actualizarContador();
     sincronizarPrism();
-    terminal.textContent = `# Plantilla cargada: ${tipo.toUpperCase()}\nPresiona 'Ejecutar' para compilar el código.\n`;
+    terminal.textContent = `# 📂 Plantilla cargada: ${tipo.toUpperCase()}\n# 💡 El código está listo en el editor. Pulsa 'Ejecutar' cuando desees iniciar la compilación.\n`;
 
-    if (tipo === "streamlit" || tipo === "dashboard_tokens") {
-      cambiarTab("streamlit");
-    } else {
-      cambiarTab("terminal");
-    }
+    // Mantener siempre en la consola al cargar plantilla (el usuario decide cuándo cambiar y cuándo ejecutar)
+    cambiarTab("terminal");
 
     // En pantallas móviles (< 992px), mantener al usuario en el editor para ver el código y el botón Ejecutar
     if (typeof cambiarVistaMovil === "function" && window.innerWidth < 992) {

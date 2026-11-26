@@ -211,6 +211,9 @@ function activarLienzoVacio() {
       return;
     }
   }
+  if (typeof detenerEjecucionActual === "function") {
+    detenerEjecucionActual();
+  }
   editor.value = "";
   actualizarContador();
   sincronizarPrism();
@@ -231,12 +234,17 @@ function elegirModoInicio(modo) {
     localStorage.setItem("pystudio_inicio", modo);
   }
 
+  if (typeof detenerEjecucionActual === "function") {
+    detenerEjecucionActual();
+  }
+
   if (modo === "vacio") {
     editor.value = "";
     actualizarContador();
     sincronizarPrism();
     actualizarDeteccionCodigo();
     terminal.textContent = "# ✨ Lienzo vacío listo. Pega tu código Python con Ctrl+V y pulsa 'Ejecutar'.\n";
+    cambiarTab('terminal');
   } else {
     cargarPlantilla("titanic");
     actualizarDeteccionCodigo();

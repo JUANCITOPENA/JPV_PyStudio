@@ -288,10 +288,16 @@ function toggleMaximize(panelId) {
 }
 
 function limpiarEditor() {
+  if (typeof detenerEjecucionActual === "function") {
+    detenerEjecucionActual();
+  }
   editor.value = "";
   actualizarContador();
   sincronizarPrism();
-  terminal.textContent = "";
+  terminal.textContent = "# ✨ Lienzo limpio preparado.\n# Pega tu código Python con Ctrl+V y pulsa 'Ejecutar'.\n";
+  if (typeof actualizarDeteccionCodigo === "function") {
+    actualizarDeteccionCodigo();
+  }
 }
 
 function limpiarConsola() {

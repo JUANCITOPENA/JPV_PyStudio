@@ -231,7 +231,11 @@ window.addEventListener("message", (e) => {
 });
 
 async function ejecutarCodigoJavaScript(code) {
-  if (ejecutandoJsActivo) return;
+  // Si había una ejecución previa en curso, cancelarla limpiamente para dar paso a la nueva
+  if (iframeJsRunner && iframeJsRunner.parentNode) {
+    iframeJsRunner.parentNode.removeChild(iframeJsRunner);
+    iframeJsRunner = null;
+  }
   ejecutandoJsActivo = true;
 
   const btn = document.getElementById("btn-run");
@@ -248,6 +252,19 @@ async function ejecutarCodigoJavaScript(code) {
   if (spinnerMob) spinnerMob.classList.remove("d-none");
   if (iconMob) iconMob.classList.add("d-none");
 
+  // Restaurar el botón en ~1 segundo para que el usuario NUNCA quede atrapado y pueda reiniciar cuando desee
+  setTimeout(() => {
+    if (btn) {
+      btn.disabled = false;
+      btn.title = "Reiniciar ejecución de JavaScript / Nexus AI";
+    }
+    if (spinner) spinner.classList.add("d-none");
+    if (icon) icon.classList.remove("d-none");
+    if (btnMob) btnMob.disabled = false;
+    if (spinnerMob) spinnerMob.classList.add("d-none");
+    if (iconMob) iconMob.classList.remove("d-none");
+  }, 1000);
+
   // Conmutar a consola
   cambiarTab('terminal');
   if (typeof cambiarVistaMovil === "function" && window.innerWidth < 992) {
@@ -259,11 +276,6 @@ async function ejecutarCodigoJavaScript(code) {
 ⚡ MOTOR NATIVO JAVASCRIPT, ES MODULES & WEBASSEMBLY
 ⚡ Resolviendo paquetes ESM (@google/genai) y binarios Wasm...
 ⚡ =======================================================\n\n`;
-
-  // Remover runner anterior si existiera
-  if (iframeJsRunner && iframeJsRunner.parentNode) {
-    iframeJsRunner.parentNode.removeChild(iframeJsRunner);
-  }
 
   // Crear iframe sandbox seguro para ejecución de ES Modules
   iframeJsRunner = document.createElement("iframe");

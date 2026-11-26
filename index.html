@@ -444,10 +444,23 @@ print("\n💾 Archivo 'Reporte_Titanic_Descargado.csv' listo para descargar.")
 
         <!-- Viewport dedicado para Streamlit App (stlite WebAssembly) -->
         <div id="tab-streamlit" class="d-none" style="flex: 1; min-height: 0; position: relative; background: #0e1117; display: flex; flex-direction: column;">
-          <div id="streamlit-loading-layer" class="d-flex flex-column align-items-center justify-content-center text-center p-4" style="height: 100%; background: #0e1117; color: #ffffff;">
+          <!-- Placeholder cuando no se ha ejecutado -->
+          <div id="streamlit-placeholder" class="d-flex flex-column align-items-center justify-content-center text-center p-4" style="height: 100%; color: #94a3b8;">
+            <span style="font-size: 2.8rem;" class="mb-2">🎈</span>
+            <h5 class="fw-bold text-light mb-1">Streamlit WebAssembly</h5>
+            <p class="small text-secondary mb-3" style="max-width: 420px;">
+              Escribe o carga tu aplicación Streamlit en el editor y pulsa el botón <strong class="text-success"><i class="bi bi-play-fill"></i> Ejecutar</strong> cuando desees compilar y lanzar el dashboard.
+            </p>
+            <span class="badge bg-dark border border-secondary text-secondary small px-3 py-1">
+              Control 100% manual: la app solo se ejecuta cuando tú lo ordenas
+            </span>
+          </div>
+
+          <!-- Spinner mientras carga la app ejecutada -->
+          <div id="streamlit-loading-layer" class="d-flex flex-column align-items-center justify-content-center text-center p-4 d-none" style="height: 100%; background: #0e1117; color: #ffffff;">
             <div class="spinner-border text-danger mb-3" style="width: 2.6rem; height: 2.6rem;" role="status"></div>
-            <h5 class="fw-bold mb-1"><span style="font-size: 1.4rem;">🎈</span> Iniciando Streamlit WebAssembly...</h5>
-            <p class="text-secondary small mb-0">Cargando motor interactivo y dependencias en tu navegador.</p>
+            <h5 class="fw-bold mb-1"><span style="font-size: 1.4rem;">🎈</span> Compilando Streamlit WebAssembly...</h5>
+            <p class="text-secondary small mb-0">Iniciando motor stlite y resolviendo dependencias en tu navegador.</p>
           </div>
           <iframe id="streamlit-frame" style="width: 100%; height: 100%; border: none; flex: 1;" class="d-none"></iframe>
         </div>

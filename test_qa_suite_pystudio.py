@@ -225,6 +225,19 @@ try:
 except Exception as e:
     registrar_resultado("E2E: Transformación de input() asíncrono en AST", False, str(e))
 
+# Caso D: Verificación de Función Global detenerEjecucionActual y Control Manual
+with open("js/streamlit-engine.js", "r", encoding="utf-8") as f:
+    st_engine_code = f.read()
+
+tiene_detener = "function detenerEjecucionActual()" in st_engine_code
+registrar_resultado("Control Manual: detenerEjecucionActual() implementada", tiene_detener, "Permite abortar y reiniciar ejecuciones al instante")
+
+with open("js/templates.js", "r", encoding="utf-8") as f:
+    tmpl_code = f.read()
+
+no_auto_tab = "cambiarTab(\"streamlit\")" not in tmpl_code
+registrar_resultado("Control Manual: cargarPlantilla() NO fuerza cambiarTab('streamlit')", no_auto_tab, "Consola se mantiene en 'terminal' hasta orden de ejecución")
+
 # ------------------------------------------------------------------------------
 # 6. INTEGRIDAD DE LA PÁGINA WEB (index.html)
 # ------------------------------------------------------------------------------
@@ -251,6 +264,7 @@ elementos_dom = [
     ("Pestaña Libros PDF", 'id="tab-btn-documentos"'),
     ("Viewport Libros PDF", 'id="tab-documentos"'),
     ("Selector de Documento Activo", 'id="select-doc-activo"'),
+    ("Placeholder Streamlit Manual", 'id="streamlit-placeholder"'),
     ("Botón Descarga PDF", 'id="btn-descargar-pdf-doc"')
 ]
 for desc, tag in elementos_dom:
