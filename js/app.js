@@ -118,9 +118,9 @@ function actualizarDeteccionCodigo() {
     detectados.push("🎈 Streamlit App");
     if (contexto === "custom") contexto = "streamlit";
   }
-  if (/(GoogleGenAI|calcular_impuesto_wasm|math_skill\.wasm)/i.test(code)) {
-    detectados.push("🤖 Agente Gemini + Wasm");
-    contexto = "gemini_wasm";
+  if (/(GoogleGenAI|NEXUS AI|agentTools|iniciarChat)/i.test(code)) {
+    detectados.push("⚡ Nexus AI Pro (Agente)");
+    contexto = "nexus_agent";
   } else if (typeof esCodigoJavaScript === "function" && esCodigoJavaScript(code)) {
     detectados.push("⚡ JavaScript / Wasm (ESM)");
     if (contexto === "custom") contexto = "custom";

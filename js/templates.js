@@ -1208,174 +1208,113 @@ if len(tickers_validos) > 1:
         hide_index=True,
     )`,
 
-  gemini_wasm: `import { GoogleGenAI, Type } from '@google/genai';
-
-// 1. Inicializar el cliente de Gemini (SDK Oficial 2026)
-// Nota: Coloca tu API Key de Google AI Studio para llamadas en vivo.
-// En v1beta se habilita el soporte de Function Calling agéntico con WebAssembly.
-const ai = new GoogleGenAI({
-  apiKey: 'TU_API_KEY_AQUI',
-  httpOptions: { apiVersion: 'v1beta' }
-});
-
-// 2. Cargar e instanciar el módulo WebAssembly
-async function cargarWasmSkill() {
-  const response = await fetch('./math_skill.wasm');
-  const buffer = await response.arrayBuffer();
-  const { instance } = await WebAssembly.instantiate(buffer);
-  return instance.exports; // Contiene la función compilada calcular_impuesto(monto, tasa)
-}
-
-// 3. Declaración de la Herramienta (Skill) en WebAssembly para Gemini
-const wasmSkillDeclaration = {
-  name: 'calcular_impuesto_wasm',
-  description: 'Calcula el impuesto exacto sobre un monto usando un motor de cálculo Wasm de alto rendimiento.',
-  parameters: {
-    type: Type.OBJECT,
-    properties: {
-      monto: {
-        type: Type.NUMBER,
-        description: 'El monto base sobre el cual calcular el impuesto.',
-      },
-      tasa: {
-        type: Type.NUMBER,
-        description: 'La tasa de impuesto en formato decimal (ej. 0.18 para 18%).',
-      },
-    },
-    required: ['monto', 'tasa'],
-  },
-};
-
-// 4. Función agéntica principal con Function Calling en WebAssembly
-async function ejecutarAgenteConWasm(promptUsuario) {
-  console.log("🤖 [Agente Gemini] Iniciando consulta:", promptUsuario);
-
-  // Cargamos las funciones nativas exportadas desde WebAssembly
-  const wasmExports = await cargarWasmSkill();
-  console.log("⚡ [Wasm Skill] Módulo 'math_skill.wasm' cargado exitosamente en memoria.");
-
-  // Demostración de cálculo nativo en WebAssembly antes o durante el flujo
-  const calculoEjemplo = wasmExports.calcular_impuesto(1250, 0.18);
-  console.log("🧮 [Wasm Direct Call] 1250 * 0.18 =", calculoEjemplo);
-
-  // Validación de API Key antes de invocar la nube de Google
-  if (!ai.apiKey || ai.apiKey === 'TU_API_KEY_AQUI') {
-    console.warn("⚠️ Nota: Configura tu API Key válida en 'new GoogleGenAI({ apiKey: ... })' para invocar la API en vivo de Google.");
-    console.log("✅ Simulación completada: La integración agéntica con WebAssembly está 100% lista y funcional.");
-    return;
-  }
-
-  try {
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: promptUsuario,
-      config: {
-        tools: [{ functionDeclarations: [wasmSkillDeclaration] }],
-        systemInstruction: 'Eres un asistente financiero. Usa tus herramientas Wasm disponibles para realizar cálculos exactos.',
-      },
-    });
-
-    const functionCalls = response.functionCalls;
-    if (functionCalls && functionCalls.length > 0) {
-      const call = functionCalls[0];
-      if (call.name === 'calcular_impuesto_wasm') {
-        const { monto, tasa } = call.args;
-        console.log(\`⚡ Agente invocando Wasm con: monto=\${monto}, tasa=\${tasa}\`);
-        const resultadoWasm = wasmExports.calcular_impuesto(monto, tasa);
-        console.log(\`✅ Resultado Wasm calculado: \${resultadoWasm}\`);
-
-        const finalResponse = await ai.models.generateContent({
-          model: 'gemini-2.5-flash',
-          contents: [
-            { role: 'user', parts: [{ text: promptUsuario }] },
-            response.candidates[0].content,
-            {
-              role: 'tool',
-              parts: [{ functionResponse: { name: 'calcular_impuesto_wasm', response: { resultado: resultadoWasm } } }]
-            }
-          ],
-          config: { tools: [{ functionDeclarations: [wasmSkillDeclaration] }] },
-        });
-
-        const respuestaTexto = finalResponse.text || finalResponse.candidates?.[0]?.content?.parts?.[0]?.text;
-        console.log("✨ Respuesta final del agente:", respuestaTexto);
-      }
-    } else {
-      console.log("💬 Respuesta directa:", response.text);
-    }
-  } catch(errApi) {
-    console.error("Error al consultar API de Gemini:", errApi.message || errApi);
-  }
-}
-
-// Ejecución
-await ejecutarAgenteConWasm('Si compro un equipo de $1,250 dólares y el impuesto es del 18%, ¿cuánto pagaré solo de impuestos?');`,
-
-  gemini_chat: `import { GoogleGenAI, Type } from '@google/genai';
+  nexus_agent: `import { GoogleGenAI, Type } from '@google/genai';
 import * as readline from 'node:readline/promises';
 import { stdin as input, stdout as output } from 'node:process';
 
 // ==========================================
-// 1. CONFIGURACIÓN Y MODELOS ACTIVOS DE GEMINI
+// 1. CONFIGURACIÓN Y CATÁLOGO MULTI-MODELO
 // ==========================================
 const AGENT_CONFIG = {
-  titulo: 'NEXUS AI CLI',
-  subtitulo: 'Asistente Agéntico Multi-Modelo con Ejecución de Herramientas',
+  titulo: 'NEXUS AI PRO — AGENTE AUTÓNOMO UNIVERSAL',
+  subtitulo: 'Razonamiento Abierto • Ejecución de Código en Vivo • Multi-Modelo',
   nombreAgente: 'Atlas',
-  versionApp: 'v2.5.0 (Google GenAI 2.5 - 4.0)',
+  versionApp: 'v3.0.0 (Google GenAI SDK 2026)',
   modeloActual: 'gemini-2.5-flash-lite' // Activo por defecto con cuota fresca
 };
 
 const MODEL_POOL = [
-  // Serie 2.5 (Producción & Estabilidad Total)
-  { id: 'gemini-2.5-flash', nombre: 'Gemini 2.5 Flash', uso: 'Producción: Alta velocidad, económico y óptimo para tools' },
-  { id: 'gemini-2.5-flash-lite', nombre: 'Gemini 2.5 Flash-Lite', uso: 'Producción: Ultra-rápido, baja latencia y consumo mínimo' },
-  { id: 'gemini-2.5-pro', nombre: 'Gemini 2.5 Pro', uso: 'Producción: Razonamiento avanzado y codificación profunda' },
+  // Serie 2.5 (Estabilidad y Alta Velocidad)
+  { id: 'gemini-2.5-flash-lite', nombre: 'Gemini 2.5 Flash-Lite', uso: 'Ultrarrápido, cuota amplia, ideal para tareas continuas' },
+  { id: 'gemini-2.5-flash', nombre: 'Gemini 2.5 Flash', uso: 'Balanceado para agentes complejos y llamadas a herramientas' },
+  { id: 'gemini-2.5-pro', nombre: 'Gemini 2.5 Pro', uso: 'Máximo razonamiento analítico y arquitectura' },
 
-  // Serie 3.x (Nueva Generación & Previews Oficiales)
-  { id: 'gemini-3.7-flash', nombre: 'Gemini 3.7 Flash', uso: 'Nueva Gen: Razonamiento híbrido de alta velocidad' },
-  { id: 'gemini-3.8-flash', nombre: 'Gemini 3.8 Flash', uso: 'Preview: Alta demanda en servidores de Google' },
-  { id: 'gemini-3.5-flash', nombre: 'Gemini 3.5 Flash', uso: 'Preview: Rendimiento experimental intermedio' },
+  // Serie 3.x (Nueva Generación)
+  { id: 'gemini-3.7-flash', nombre: 'Gemini 3.7 Flash', uso: 'Razonamiento híbrido y alta velocidad' },
+  { id: 'gemini-3.8-flash', nombre: 'Gemini 3.8 Flash', uso: 'Preview experimental de alta demanda' },
+  { id: 'gemini-3.5-flash', nombre: 'Gemini 3.5 Flash', uso: 'Preview experimental de testing' },
 
   // Serie 4.x (Gemini 4 Next-Gen Lab)
   { id: 'gemini-4-hydrogen', nombre: 'Gemini 4 Hydrogen', uso: 'Next-Gen: Programación y agentes autónomos' },
-  { id: 'gemini-4-neon', nombre: 'Gemini 4 Neon', uso: 'Next-Gen: Razonamiento matemático y lógica' },
+  { id: 'gemini-4-neon', nombre: 'Gemini 4 Neon', uso: 'Next-Gen: Razonamiento lógico y matemáticas' },
   { id: 'gemini-4-carbon', nombre: 'Gemini 4 Carbon', uso: 'Next-Gen: Tareas de largo horizonte y auditoría' },
   { id: 'gemini-4-argon', nombre: 'Gemini 4 Argon', uso: 'Next-Gen Insignia: Máximo razonamiento y 1M contexto' }
 ];
 
 // ==========================================
-// 2. DEFINICIÓN DE SKILLS AGÉNTICAS (TOOLS)
+// 2. HERRAMIENTAS AGÉNTICAS DE EJECUCIÓN REAL (CODE EXECUTION & TOOLS)
 // ==========================================
 const agentTools = [
   {
-    name: 'obtener_hora_sistema',
-    description: 'Obtiene la fecha y hora exacta actual del sistema.',
-    parameters: { type: Type.OBJECT, properties: {} }
-  },
-  {
-    name: 'calcular_presupuesto',
-    description: 'Calcula el costo total sumando un porcentaje de impuestos o margen.',
+    name: 'ejecutar_javascript',
+    description: 'Ejecuta dinámicamente código JavaScript para evaluar algoritmos, resolver operaciones matemáticas complejas, procesar datos o interactuar con el entorno.',
     parameters: {
       type: Type.OBJECT,
       properties: {
-        monto: { type: Type.NUMBER, description: 'Monto base en dólares' },
-        porcentaje: { type: Type.NUMBER, description: 'Porcentaje a sumar (ej. 18 para 18%)' }
+        codigo: {
+          type: Type.STRING,
+          description: 'Expresión o bloque de código JavaScript a ejecutar (ej: Math.sqrt(256), Array.from({length:10}, (_,i)=>i*2).reduce((a,b)=>a+b,0), o new Date().toISOString())'
+        }
       },
-      required: ['monto', 'porcentaje']
+      required: ['codigo']
+    }
+  },
+  {
+    name: 'consultar_entorno_sistema',
+    description: 'Obtiene información en tiempo real sobre la fecha, hora, navegador y capacidades del sistema.',
+    parameters: { type: Type.OBJECT, properties: {} }
+  },
+  {
+    name: 'gestionar_memoria_agente',
+    description: 'Guarda o recupera variables, notas o datos clave en la memoria de la sesión activa.',
+    parameters: {
+      type: Type.OBJECT,
+      properties: {
+        accion: { type: Type.STRING, description: 'Acción a realizar: "guardar" o "leer"' },
+        clave: { type: Type.STRING, description: 'Nombre de la clave o variable' },
+        valor: { type: Type.STRING, description: 'Valor a almacenar (solo para acción "guardar")' }
+      },
+      required: ['accion', 'clave']
     }
   }
 ];
 
+// Memoria volátil del agente
+const memoriaSesion = {};
+
 function ejecutarSkillLocal(name, args) {
-  if (name === 'obtener_hora_sistema') {
-    return { fechaHora: new Date().toLocaleString() };
+  if (name === 'ejecutar_javascript') {
+    try {
+      const resultado = eval(args.codigo);
+      return {
+        exito: true,
+        salida: typeof resultado === 'object' ? JSON.stringify(resultado, null, 2) : String(resultado)
+      };
+    } catch(err) {
+      return { exito: false, error: err.message };
+    }
   }
-  if (name === 'calcular_presupuesto') {
-    const total = args.monto + (args.monto * (args.porcentaje / 100));
-    return { montoBase: args.monto, porcentajeAplicado: args.porcentaje, totalFinal: total };
+
+  if (name === 'consultar_entorno_sistema') {
+    return {
+      fechaHoraLocal: new Date().toLocaleString(),
+      zonaHoraria: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      plataforma: typeof navigator !== 'undefined' ? navigator.userAgent : 'Node.js Runtime',
+      memoriaJS: typeof performance !== 'undefined' && performance.memory ? \`\${Math.round(performance.memory.usedJSHeapSize / 1048576)} MB\` : 'N/A'
+    };
   }
-  return { error: 'Herramienta no encontrada' };
+
+  if (name === 'gestionar_memoria_agente') {
+    if (args.accion === 'guardar') {
+      memoriaSesion[args.clave] = args.valor;
+      return { estado: 'Guardado exitosamente', clave: args.clave, valor: args.valor };
+    }
+    if (args.accion === 'leer') {
+      return { clave: args.clave, valor: memoriaSesion[args.clave] || 'No encontrado en memoria' };
+    }
+  }
+
+  return { error: \`Herramienta "\${name}" no reconocida\` };
 }
 
 // ==========================================
@@ -1387,28 +1326,28 @@ function mostrarPresentacion() {
   const maskedKey = rawKey ? (rawKey.substring(0, 8) + '...' + rawKey.slice(-4)) : 'No configurada';
 
   console.log('================================================================');
-  console.log(\`🚀 \${AGENT_CONFIG.titulo} — \${AGENT_CONFIG.versionApp}\`);
+  console.log(\`🚀 \${AGENT_CONFIG.titulo}\`);
   console.log(\`📌 \${AGENT_CONFIG.subtitulo}\`);
   console.log('----------------------------------------------------------------');
   console.log(\`🤖 Agente activo: \${AGENT_CONFIG.nombreAgente}\`);
   console.log(\`🧠 Modelo en uso: \${AGENT_CONFIG.modeloActual}\`);
-  console.log(\`🔑 Clave activa: \${maskedKey} (Guardada en navegador)\`);
-  console.log('💡 Escribe /ayuda para ver los comandos o /modelo para cambiar.');
+  console.log(\`🔑 Clave activa: \${maskedKey}\`);
+  console.log('💡 Pregunta cualquier cosa o pide ejecutar código. Escribe /ayuda para ver comandos.');
   console.log('================================================================\\n');
 }
 
 function mostrarAyuda() {
   console.log('\\n📖 COMANDOS DISPONIBLES:');
-  console.log('  /pool             -> Muestra los modelos oficiales disponibles');
-  console.log('  /modelo <id>      -> Cambia el modelo activo (ej. /modelo gemini-2.5-pro)');
+  console.log('  /pool             -> Muestra todos los modelos del 2.5 al 4');
+  console.log('  /modelo <id>      -> Cambia el modelo activo (ej. /modelo gemini-3.7-flash)');
   console.log('  /key              -> Cambia la Gemini API Key almacenada');
-  console.log('  /version          -> Muestra información del agente y modelo');
+  console.log('  /memoria          -> Muestra las variables almacenadas por el agente');
   console.log('  /limpiar          -> Reinicia la memoria de la conversación');
   console.log('  /salir            -> Cierra la sesión del chat\\n');
 }
 
 function mostrarPool() {
-  console.log('\\n🌐 POOL DE MODELOS OFICIALES:');
+  console.log('\\n🌐 POOL DE MODELOS OFICIALES (2.5 AL 4):');
   MODEL_POOL.forEach((m, index) => {
     const activo = m.id === AGENT_CONFIG.modeloActual ? '✅ [ACTIVO]' : '  ';
     console.log(\`  \${index + 1}. \${activo} \${m.id} (\${m.nombre}) -> \${m.uso}\`);
@@ -1417,7 +1356,7 @@ function mostrarPool() {
 }
 
 // ==========================================
-// 4. BUCLE PRINCIPAL DEL CHAT AGÉNTICO
+// 4. BUCLE PRINCIPAL DEL AGENTE AUTÓNOMO
 // ==========================================
 async function iniciarChat() {
   const rl = readline.createInterface({ input, output });
@@ -1469,8 +1408,9 @@ async function iniciarChat() {
           if (!argumento) {
             console.log('⚠️ Debes indicar el ID del modelo. Escribe /pool para ver la lista.\\n');
           } else {
+            const existe = MODEL_POOL.find(m => m.id === argumento);
             AGENT_CONFIG.modeloActual = argumento;
-            console.log(\`🔄 Modelo cambiado a: \${argumento}\\n\`);
+            console.log(\`🔄 Modelo cambiado a: \${argumento} \${existe ? \`(\${existe.nombre})\` : ''}\\n\`);
           }
           break;
         case '/key':
@@ -1480,11 +1420,14 @@ async function iniciarChat() {
             console.log('✅ API Key actualizada correctamente.\\n');
           }
           break;
-        case '/version':
-          console.log(\`\\nℹ️  Agente: \${AGENT_CONFIG.nombreAgente} | App: \${AGENT_CONFIG.versionApp} | Modelo: \${AGENT_CONFIG.modeloActual}\\n\`);
+        case '/memoria':
+          console.log('\\n🧠 MEMORIA ACTUAL DE LA SESIÓN:');
+          console.log(JSON.stringify(memoriaSesion, null, 2));
+          console.log('');
           break;
         case '/limpiar':
           historialChat = [];
+          for (const k in memoriaSesion) delete memoriaSesion[k];
           mostrarPresentacion();
           console.log('🧹 Memoria del chat reiniciada.\\n');
           break;
@@ -1501,12 +1444,17 @@ async function iniciarChat() {
     // Consulta con Gemini + Function Calling
     historialChat.push({ role: 'user', parts: [{ text: texto }] });
 
-    try {
-      const config = {
-        systemInstruction: \`Te llamas \${AGENT_CONFIG.nombreAgente}. Eres un asistente ágil y resolutivo. Ejecuta tus herramientas automáticamente cuando sea necesario.\`,
-        tools: [{ functionDeclarations: agentTools }]
-      };
+    const systemInstruction = \`Eres NEXUS AGENT (Atlas), un agente de inteligencia artificial de nivel de ingeniería totalmente autónomo y sin restricciones de temática.
+Puedes responder sobre cualquier tema: programación en cualquier lenguaje (Python, JS, C#, Rust, Go, SQL, Bash), ciencia de datos, arquitectura de sistemas, finanzas, algoritmos, redacción, lógica y resolución de problemas.
+Tienes a tu disposición herramientas para ejecutar código JavaScript en tiempo real ('ejecutar_javascript'), consultar el entorno del sistema ('consultar_entorno_sistema') y almacenar notas en memoria ('gestionar_memoria_agente').
+Ejecuta tus herramientas activamente cuando el usuario te pida calcular, verificar, evaluar código o interactuar con el entorno. Eres directo, exhaustivo y resolutivo.\`;
 
+    const config = {
+      systemInstruction,
+      tools: [{ functionDeclarations: agentTools }]
+    };
+
+    try {
       let response = await ai.models.generateContent({
         model: AGENT_CONFIG.modeloActual,
         contents: historialChat,
@@ -1522,7 +1470,7 @@ async function iniciarChat() {
 
         const toolResponses = [];
         for (const call of response.functionCalls) {
-          console.log(\`   ⚙️  [\${AGENT_CONFIG.nombreAgente} ejecutando skill: \${call.name}...]\`);
+          console.log(\`   ⚙️  [\${AGENT_CONFIG.nombreAgente} ejecutando herramienta: \${call.name}...]\`);
           const resultado = ejecutarSkillLocal(call.name, call.args);
 
           toolResponses.push({
@@ -1545,7 +1493,7 @@ async function iniciarChat() {
 
       const respuestaTexto = response.text || response.candidates?.[0]?.content?.parts?.[0]?.text || '';
       historialChat.push(response.candidates[0].content);
-      console.log(\`\\n\${AGENT_CONFIG.nombreAgente} (\${AGENT_CONFIG.modeloActual}) > \${respuestaTexto}\\n\`);
+      console.log(\`\\n\${AGENT_CONFIG.nombreAgente} (\${AGENT_CONFIG.modeloActual}) >\\n\${respuestaTexto}\\n\`);
 
     } catch (error) {
       console.error(\`\\n❌ Error con el modelo \${AGENT_CONFIG.modeloActual}:\`, error.message, '\\n');
@@ -1561,14 +1509,11 @@ async function iniciarChat() {
           let retryResp = await ai.models.generateContent({
             model: AGENT_CONFIG.modeloActual,
             contents: historialChat,
-            config: {
-              systemInstruction: \`Te llamas \${AGENT_CONFIG.nombreAgente}. Eres un asistente ágil y resolutivo. Ejecuta tus herramientas automáticamente cuando sea necesario.\`,
-              tools: [{ functionDeclarations: agentTools }]
-            }
+            config
           });
           const respText = retryResp.text || retryResp.candidates?.[0]?.content?.parts?.[0]?.text || '';
           historialChat.push(retryResp.candidates[0].content);
-          console.log(\`\\n\${AGENT_CONFIG.nombreAgente} (\${AGENT_CONFIG.modeloActual}) > \${respText}\\n\`);
+          console.log(\`\\n\${AGENT_CONFIG.nombreAgente} (\${AGENT_CONFIG.modeloActual}) >\\n\${respText}\\n\`);
           continue;
         } catch(retryErr) {
           console.error(\`❌ Fallo en fallback con \${nuevoModelo}:\`, retryErr.message);
