@@ -283,7 +283,13 @@ async function ejecutarPython() {
   }
 
   // Prevenir ejecuciones múltiples simultáneas
-  if (ejecutandoStreamlitActivo) return;
+  if (ejecutandoStreamlitActivo || (typeof ejecutandoJsActivo !== "undefined" && ejecutandoJsActivo)) return;
+
+  // Interceptor para JavaScript, ES Modules & WebAssembly nativo
+  if (typeof esCodigoJavaScript === "function" && esCodigoJavaScript(code)) {
+    await ejecutarCodigoJavaScript(code);
+    return;
+  }
 
   // Interceptor para Streamlit Apps
   if (esCodigoStreamlit(code)) {

@@ -118,6 +118,13 @@ function actualizarDeteccionCodigo() {
     detectados.push("🎈 Streamlit App");
     if (contexto === "custom") contexto = "streamlit";
   }
+  if (/(GoogleGenAI|calcular_impuesto_wasm|math_skill\.wasm)/i.test(code)) {
+    detectados.push("🤖 Agente Gemini + Wasm");
+    contexto = "gemini_wasm";
+  } else if (typeof esCodigoJavaScript === "function" && esCodigoJavaScript(code)) {
+    detectados.push("⚡ JavaScript / Wasm (ESM)");
+    if (contexto === "custom") contexto = "custom";
+  }
   if (/(requests\.|urllib)/i.test(code)) {
     detectados.push("Requests HTTPS");
     if (contexto === "custom") contexto = "requests";
@@ -156,18 +163,19 @@ function actualizarDeteccionCodigo() {
     }
   }
 
-  // Activar botón de ejecución inmediatamente si es Streamlit (Wasm autónomo) o Pyodide ya cargó
+  // Activar botón de ejecución inmediatamente si es JS/Wasm o Streamlit (Wasm autónomo) o Pyodide ya cargó
   const btnRun = document.getElementById("btn-run");
   const btnMobileRun = document.getElementById("btn-mobile-run");
+  const esJs = typeof esCodigoJavaScript === "function" && esCodigoJavaScript(code);
   const esSt = typeof esCodigoStreamlit === "function" && esCodigoStreamlit(code);
-  if (esSt) {
+  if (esJs || esSt) {
     if (btnRun) {
       btnRun.disabled = false;
-      btnRun.title = "Ejecutar Streamlit App (WebAssembly autónomo)";
+      btnRun.title = esJs ? "Ejecutar JavaScript & WebAssembly en el navegador" : "Ejecutar Streamlit App (WebAssembly autónomo)";
     }
     if (btnMobileRun) {
       btnMobileRun.disabled = false;
-      btnMobileRun.title = "Ejecutar Streamlit App";
+      btnMobileRun.title = esJs ? "Ejecutar JS/Wasm" : "Ejecutar Streamlit App";
     }
   } else if (typeof pyodideInstance !== "undefined" && pyodideInstance) {
     if (btnRun) btnRun.disabled = false;

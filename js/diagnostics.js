@@ -53,8 +53,13 @@ function generarDiagnosticoEducativo(diag, userCode, rawErr) {
       explicacion = "Hay un paréntesis <code>(</code>, corchete <code>[</code> o llave <code>{</code> que se abrió pero no fue cerrado.";
       recomendacion = "Busca el paréntesis o corchete de apertura en la línea y asegúrate de cerrarlo antes del final de la instrucción.";
     } else if (detalle.includes("invalid syntax")) {
-      explicacion = "La sintaxis de esta instrucción no sigue las reglas gramaticales de Python.";
-      recomendacion = "Verifica si olvidaste dos puntos <code>:</code> al final de un <code>if</code>, <code>for</code>, <code>def</code> o <code>while</code>, o si hay un operador o comilla fuera de lugar.";
+      if (snippet && (snippet.includes("import {") || snippet.includes("from '") || snippet.includes("from \"") || snippet.includes("const ") || snippet.includes("let "))) {
+        explicacion = "Has pegado código <strong>JavaScript / TypeScript</strong> (ej: <code>import { ... } from '...'</code>) en un entorno Python. Python no utiliza llaves ni comillas en sus declaraciones de import.";
+        recomendacion = "PyStudio cuenta con motor nativo de <strong>JavaScript & WebAssembly</strong>. El detector automático ejecutará el código directamente en el navegador, o puedes utilizar el SDK de Python equivalente: <code>from google import genai</code>.";
+      } else {
+        explicacion = "La sintaxis de esta instrucción no sigue las reglas gramaticales de Python.";
+        recomendacion = "Verifica si olvidaste dos puntos <code>:</code> al final de un <code>if</code>, <code>for</code>, <code>def</code> o <code>while</code>, o si hay un operador o comilla fuera de lugar.";
+      }
     } else {
       explicacion = detalle || "Error en la estructura sintáctica del código.";
       recomendacion = "Revisa la línea indicada para corregir caracteres faltantes o fuera de lugar.";

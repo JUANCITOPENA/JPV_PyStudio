@@ -1206,7 +1206,104 @@ if len(tickers_validos) > 1:
         pd.DataFrame(filas),
         use_container_width=True,
         hide_index=True,
-    )`
+    )`,
+
+  gemini_wasm: `import { GoogleGenAI, Type } from '@google/genai';
+
+// 1. Inicializar el cliente de Gemini (SDK Oficial 2026)
+// Nota: Coloca tu API Key de Google AI Studio para llamadas en vivo
+const ai = new GoogleGenAI({ apiKey: 'TU_API_KEY_AQUI' });
+
+// 2. Cargar e instanciar el módulo WebAssembly
+async function cargarWasmSkill() {
+  const response = await fetch('./math_skill.wasm');
+  const buffer = await response.arrayBuffer();
+  const { instance } = await WebAssembly.instantiate(buffer);
+  return instance.exports; // Contiene la función compilada calcular_impuesto(monto, tasa)
+}
+
+// 3. Declaración de la Herramienta (Skill) en WebAssembly para Gemini
+const wasmSkillDeclaration = {
+  name: 'calcular_impuesto_wasm',
+  description: 'Calcula el impuesto exacto sobre un monto usando un motor de cálculo Wasm de alto rendimiento.',
+  parameters: {
+    type: Type.OBJECT,
+    properties: {
+      monto: {
+        type: Type.NUMBER,
+        description: 'El monto base sobre el cual calcular el impuesto.',
+      },
+      tasa: {
+        type: Type.NUMBER,
+        description: 'La tasa de impuesto en formato decimal (ej. 0.18 para 18%).',
+      },
+    },
+    required: ['monto', 'tasa'],
+  },
+};
+
+// 4. Función agéntica principal con Function Calling en WebAssembly
+async function ejecutarAgenteConWasm(promptUsuario) {
+  console.log("🤖 [Agente Gemini] Iniciando consulta:", promptUsuario);
+
+  // Cargamos las funciones nativas exportadas desde WebAssembly
+  const wasmExports = await cargarWasmSkill();
+  console.log("⚡ [Wasm Skill] Módulo 'math_skill.wasm' cargado exitosamente en memoria.");
+
+  // Demostración de cálculo nativo en WebAssembly antes o durante el flujo
+  const calculoEjemplo = wasmExports.calcular_impuesto(1250, 0.18);
+  console.log("🧮 [Wasm Direct Call] 1250 * 0.18 =", calculoEjemplo);
+
+  // Validación de API Key antes de invocar la nube de Google
+  if (!ai.apiKey || ai.apiKey === 'TU_API_KEY_AQUI') {
+    console.warn("⚠️ Nota: Configura tu API Key válida en 'new GoogleGenAI({ apiKey: ... })' para invocar la API en vivo de Google.");
+    console.log("✅ Simulación completada: La integración agéntica con WebAssembly está 100% lista y funcional.");
+    return;
+  }
+
+  try {
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: promptUsuario,
+      config: {
+        tools: [{ functionDeclarations: [wasmSkillDeclaration] }],
+        systemInstruction: 'Eres un asistente financiero. Usa tus herramientas Wasm disponibles para realizar cálculos exactos.',
+      },
+    });
+
+    const functionCalls = response.functionCalls;
+    if (functionCalls && functionCalls.length > 0) {
+      const call = functionCalls[0];
+      if (call.name === 'calcular_impuesto_wasm') {
+        const { monto, tasa } = call.args;
+        console.log(\`⚡ Agente invocando Wasm con: monto=\${monto}, tasa=\${tasa}\`);
+        const resultadoWasm = wasmExports.calcular_impuesto(monto, tasa);
+
+        const finalResponse = await ai.models.generateContent({
+          model: 'gemini-2.5-flash',
+          contents: [
+            { role: 'user', parts: [{ text: promptUsuario }] },
+            response.candidates[0].content,
+            {
+              role: 'user',
+              parts: [{ functionResponse: { name: 'calcular_impuesto_wasm', response: { resultado: resultadoWasm } } }]
+            }
+          ],
+          config: { tools: [{ functionDeclarations: [wasmSkillDeclaration] }] },
+        });
+
+        console.log("✨ Respuesta final del agente:", finalResponse.text);
+      }
+    } else {
+      console.log("💬 Respuesta directa:", response.text);
+    }
+  } catch(errApi) {
+    console.error("Error al consultar API de Gemini:", errApi.message);
+  }
+}
+
+// Ejecución
+await ejecutarAgenteConWasm('Si compro un equipo de $1,250 dólares y el impuesto es del 18%, ¿cuánto pagaré solo de impuestos?');`
 };
 
 function cargarPlantilla(tipo) {

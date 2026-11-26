@@ -1089,10 +1089,12 @@ def __exportar_df_csv(df_name):
     const btnMobInit = document.getElementById("btn-mobile-run");
     if (btnMobInit) btnMobInit.disabled = false;
     
-    terminal.textContent = `# 🐍 JPV PyStudio Pro inicializado con éxito.
+    if (!terminal.textContent || terminal.textContent.includes("Esperando") || terminal.textContent.includes("Inicializando")) {
+      terminal.textContent = `# 🐍 JPV PyStudio Pro inicializado con éxito.
 # ⚡ Motor Fast-Boot activo: Auto-instalación y renderizado de Folium, Plotly, Seaborn, NetworkX, WordCloud, Excel y más.
 # 📦 Pega cualquier script Python y pulsa 'Ejecutar': las librerías y mapas/gráficos se activan solos.
 `;
+    }
 
     // Calentamiento en segundo plano no bloqueante para requests, excel y ssl
     setTimeout(async () => {
