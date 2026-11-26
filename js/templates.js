@@ -1327,10 +1327,21 @@ const AGENT_CONFIG = {
 };
 
 const MODEL_POOL = [
-  { id: 'gemini-2.5-flash', nombre: 'Gemini 2.5 Flash', uso: 'Rápido, rentable y optimizado para agentes' },
-  { id: 'gemini-2.5-pro', nombre: 'Gemini 2.5 Pro', uso: 'Máximo razonamiento y auditoría profunda' },
-  { id: 'gemini-2.0-flash', nombre: 'Gemini 2.0 Flash', uso: 'Baja latencia y soporte multimodal' },
-  { id: 'gemini-1.5-pro', nombre: 'Gemini 1.5 Pro', uso: 'Ventana de contexto ultra extendida' }
+  // Serie 2.5 (Producción & Estabilidad Total)
+  { id: 'gemini-2.5-flash', nombre: 'Gemini 2.5 Flash', uso: 'Producción: Alta velocidad, económico y óptimo para tools' },
+  { id: 'gemini-2.5-flash-lite', nombre: 'Gemini 2.5 Flash-Lite', uso: 'Producción: Ultra-rápido, baja latencia y consumo mínimo' },
+  { id: 'gemini-2.5-pro', nombre: 'Gemini 2.5 Pro', uso: 'Producción: Razonamiento avanzado y codificación profunda' },
+
+  // Serie 3.x (Nueva Generación & Previews Oficiales)
+  { id: 'gemini-3.7-flash', nombre: 'Gemini 3.7 Flash', uso: 'Nueva Gen: Razonamiento híbrido de alta velocidad' },
+  { id: 'gemini-3.8-flash', nombre: 'Gemini 3.8 Flash', uso: 'Preview: Alta demanda en servidores de Google' },
+  { id: 'gemini-3.5-flash', nombre: 'Gemini 3.5 Flash', uso: 'Preview: Rendimiento experimental intermedio' },
+
+  // Serie 4.x (Gemini 4 Next-Gen Lab)
+  { id: 'gemini-4-hydrogen', nombre: 'Gemini 4 Hydrogen', uso: 'Next-Gen: Programación y agentes autónomos' },
+  { id: 'gemini-4-neon', nombre: 'Gemini 4 Neon', uso: 'Next-Gen: Razonamiento matemático y lógica' },
+  { id: 'gemini-4-carbon', nombre: 'Gemini 4 Carbon', uso: 'Next-Gen: Tareas de largo horizonte y auditoría' },
+  { id: 'gemini-4-argon', nombre: 'Gemini 4 Argon', uso: 'Next-Gen Insignia: Máximo razonamiento y 1M contexto' }
 ];
 
 // ==========================================
@@ -1534,6 +1545,11 @@ async function iniciarChat() {
 
     } catch (error) {
       console.error(\`\\n❌ Error con el modelo \${AGENT_CONFIG.modeloActual}:\`, error.message, '\\n');
+      if (error.message.includes('503') || error.message.includes('high demand')) {
+        console.warn(\`💡 TIP: El modelo \${AGENT_CONFIG.modeloActual} tiene alta demanda en servidores de Google. Cambia temporalmente a gemini-2.5-flash o gemini-3.7-flash con: /modelo gemini-2.5-flash\\n\`);
+      } else if (error.message.includes('429') || error.message.includes('quota') || error.message.includes('limit')) {
+        console.warn(\`💡 TIP: Se excedió la cuota de peticiones para este modelo. Cambia a gemini-2.5-flash o gemini-2.5-flash-lite con: /modelo gemini-2.5-flash\\n\`);
+      }
       historialChat.pop();
     }
   }
