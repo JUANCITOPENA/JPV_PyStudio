@@ -145,9 +145,16 @@
       </button>
     </div>
     
-    <button id="btn-toggle-layout-mobile" class="btn btn-sm btn-outline-secondary py-1 px-2 ms-2" onclick="toggleLayoutModoMovil()" title="Alternar entre Vista de Pestañas y Dividida Vertical">
-      <i id="icono-layout-mobile" class="bi bi-layout-split text-info"></i>
-    </button>
+    <div class="d-flex align-items-center gap-1 ms-1">
+      <button id="btn-mobile-run" class="btn btn-sm btn-success fw-bold d-flex align-items-center gap-1 py-1 px-2" onclick="ejecutarPython()" title="Ejecutar Código" style="font-size: 11.5px; border-radius: 6px; white-space: nowrap;">
+        <span id="btn-mobile-spinner" class="spinner-border spinner-border-sm d-none" style="width: 12px; height: 12px;"></span>
+        <i id="btn-mobile-icon" class="bi bi-play-fill fs-6"></i>
+        <span>Ejecutar</span>
+      </button>
+      <button id="btn-toggle-layout-mobile" class="btn btn-sm btn-outline-secondary py-1 px-2" onclick="toggleLayoutModoMovil()" title="Alternar entre Vista de Pestañas y Dividida Vertical">
+        <i id="icono-layout-mobile" class="bi bi-layout-split text-info"></i>
+      </button>
+    </div>
   </nav>
 
   <main class="split-container mobile-tab-mode view-editor" id="split-container">

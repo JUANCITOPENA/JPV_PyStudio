@@ -1086,6 +1086,8 @@ def __exportar_df_csv(df_name):
     badge.title = "Motor Wasm Listo (Auto-Detección Activa)";
     badge.innerHTML = `<i class="bi bi-check-circle-fill"></i> <span class="d-none d-md-inline">Motor Wasm Listo (Auto-Detección Activa)</span><span class="d-inline d-md-none">Listo</span>`;
     btn.disabled = false;
+    const btnMobInit = document.getElementById("btn-mobile-run");
+    if (btnMobInit) btnMobInit.disabled = false;
     
     terminal.textContent = `# 🐍 JPV PyStudio Pro inicializado con éxito.
 # ⚡ Motor Fast-Boot activo: Auto-instalación y renderizado de Folium, Plotly, Seaborn, NetworkX, WordCloud, Excel y más.

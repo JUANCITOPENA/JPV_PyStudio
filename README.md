@@ -81,17 +81,21 @@ El mayor obstáculo que enfrenta un estudiante, docente o profesional al aprende
 <div align="center">
   <table width="100%">
     <tr>
-      <td width="33%" align="center">
+      <td width="25%" align="center">
         <img src="assets/pystudio_mobile_editor.png" alt="JPV PyStudio Móvil - Editor de Código" width="100%" style="border-radius: 8px; border: 1.5px solid #00f2fe;">
-        <br><sub>📱 <b>Móvil: Editor de Código</b><br>Header compacto y selector rápido segmentado</sub>
+        <br><sub>📱 <b>Móvil: Editor</b><br>Header compacto y ejecución directa</sub>
       </td>
-      <td width="33%" align="center">
+      <td width="25%" align="center">
         <img src="assets/pystudio_mobile_console.png" alt="JPV PyStudio Móvil - Consola y Tablas" width="100%" style="border-radius: 8px; border: 1.5px solid #38bdf8;">
-        <br><sub>💻 <b>Móvil: Consola & Tablas</b><br>Salida interactiva con datos en tiempo real</sub>
+        <br><sub>💻 <b>Móvil: Consola</b><br>Salida interactiva en tiempo real</sub>
       </td>
-      <td width="33%" align="center">
+      <td width="25%" align="center">
         <img src="assets/pystudio_mobile_chart.png" alt="JPV PyStudio Móvil - Gráficos Analíticos" width="100%" style="border-radius: 8px; border: 1.5px solid #10b981;">
-        <br><sub>📊 <b>Móvil: Gráficos Analíticos</b><br>Visualizaciones Matplotlib y selector de fondo</sub>
+        <br><sub>📊 <b>Móvil: Gráficos</b><br>Visualizaciones Matplotlib y temas</sub>
+      </td>
+      <td width="25%" align="center">
+        <img src="assets/pystudio_mobile_streamlit.png" alt="JPV PyStudio Móvil - Streamlit App Wasm" width="100%" style="border-radius: 8px; border: 1.5px solid #ff4b4b;">
+        <br><sub>🎈 <b>Móvil: Streamlit</b><br>Apps interactivas Wasm en tu teléfono</sub>
       </td>
     </tr>
   </table>

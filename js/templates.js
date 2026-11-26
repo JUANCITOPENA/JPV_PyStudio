@@ -1214,7 +1214,21 @@ function cargarPlantilla(tipo) {
     editor.value = PLANTILLAS[tipo];
     actualizarContador();
     sincronizarPrism();
-    terminal.textContent = `# Plantilla cargada: ${tipo.toUpperCase()}\\nPresiona 'Ejecutar' para compilar el código.\\n`;
-    cambiarTab('terminal');
+    terminal.textContent = `# Plantilla cargada: ${tipo.toUpperCase()}\nPresiona 'Ejecutar' para compilar el código.\n`;
+
+    if (tipo === "streamlit" || tipo === "dashboard_tokens") {
+      cambiarTab("streamlit");
+    } else {
+      cambiarTab("terminal");
+    }
+
+    // En pantallas móviles (< 992px), mantener al usuario en el editor para ver el código y el botón Ejecutar
+    if (typeof cambiarVistaMovil === "function" && window.innerWidth < 992) {
+      cambiarVistaMovil("editor");
+    }
+
+    if (typeof actualizarDeteccionCodigo === "function") {
+      actualizarDeteccionCodigo();
+    }
   }
 }

@@ -111,7 +111,10 @@ function actualizarDeteccionCodigo() {
     detectados.push("Animación");
     if (contexto === "custom") contexto = "animacion";
   }
-  if (/(streamlit|st\.)/i.test(code)) {
+  if (/(dashboard_tokens|Empresas y Tokens|tokens_usd)/i.test(code)) {
+    detectados.push("💎 Dashboard Dinámico");
+    contexto = "dashboard_tokens";
+  } else if (/(streamlit|st\.)/i.test(code)) {
     detectados.push("🎈 Streamlit App");
     if (contexto === "custom") contexto = "streamlit";
   }
@@ -151,6 +154,24 @@ function actualizarDeteccionCodigo() {
       selectPlantillas.value = "custom";
       if (labelArchivo) labelArchivo.innerText = "mi_analisis.py";
     }
+  }
+
+  // Activar botón de ejecución inmediatamente si es Streamlit (Wasm autónomo) o Pyodide ya cargó
+  const btnRun = document.getElementById("btn-run");
+  const btnMobileRun = document.getElementById("btn-mobile-run");
+  const esSt = typeof esCodigoStreamlit === "function" && esCodigoStreamlit(code);
+  if (esSt) {
+    if (btnRun) {
+      btnRun.disabled = false;
+      btnRun.title = "Ejecutar Streamlit App (WebAssembly autónomo)";
+    }
+    if (btnMobileRun) {
+      btnMobileRun.disabled = false;
+      btnMobileRun.title = "Ejecutar Streamlit App";
+    }
+  } else if (typeof pyodideInstance !== "undefined" && pyodideInstance) {
+    if (btnRun) btnRun.disabled = false;
+    if (btnMobileRun) btnMobileRun.disabled = false;
   }
 }
 

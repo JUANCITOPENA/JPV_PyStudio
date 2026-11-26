@@ -46,8 +46,11 @@ async function ejecutarStreamlitApp(code) {
     archivosApp[fn] = content;
   }
 
-  // 2. Resolver dependencias requeridas para stlite
-  const reqs = ["pandas", "numpy", "matplotlib"];
+  // 2. Resolver dependencias requeridas para stlite quirúrgicamente (optimizado para velocidad y memoria)
+  const reqs = [];
+  if (/(pandas|pd\.)/i.test(code)) reqs.push("pandas");
+  if (/(numpy|np\.)/i.test(code)) reqs.push("numpy");
+  if (/(matplotlib|plt\.)/i.test(code) && !reqs.includes("matplotlib")) reqs.push("matplotlib");
   if (/(seaborn|sns\.)/i.test(code) && !reqs.includes("seaborn")) reqs.push("seaborn");
   if (/(plotly|px\.|go\.)/i.test(code) && !reqs.includes("plotly")) reqs.push("plotly");
   if (/(altair|alt\.)/i.test(code) && !reqs.includes("altair")) reqs.push("altair");
@@ -135,15 +138,18 @@ async function ejecutarStreamlitApp(code) {
         // Ocultar loader cuando el contenido de Streamlit esté renderizado
         const obsLoader = new MutationObserver(() => {
           const root = document.getElementById("root");
-          if (root && root.children.length > 0) {
+          if (root && (root.querySelector(".stApp") || root.children.length > 0)) {
             const loader = document.getElementById("stlite-loader");
             if (loader) loader.style.display = "none";
             obsLoader.disconnect();
+            try {
+              window.parent.postMessage({ type: "stlite_ready" }, "*");
+            } catch(eP) {}
           }
         });
         obsLoader.observe(document.getElementById("root"), { childList: true, subtree: true });
 
-        // Erradicación quirúrgica de alertas espurias de enrutamiento por iframe (Page not found /srcdoc)
+        // Erradicación de alertas espurias sin sobrecargar el hilo de renderizado
         const limpiarAlertasSrcdoc = () => {
           document.querySelectorAll('[data-testid="stAlert"], [data-testid="stNotification"]').forEach(el => {
             const t = el.textContent || "";
@@ -152,18 +158,25 @@ async function ejecutarStreamlitApp(code) {
             }
           });
         };
-        limpiarAlertasSrcdoc();
-        const obsAlerts = new MutationObserver(limpiarAlertasSrcdoc);
-        obsAlerts.observe(document.body, { childList: true, subtree: true });
+        setTimeout(limpiarAlertasSrcdoc, 1500);
+        setTimeout(limpiarAlertasSrcdoc, 3500);
+        setTimeout(limpiarAlertasSrcdoc, 7000);
 
+        // Timeout de seguridad en caso de red lenta
         setTimeout(() => {
           const loader = document.getElementById("stlite-loader");
           if (loader) loader.style.display = "none";
           limpiarAlertasSrcdoc();
-        }, 12000);
+          try {
+            window.parent.postMessage({ type: "stlite_ready" }, "*");
+          } catch(eP) {}
+        }, 35000);
       } catch(err) {
         const loader = document.getElementById("stlite-loader");
         if (loader) loader.innerHTML = "<div style='color:#ff4b4b; padding:20px; text-align:center;'>❌ Error cargando Streamlit: " + err.message + "</div>";
+        try {
+          window.parent.postMessage({ type: "stlite_ready" }, "*");
+        } catch(eP) {}
       }
     })();
   <` + `/script>
@@ -172,9 +185,12 @@ async function ejecutarStreamlitApp(code) {
 
   ultimoStreamlitHTML = stliteDoc;
 
-  // 4. Inyectar en el iframe
+  // 4. Inyectar en el iframe (limpiando instancia previa para evitar fugas de memoria Wasm)
   if (frame) {
-    frame.srcdoc = stliteDoc;
+    frame.srcdoc = "";
+    setTimeout(() => {
+      frame.srcdoc = stliteDoc;
+    }, 25);
     frame.onload = () => {
       if (loadingLayer) loadingLayer.classList.add("d-none");
       frame.classList.remove("d-none");
@@ -217,6 +233,33 @@ function descargarStreamlitHTML() {
   document.body.removeChild(a);
 }
 
+let ejecutandoStreamlitActivo = false;
+
+window.addEventListener("message", (e) => {
+  if (e.data && e.data.type === "stlite_ready") {
+    const loadingLayer = document.getElementById("streamlit-loading-layer");
+    const frame = document.getElementById("streamlit-frame");
+    const btn = document.getElementById("btn-run");
+    const spinner = document.getElementById("btn-spinner");
+    const icon = document.getElementById("btn-icon");
+    const btnMob = document.getElementById("btn-mobile-run");
+    const spinnerMob = document.getElementById("btn-mobile-spinner");
+    const iconMob = document.getElementById("btn-mobile-icon");
+    const tiempoLbl = document.getElementById("tiempo-ejecucion");
+    
+    if (loadingLayer) loadingLayer.classList.add("d-none");
+    if (frame) frame.classList.remove("d-none");
+    if (btn) btn.disabled = false;
+    if (spinner) spinner.classList.add("d-none");
+    if (icon) icon.classList.remove("d-none");
+    if (btnMob) btnMob.disabled = false;
+    if (spinnerMob) spinnerMob.classList.add("d-none");
+    if (iconMob) iconMob.classList.remove("d-none");
+    if (tiempoLbl) tiempoLbl.innerText = "Streamlit App Activa";
+    ejecutandoStreamlitActivo = false;
+  }
+});
+
 function recargarStreamlitApp() {
   const code = editor ? editor.value : "";
   if (!code.trim()) return;
@@ -227,6 +270,9 @@ async function ejecutarPython() {
   const btn = document.getElementById("btn-run");
   const spinner = document.getElementById("btn-spinner");
   const icon = document.getElementById("btn-icon");
+  const btnMob = document.getElementById("btn-mobile-run");
+  const spinnerMob = document.getElementById("btn-mobile-spinner");
+  const iconMob = document.getElementById("btn-mobile-icon");
   const dot = document.getElementById("grafico-dot");
   const tiempoLbl = document.getElementById("tiempo-ejecucion");
   const code = editor.value;
@@ -236,29 +282,61 @@ async function ejecutarPython() {
     return;
   }
 
+  // Prevenir ejecuciones múltiples simultáneas
+  if (ejecutandoStreamlitActivo) return;
+
   // Interceptor para Streamlit Apps
   if (esCodigoStreamlit(code)) {
-    btn.disabled = true;
-    spinner.classList.remove("d-none");
-    icon.classList.add("d-none");
+    ejecutandoStreamlitActivo = true;
+    if (btn) btn.disabled = true;
+    if (spinner) spinner.classList.remove("d-none");
+    if (icon) icon.classList.add("d-none");
+    if (btnMob) btnMob.disabled = true;
+    if (spinnerMob) spinnerMob.classList.remove("d-none");
+    if (iconMob) iconMob.classList.add("d-none");
+
+    // Conmutar inmediatamente a la vista de Streamlit (Móvil y Escritorio)
+    if (typeof cambiarVistaMovil === "function" && window.innerWidth < 992) {
+      cambiarVistaMovil("streamlit");
+    } else {
+      cambiarTab("streamlit");
+    }
+
     try {
       await ejecutarStreamlitApp(code);
     } catch(errSt) {
       console.error("Error ejecutando Streamlit:", errSt);
       alert("Error al inicializar Streamlit: " + errSt.message);
-    } finally {
-      btn.disabled = false;
-      spinner.classList.add("d-none");
-      icon.classList.remove("d-none");
+      ejecutandoStreamlitActivo = false;
+      if (btn) btn.disabled = false;
+      if (spinner) spinner.classList.add("d-none");
+      if (icon) icon.classList.remove("d-none");
+      if (btnMob) btnMob.disabled = false;
+      if (spinnerMob) spinnerMob.classList.add("d-none");
+      if (iconMob) iconMob.classList.remove("d-none");
     }
+
+    // Timeout de seguridad para evitar que el botón quede bloqueado
+    setTimeout(() => {
+      ejecutandoStreamlitActivo = false;
+      if (btn) btn.disabled = false;
+      if (spinner) spinner.classList.add("d-none");
+      if (icon) icon.classList.remove("d-none");
+      if (btnMob) btnMob.disabled = false;
+      if (spinnerMob) spinnerMob.classList.add("d-none");
+      if (iconMob) iconMob.classList.remove("d-none");
+    }, 35000);
     return;
   }
 
   if (!pyodideInstance) return;
 
-  btn.disabled = true;
-  spinner.classList.remove("d-none");
-  icon.classList.add("d-none");
+  if (btn) btn.disabled = true;
+  if (spinner) spinner.classList.remove("d-none");
+  if (icon) icon.classList.add("d-none");
+  if (btnMob) btnMob.disabled = true;
+  if (spinnerMob) spinnerMob.classList.remove("d-none");
+  if (iconMob) iconMob.classList.add("d-none");
   terminal.className = "";
   terminal.textContent = "";
   currentPlotB64 = "";
@@ -266,7 +344,13 @@ async function ejecutarPython() {
   btnDlPlot.disabled = true;
   const btnDlHtmlInit = document.getElementById("btn-dl-html");
   if (btnDlHtmlInit) btnDlHtmlInit.classList.add("d-none");
-  cambiarTab('terminal');
+
+  // En móvil, cambiar a la consola para ver el progreso
+  if (typeof cambiarVistaMovil === "function" && window.innerWidth < 992) {
+    cambiarVistaMovil("terminal");
+  } else {
+    cambiarTab("terminal");
+  }
 
   const t0 = performance.now();
 
@@ -400,8 +484,11 @@ async function ejecutarPython() {
     terminalContainer.scrollTop = terminalContainer.scrollHeight;
     cambiarTab('terminal');
   } finally {
-    btn.disabled = false;
-    spinner.classList.add("d-none");
-    icon.classList.remove("d-none");
+    if (btn) btn.disabled = false;
+    if (spinner) spinner.classList.add("d-none");
+    if (icon) icon.classList.remove("d-none");
+    if (btnMob) btnMob.disabled = false;
+    if (spinnerMob) spinnerMob.classList.add("d-none");
+    if (iconMob) iconMob.classList.remove("d-none");
   }
 }

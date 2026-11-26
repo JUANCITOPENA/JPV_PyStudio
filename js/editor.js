@@ -80,6 +80,9 @@ function extraerVariablesUsuario(codigo) {
   return Array.from(variables.values());
 }
 
+let cachedLineCount = -1;
+let rafEditorSync = null;
+
 function sincronizarPrism() {
   let codigo = editor.value;
   if (codigo.endsWith("\n")) codigo += " ";
@@ -89,7 +92,15 @@ function sincronizarPrism() {
 
 function actualizarContador() {
   const total = editor.value.split("\n").length;
-  lineas.innerHTML = Array.from({ length: total }, (_, i) => i + 1).join("<br>");
+  if (total !== cachedLineCount) {
+    cachedLineCount = total;
+    lineas.innerHTML = Array.from({ length: total }, (_, i) => i + 1).join("<br>");
+  }
+}
+
+function sincronizarEditorOptimizado() {
+  actualizarContador();
+  sincronizarPrism();
 }
 
 function obtenerPalabraActual() {
@@ -103,7 +114,7 @@ function obtenerPalabraActual() {
 }
 
 function mostrarAutocomplete() {
-  if (suprimirPopup) {
+  if (window.innerWidth < 768 || suprimirPopup) {
     suprimirPopup = false;
     ocultarAutocomplete();
     return;
@@ -166,6 +177,10 @@ function renderizarPopup() {
 }
 
 function posicionarPopup() {
+  if (window.innerWidth < 768) {
+    ocultarAutocomplete();
+    return;
+  }
   const pos = editor.selectionStart;
   const textoHastaCursor = editor.value.substring(0, pos);
   const numLineas = textoHastaCursor.split("\n").length;
@@ -177,8 +192,11 @@ function posicionarPopup() {
   let top = (numLineas * lineHeight) - editor.scrollTop + 14;
   let left = (col * charWidth) - editor.scrollLeft + 14;
 
-  popup.style.top = `${Math.min(top, editor.clientHeight - 240)}px`;
-  popup.style.left = `${Math.min(left, editor.clientWidth - 340)}px`;
+  const maxTop = Math.max(10, editor.clientHeight - 240);
+  const maxLeft = Math.max(10, editor.clientWidth - 340);
+
+  popup.style.top = `${Math.max(10, Math.min(top, maxTop))}px`;
+  popup.style.left = `${Math.max(10, Math.min(left, maxLeft))}px`;
 }
 
 function ocultarAutocomplete() {
@@ -302,9 +320,15 @@ editor.addEventListener("keydown", (e) => {
 });
 
 editor.addEventListener("input", () => {
-  actualizarContador();
-  sincronizarPrism();
-  mostrarAutocomplete();
+  if (rafEditorSync) cancelAnimationFrame(rafEditorSync);
+  rafEditorSync = requestAnimationFrame(() => {
+    sincronizarEditorOptimizado();
+    if (window.innerWidth >= 768) {
+      mostrarAutocomplete();
+    } else {
+      ocultarAutocomplete();
+    }
+  });
 });
 
 editor.addEventListener("click", () => {

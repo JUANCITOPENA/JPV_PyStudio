@@ -219,21 +219,22 @@ function cambiarTab(tab) {
   // Sincronización con barra móvil en resoluciones < 992px
   if (window.innerWidth < 992 && mobileLayoutMode === "tab") {
     const splitEl = document.getElementById("split-container");
-    if (activeMobileView !== "editor" && splitEl) {
+    if (splitEl) {
+      activeMobileView = tab;
       splitEl.classList.add("view-output");
       splitEl.classList.remove("view-editor");
     }
     const btns = {
+      editor: document.getElementById("btn-mobile-editor"),
       terminal: document.getElementById("btn-mobile-terminal"),
       grafico: document.getElementById("btn-mobile-grafico"),
       streamlit: document.getElementById("btn-mobile-streamlit")
     };
-    if (btns[tab]) {
-      const mobEditorBtn = document.getElementById("btn-mobile-editor");
-      if (mobEditorBtn && activeMobileView !== "editor") mobEditorBtn.classList.remove("active");
-      Object.values(btns).forEach(b => b && b.classList.remove("active"));
-      btns[tab].classList.add("active");
-    }
+    if (btns.editor) btns.editor.classList.remove("active");
+    if (btns.terminal) btns.terminal.classList.remove("active");
+    if (btns.grafico) btns.grafico.classList.remove("active");
+    if (btns.streamlit) btns.streamlit.classList.remove("active");
+    if (btns[tab]) btns[tab].classList.add("active");
   }
 }
 
