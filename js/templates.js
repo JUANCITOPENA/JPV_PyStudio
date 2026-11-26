@@ -1322,8 +1322,8 @@ const AGENT_CONFIG = {
   titulo: 'NEXUS AI CLI',
   subtitulo: 'Asistente Agéntico Multi-Modelo con Ejecución de Herramientas',
   nombreAgente: 'Atlas',
-  versionApp: 'v2.4.0 (SDK @google/genai)',
-  modeloActual: 'gemini-2.5-flash'
+  versionApp: 'v2.5.0 (Google GenAI 2.5 - 4.0)',
+  modeloActual: 'gemini-2.5-flash-lite' // Activo por defecto con cuota fresca
 };
 
 const MODEL_POOL = [
@@ -1383,13 +1383,17 @@ function ejecutarSkillLocal(name, args) {
 // ==========================================
 function mostrarPresentacion() {
   console.clear();
+  const rawKey = localStorage.getItem('GEMINI_API_KEY') || '';
+  const maskedKey = rawKey ? (rawKey.substring(0, 8) + '...' + rawKey.slice(-4)) : 'No configurada';
+
   console.log('================================================================');
   console.log(\`🚀 \${AGENT_CONFIG.titulo} — \${AGENT_CONFIG.versionApp}\`);
   console.log(\`📌 \${AGENT_CONFIG.subtitulo}\`);
   console.log('----------------------------------------------------------------');
   console.log(\`🤖 Agente activo: \${AGENT_CONFIG.nombreAgente}\`);
   console.log(\`🧠 Modelo en uso: \${AGENT_CONFIG.modeloActual}\`);
-  console.log('💡 Escribe /ayuda para ver los comandos disponibles.');
+  console.log(\`🔑 Clave activa: \${maskedKey} (Guardada en navegador)\`);
+  console.log('💡 Escribe /ayuda para ver los comandos o /modelo para cambiar.');
   console.log('================================================================\\n');
 }
 
@@ -1545,11 +1549,32 @@ async function iniciarChat() {
 
     } catch (error) {
       console.error(\`\\n❌ Error con el modelo \${AGENT_CONFIG.modeloActual}:\`, error.message, '\\n');
-      if (error.message.includes('503') || error.message.includes('high demand')) {
-        console.warn(\`💡 TIP: El modelo \${AGENT_CONFIG.modeloActual} tiene alta demanda en servidores de Google. Cambia temporalmente a gemini-2.5-flash o gemini-3.7-flash con: /modelo gemini-2.5-flash\\n\`);
-      } else if (error.message.includes('429') || error.message.includes('quota') || error.message.includes('limit')) {
-        console.warn(\`💡 TIP: Se excedió la cuota de peticiones para este modelo. Cambia a gemini-2.5-flash o gemini-2.5-flash-lite con: /modelo gemini-2.5-flash\\n\`);
+
+      // Auto-fallback inteligente ante cuota agotada (429) o alta demanda (503)
+      if (error.message.includes('429') || error.message.includes('RESOURCE_EXHAUSTED') || error.message.includes('503')) {
+        const fallbacks = ['gemini-2.5-flash-lite', 'gemini-3.7-flash', 'gemini-2.5-flash'].filter(m => m !== AGENT_CONFIG.modeloActual);
+        const nuevoModelo = fallbacks[0];
+        console.warn(\`🔄 [Auto-Fallback] Cuota/demanda agotada en \${AGENT_CONFIG.modeloActual}. Conmutando automáticamente a \${nuevoModelo}...\\n\`);
+        AGENT_CONFIG.modeloActual = nuevoModelo;
+
+        try {
+          let retryResp = await ai.models.generateContent({
+            model: AGENT_CONFIG.modeloActual,
+            contents: historialChat,
+            config: {
+              systemInstruction: \`Te llamas \${AGENT_CONFIG.nombreAgente}. Eres un asistente ágil y resolutivo. Ejecuta tus herramientas automáticamente cuando sea necesario.\`,
+              tools: [{ functionDeclarations: agentTools }]
+            }
+          });
+          const respText = retryResp.text || retryResp.candidates?.[0]?.content?.parts?.[0]?.text || '';
+          historialChat.push(retryResp.candidates[0].content);
+          console.log(\`\\n\${AGENT_CONFIG.nombreAgente} (\${AGENT_CONFIG.modeloActual}) > \${respText}\\n\`);
+          continue;
+        } catch(retryErr) {
+          console.error(\`❌ Fallo en fallback con \${nuevoModelo}:\`, retryErr.message);
+        }
       }
+
       historialChat.pop();
     }
   }
