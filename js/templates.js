@@ -1465,8 +1465,8 @@ async function llamarConPoolFailover(ai, historial, config) {
 async function iniciarChat() {
   const rl = readline.createInterface({ input, output });
 
-  // Validador de formato de API Key de Google Gemini
-  const esKeyValida = (k) => typeof k === 'string' && k.trim().length >= 20 && !k.trim().includes(' ') && /^[A-Za-z0-9_-]{20,}$/.test(k.trim());
+  // Validador de formato de API Key de Google Gemini (admite AIzaSy... y formato nuevo AQ.Ab8...)
+  const esKeyValida = (k) => typeof k === 'string' && k.trim().length >= 20 && !/\s/.test(k.trim()) && /^[A-Za-z0-9_.-]{20,}$/.test(k.trim());
 
   // 1. Validar y solicitar la API Key si no existe o si es inválida
   let apiKey = localStorage.getItem('GEMINI_API_KEY');
@@ -1482,7 +1482,7 @@ async function iniciarChat() {
     console.log('');
 
     while (!esKeyValida(apiKey)) {
-      apiKey = await rl.question('👉 Ingresa tu Gemini API Key (empieza con AIzaSy...): ');
+      apiKey = await rl.question('👉 Ingresa tu Gemini API Key: ');
       apiKey = (apiKey || '').trim();
 
       if (!apiKey || apiKey === '/salir' || apiKey === '/cancelar') {
