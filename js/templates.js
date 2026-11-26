@@ -1291,9 +1291,9 @@ const agentTools = [
     parameters: {
       type: Type.OBJECT,
       properties: {
-        accion: { type: Type.STRING, description: 'Acción a realizar: "guardar" o "leer"' },
+        accion: { type: Type.STRING, description: 'Acción a realizar: \"guardar\" o \"leer\"' },
         clave: { type: Type.STRING, description: 'Nombre de la clave o variable' },
-        valor: { type: Type.STRING, description: 'Valor a almacenar (solo para acción "guardar")' }
+        valor: { type: Type.STRING, description: 'Valor a almacenar (solo para acción \"guardar\")' }
       },
       required: ['accion', 'clave']
     }
@@ -1335,7 +1335,7 @@ function ejecutarSkillLocal(name, args) {
     }
   }
 
-  return { error: \`Herramienta "\${name}" no reconocida\` };
+  return { error: \`Herramienta \"\${name}\" no reconocida\` };
 }
 
 // ==========================================
@@ -1354,21 +1354,25 @@ function mostrarPresentacion() {
   console.log(\`🧠 Modelo inicial: \${AGENT_CONFIG.modeloActual}\`);
   console.log(\`🔑 Clave activa: \${maskedKey}\`);
   console.log('💡 Pregunta cualquier cosa o pide ejecutar código. Escribe /ayuda para ver comandos.');
-  console.log('================================================================\n');
+  console.log('================================================================');
+  console.log('');
 }
 
 function mostrarAyuda() {
-  console.log('\n📖 COMANDOS DISPONIBLES:');
+  console.log('');
+  console.log('📖 COMANDOS DISPONIBLES:');
   console.log('  /pool             -> Muestra todos los modelos del 3.1 al 4');
   console.log('  /modelo <id>      -> Cambia el modelo activo (ej. /modelo gemini-3.6-flash)');
   console.log('  /key              -> Cambia la Gemini API Key almacenada');
   console.log('  /memoria          -> Muestra las variables almacenadas por el agente');
   console.log('  /limpiar          -> Reinicia la memoria de la conversación');
-  console.log('  /salir            -> Cierra la sesión del chat\n');
+  console.log('  /salir            -> Cierra la sesión del chat');
+  console.log('');
 }
 
 function mostrarPool() {
-  console.log('\n🌐 POOL DE MODELOS OFICIALES (3.1 AL 4):');
+  console.log('');
+  console.log('🌐 POOL DE MODELOS OFICIALES (3.1 AL 4):');
   MODEL_POOL.forEach((m, index) => {
     const activo = m.id === AGENT_CONFIG.modeloActual ? '✅ [ACTIVO]' : '  ';
     console.log(\`  \${index + 1}. \${activo} \${m.id} (\${m.nombre}) -> \${m.uso}\`);
@@ -1458,22 +1462,26 @@ async function iniciarChat() {
           break;
         case '/modelo':
           if (!argumento) {
-            console.log('⚠️ Debes indicar el ID del modelo. Escribe /pool para ver la lista.\n');
+            console.log('⚠️ Debes indicar el ID del modelo. Escribe /pool para ver la lista.');
+            console.log('');
           } else {
             const existe = MODEL_POOL.find(m => m.id === argumento);
             AGENT_CONFIG.modeloActual = argumento;
-            console.log(\`🔄 Modelo configurado a: \${argumento} \${existe ? \`(\${existe.nombre})\` : ''}\n\`);
+            console.log(\`🔄 Modelo configurado a: \${argumento} \${existe ? \`(\${existe.nombre})\` : ''}\`);
+            console.log('');
           }
           break;
         case '/key':
           const nuevaKey = await rl.question('🔑 Ingresa nueva Gemini API Key: ');
           if (nuevaKey.trim()) {
             localStorage.setItem('GEMINI_API_KEY', nuevaKey.trim());
-            console.log('✅ API Key actualizada correctamente.\n');
+            console.log('✅ API Key actualizada correctamente.');
+            console.log('');
           }
           break;
         case '/memoria':
-          console.log('\n🧠 MEMORIA ACTUAL DE LA SESIÓN:');
+          console.log('');
+          console.log('🧠 MEMORIA ACTUAL DE LA SESIÓN:');
           console.log(JSON.stringify(memoriaSesion, null, 2));
           console.log('');
           break;
@@ -1481,14 +1489,17 @@ async function iniciarChat() {
           historialChat = [];
           for (const k in memoriaSesion) delete memoriaSesion[k];
           mostrarPresentacion();
-          console.log('🧹 Memoria del chat reiniciada.\n');
+          console.log('🧹 Memoria del chat reiniciada.');
+          console.log('');
           break;
         case '/salir':
-          console.log(\`\n👋 ¡Hasta luego! \${AGENT_CONFIG.nombreAgente} desconectado.\`);
+          console.log('');
+          console.log(\`👋 ¡Hasta luego! \${AGENT_CONFIG.nombreAgente} desconectado.\`);
           rl.close();
           return;
         default:
-          console.log('❌ Comando no reconocido. Escribe /ayuda para ver las opciones.\n');
+          console.log('❌ Comando no reconocido. Escribe /ayuda para ver las opciones.');
+          console.log('');
       }
       continue;
     }
@@ -1540,10 +1551,15 @@ DIRECTIVAS INMUTABLES Y DE OBLIGATORIO CUMPLIMIENTO:
 
       const respuestaTexto = response.text || response.candidates?.[0]?.content?.parts?.[0]?.text || '';
       historialChat.push(response.candidates[0].content);
-      console.log(\`\n\${AGENT_CONFIG.nombreAgente} (\${AGENT_CONFIG.modeloActual}) >\n\${respuestaTexto}\n\`);
+      console.log('');
+      console.log(\`\${AGENT_CONFIG.nombreAgente} (\${AGENT_CONFIG.modeloActual}) >\`);
+      console.log(respuestaTexto);
+      console.log('');
 
     } catch (error) {
-      console.error(\`\n❌ Error con el pool de modelos:\`, error.message, '\n');
+      console.log('');
+      console.error(\`❌ Error con el pool de modelos:\`, error.message);
+      console.log('');
       historialChat.pop();
     }
   }
