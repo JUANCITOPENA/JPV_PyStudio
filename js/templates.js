@@ -1309,7 +1309,237 @@ async function ejecutarAgenteConWasm(promptUsuario) {
 }
 
 // Ejecución
-await ejecutarAgenteConWasm('Si compro un equipo de $1,250 dólares y el impuesto es del 18%, ¿cuánto pagaré solo de impuestos?');`
+await ejecutarAgenteConWasm('Si compro un equipo de $1,250 dólares y el impuesto es del 18%, ¿cuánto pagaré solo de impuestos?');`,
+
+  gemini_chat: `import { GoogleGenAI, Type } from '@google/genai';
+import * as readline from 'node:readline/promises';
+import { stdin as input, stdout as output } from 'node:process';
+
+// ==========================================
+// 1. CONFIGURACIÓN Y MODELOS ACTIVOS DE GEMINI
+// ==========================================
+const AGENT_CONFIG = {
+  titulo: 'NEXUS AI CLI',
+  subtitulo: 'Asistente Agéntico Multi-Modelo con Ejecución de Herramientas',
+  nombreAgente: 'Atlas',
+  versionApp: 'v2.4.0 (SDK @google/genai)',
+  modeloActual: 'gemini-2.5-flash'
+};
+
+const MODEL_POOL = [
+  { id: 'gemini-2.5-flash', nombre: 'Gemini 2.5 Flash', uso: 'Rápido, rentable y optimizado para agentes' },
+  { id: 'gemini-2.5-pro', nombre: 'Gemini 2.5 Pro', uso: 'Máximo razonamiento y auditoría profunda' },
+  { id: 'gemini-2.0-flash', nombre: 'Gemini 2.0 Flash', uso: 'Baja latencia y soporte multimodal' },
+  { id: 'gemini-1.5-pro', nombre: 'Gemini 1.5 Pro', uso: 'Ventana de contexto ultra extendida' }
+];
+
+// ==========================================
+// 2. DEFINICIÓN DE SKILLS AGÉNTICAS (TOOLS)
+// ==========================================
+const agentTools = [
+  {
+    name: 'obtener_hora_sistema',
+    description: 'Obtiene la fecha y hora exacta actual del sistema.',
+    parameters: { type: Type.OBJECT, properties: {} }
+  },
+  {
+    name: 'calcular_presupuesto',
+    description: 'Calcula el costo total sumando un porcentaje de impuestos o margen.',
+    parameters: {
+      type: Type.OBJECT,
+      properties: {
+        monto: { type: Type.NUMBER, description: 'Monto base en dólares' },
+        porcentaje: { type: Type.NUMBER, description: 'Porcentaje a sumar (ej. 18 para 18%)' }
+      },
+      required: ['monto', 'porcentaje']
+    }
+  }
+];
+
+function ejecutarSkillLocal(name, args) {
+  if (name === 'obtener_hora_sistema') {
+    return { fechaHora: new Date().toLocaleString() };
+  }
+  if (name === 'calcular_presupuesto') {
+    const total = args.monto + (args.monto * (args.porcentaje / 100));
+    return { montoBase: args.monto, porcentajeAplicado: args.porcentaje, totalFinal: total };
+  }
+  return { error: 'Herramienta no encontrada' };
+}
+
+// ==========================================
+// 3. INTERFAZ VISUAL Y GESTIÓN DE COMANDOS
+// ==========================================
+function mostrarPresentacion() {
+  console.clear();
+  console.log('================================================================');
+  console.log(\`🚀 \${AGENT_CONFIG.titulo} — \${AGENT_CONFIG.versionApp}\`);
+  console.log(\`📌 \${AGENT_CONFIG.subtitulo}\`);
+  console.log('----------------------------------------------------------------');
+  console.log(\`🤖 Agente activo: \${AGENT_CONFIG.nombreAgente}\`);
+  console.log(\`🧠 Modelo en uso: \${AGENT_CONFIG.modeloActual}\`);
+  console.log('💡 Escribe /ayuda para ver los comandos disponibles.');
+  console.log('================================================================\\n');
+}
+
+function mostrarAyuda() {
+  console.log('\\n📖 COMANDOS DISPONIBLES:');
+  console.log('  /pool             -> Muestra los modelos oficiales disponibles');
+  console.log('  /modelo <id>      -> Cambia el modelo activo (ej. /modelo gemini-2.5-pro)');
+  console.log('  /key              -> Cambia la Gemini API Key almacenada');
+  console.log('  /version          -> Muestra información del agente y modelo');
+  console.log('  /limpiar          -> Reinicia la memoria de la conversación');
+  console.log('  /salir            -> Cierra la sesión del chat\\n');
+}
+
+function mostrarPool() {
+  console.log('\\n🌐 POOL DE MODELOS OFICIALES:');
+  MODEL_POOL.forEach((m, index) => {
+    const activo = m.id === AGENT_CONFIG.modeloActual ? '✅ [ACTIVO]' : '  ';
+    console.log(\`  \${index + 1}. \${activo} \${m.id} (\${m.nombre}) -> \${m.uso}\`);
+  });
+  console.log('');
+}
+
+// ==========================================
+// 4. BUCLE PRINCIPAL DEL CHAT AGÉNTICO
+// ==========================================
+async function iniciarChat() {
+  const rl = readline.createInterface({ input, output });
+
+  // 1. Solicitar la API Key al inicio si no existe en memoria
+  let apiKey = localStorage.getItem('GEMINI_API_KEY');
+  if (!apiKey) {
+    console.log('🔐 No se detectó clave de Gemini API configurada.');
+    apiKey = await rl.question('👉 Ingresa tu Gemini API Key para iniciar el agente: ');
+    apiKey = (apiKey || '').trim();
+    if (!apiKey) {
+      console.error('❌ Error: Se requiere una API Key para conectar con Google AI Studio.');
+      rl.close();
+      return;
+    }
+    localStorage.setItem('GEMINI_API_KEY', apiKey);
+  }
+
+  // 2. Inicializar cliente con v1beta para soporte de tools
+  const ai = new GoogleGenAI({
+    apiKey: apiKey,
+    httpOptions: { apiVersion: 'v1beta' }
+  });
+
+  // 3. Cargar la interfaz de consola
+  mostrarPresentacion();
+
+  let historialChat = [];
+
+  while (true) {
+    const userInput = await rl.question('Tú > ');
+    const texto = (userInput || '').trim();
+
+    if (!texto) continue;
+
+    // Comandos slash
+    if (texto.startsWith('/')) {
+      const [comando, ...partes] = texto.split(' ');
+      const argumento = partes.join(' ');
+
+      switch (comando.toLowerCase()) {
+        case '/ayuda':
+          mostrarAyuda();
+          break;
+        case '/pool':
+          mostrarPool();
+          break;
+        case '/modelo':
+          if (!argumento) {
+            console.log('⚠️ Debes indicar el ID del modelo. Escribe /pool para ver la lista.\\n');
+          } else {
+            AGENT_CONFIG.modeloActual = argumento;
+            console.log(\`🔄 Modelo cambiado a: \${argumento}\\n\`);
+          }
+          break;
+        case '/key':
+          const nuevaKey = await rl.question('🔑 Ingresa nueva Gemini API Key: ');
+          if (nuevaKey.trim()) {
+            localStorage.setItem('GEMINI_API_KEY', nuevaKey.trim());
+            console.log('✅ API Key actualizada correctamente.\\n');
+          }
+          break;
+        case '/version':
+          console.log(\`\\nℹ️  Agente: \${AGENT_CONFIG.nombreAgente} | App: \${AGENT_CONFIG.versionApp} | Modelo: \${AGENT_CONFIG.modeloActual}\\n\`);
+          break;
+        case '/limpiar':
+          historialChat = [];
+          mostrarPresentacion();
+          console.log('🧹 Memoria del chat reiniciada.\\n');
+          break;
+        case '/salir':
+          console.log(\`\\n👋 ¡Hasta luego! \${AGENT_CONFIG.nombreAgente} desconectado.\`);
+          rl.close();
+          return;
+        default:
+          console.log('❌ Comando no reconocido. Escribe /ayuda para ver las opciones.\\n');
+      }
+      continue;
+    }
+
+    // Consulta con Gemini + Function Calling
+    historialChat.push({ role: 'user', parts: [{ text: texto }] });
+
+    try {
+      const config = {
+        systemInstruction: \`Te llamas \${AGENT_CONFIG.nombreAgente}. Eres un asistente ágil y resolutivo. Ejecuta tus herramientas automáticamente cuando sea necesario.\`,
+        tools: [{ functionDeclarations: agentTools }]
+      };
+
+      let response = await ai.models.generateContent({
+        model: AGENT_CONFIG.modeloActual,
+        contents: historialChat,
+        config
+      });
+
+      // Ciclo agéntico protegido contra bucles infinitos (máximo 5 iteraciones)
+      let turns = 0;
+      while (response.functionCalls && response.functionCalls.length > 0 && turns < 5) {
+        turns++;
+        const modelContent = response.candidates[0].content;
+        historialChat.push(modelContent);
+
+        const toolResponses = [];
+        for (const call of response.functionCalls) {
+          console.log(\`   ⚙️  [\${AGENT_CONFIG.nombreAgente} ejecutando skill: \${call.name}...]\`);
+          const resultado = ejecutarSkillLocal(call.name, call.args);
+
+          toolResponses.push({
+            functionResponse: {
+              name: call.name,
+              response: resultado
+            }
+          });
+        }
+
+        // Devolver resultado de herramientas con rol 'tool'
+        historialChat.push({ role: 'tool', parts: toolResponses });
+
+        response = await ai.models.generateContent({
+          model: AGENT_CONFIG.modeloActual,
+          contents: historialChat,
+          config
+        });
+      }
+
+      const respuestaTexto = response.text || response.candidates?.[0]?.content?.parts?.[0]?.text || '';
+      historialChat.push(response.candidates[0].content);
+      console.log(\`\\n\${AGENT_CONFIG.nombreAgente} (\${AGENT_CONFIG.modeloActual}) > \${respuestaTexto}\\n\`);
+
+    } catch (error) {
+      console.error(\`\\n❌ Error con el modelo \${AGENT_CONFIG.modeloActual}:\`, error.message, '\\n');
+      historialChat.pop();
+    }
+  }
+}
+
+await iniciarChat();`
 };
 
 function cargarPlantilla(tipo) {

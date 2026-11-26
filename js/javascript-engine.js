@@ -24,8 +24,30 @@ let iframeJsRunner = null;
 window.addEventListener("message", (e) => {
   if (!e.data) return;
 
+  if (e.data.type === "js_input_request") {
+    const promptText = e.data.prompt || "";
+    if (typeof window.solicitarInputTerminal === "function") {
+      window.solicitarInputTerminal(promptText).then((valor) => {
+        if (iframeJsRunner && iframeJsRunner.contentWindow) {
+          iframeJsRunner.contentWindow.postMessage({
+            type: "js_input_response",
+            id: e.data.id,
+            value: valor
+          }, "*");
+        }
+      });
+    }
+    return;
+  }
+
   if (e.data.type === "js_console") {
     const metodo = e.data.method || "log";
+
+    if (metodo === "clear") {
+      if (terminal) terminal.textContent = "";
+      return;
+    }
+
     const texto = (e.data.args || []).map(a => typeof a === "object" ? JSON.stringify(a, null, 2) : String(a)).join(" ");
     
     let colorClass = "";
@@ -124,6 +146,38 @@ async function ejecutarCodigoJavaScript(code) {
   iframeJsRunner.style.display = "none";
   document.body.appendChild(iframeJsRunner);
 
+  const readlinePolyfill = "data:text/javascript;charset=utf-8," + encodeURIComponent(`
+    export function createInterface() {
+      return {
+        question: (promptText) => window.solicitarInput(promptText),
+        close: () => {}
+      };
+    }
+    export default { createInterface };
+  `);
+
+  const processPolyfill = "data:text/javascript;charset=utf-8," + encodeURIComponent(`
+    export const stdin = {};
+    export const stdout = {};
+    export const env = new Proxy({}, {
+      get: (target, prop) => {
+        try {
+          return window.parent.localStorage.getItem(prop) || window.parent.sessionStorage.getItem(prop) || "";
+        } catch(e) { return ""; }
+      },
+      set: (target, prop, val) => {
+        try {
+          window.parent.localStorage.setItem(prop, String(val));
+          return true;
+        } catch(e) { return true; }
+      }
+    });
+    export const exit = (code) => {
+      console.log("[Proceso finalizado]");
+    };
+    export default { stdin, stdout, env, exit };
+  `);
+
   const runnerDoc = `<!DOCTYPE html>
 <html>
 <head>
@@ -131,11 +185,33 @@ async function ejecutarCodigoJavaScript(code) {
   <script type="importmap">
   {
     "imports": {
-      "@google/genai": "https://cdn.jsdelivr.net/npm/@google/genai/+esm"
+      "@google/genai": "https://cdn.jsdelivr.net/npm/@google/genai/+esm",
+      "node:readline/promises": "${readlinePolyfill}",
+      "readline/promises": "${readlinePolyfill}",
+      "node:readline": "${readlinePolyfill}",
+      "readline": "${readlinePolyfill}",
+      "node:process": "${processPolyfill}",
+      "process": "${processPolyfill}"
     }
   }
   <` + `/script>
   <script>
+    window.__inputPromises = {};
+    window.addEventListener("message", (ev) => {
+      if (ev.data && ev.data.type === "js_input_response" && window.__inputPromises[ev.data.id]) {
+        window.__inputPromises[ev.data.id](ev.data.value);
+        delete window.__inputPromises[ev.data.id];
+      }
+    });
+
+    window.solicitarInput = function(promptText) {
+      return new Promise((resolve) => {
+        const id = "req_" + Math.random().toString(36).slice(2);
+        window.__inputPromises[id] = resolve;
+        window.parent.postMessage({ type: "js_input_request", id: id, prompt: promptText }, "*");
+      });
+    };
+
     const enviarLog = (method, args) => {
       try {
         window.parent.postMessage({
@@ -155,6 +231,9 @@ async function ejecutarCodigoJavaScript(code) {
     console.error = function(...args) { enviarLog("error", args); };
     console.warn = function(...args) { enviarLog("warn", args); };
     console.info = function(...args) { enviarLog("info", args); };
+    console.clear = function() {
+      window.parent.postMessage({ type: "js_console", method: "clear", args: [] }, "*");
+    };
 
     const origFetch = window.fetch;
     window.fetch = async function(resource, init) {
