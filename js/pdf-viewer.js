@@ -202,13 +202,10 @@ function generarHtmlVistaEnriquecida(doc) {
             <div class="small text-secondary mb-2" style="font-size: 11px;">Módulos 1 al 5 + 15 Casos Prácticos Reales.</div>
             <div class="d-flex gap-1">
               <button class="btn btn-sm btn-outline-info py-0 px-2 fw-semibold" style="font-size: 11px;" onclick="event.stopPropagation(); cambiarDocumentoActivo('libro_maestro_python')">
-                <i class="bi bi-eye"></i> Abrir
+                <i class="bi bi-eye"></i> Abrir Taller
               </button>
-              <button class="btn btn-sm btn-outline-success py-0 px-2 fw-bold" style="font-size: 11px;" onclick="event.stopPropagation(); descargarArchivoTxt('libro_maestro_python')">
-                <i class="bi bi-filetype-txt"></i> .TXT
-              </button>
-              <button class="btn btn-sm btn-warning text-dark py-0 px-2 fw-bold" style="font-size: 11px;" onclick="event.stopPropagation(); descargarDocumentoPDF('libro_maestro_python')">
-                <i class="bi bi-file-pdf"></i> PDF
+              <button class="btn btn-sm btn-success text-dark py-0 px-2 fw-bold" style="font-size: 11px;" onclick="event.stopPropagation(); descargarArchivoTxt('libro_maestro_python')">
+                <i class="bi bi-download"></i> Descargar .TXT
               </button>
             </div>
           </div>
@@ -226,13 +223,10 @@ function generarHtmlVistaEnriquecida(doc) {
             <div class="small text-secondary mb-2" style="font-size: 11px;">Matriz 3x3, Ventas, Clima, Triage y K-Means.</div>
             <div class="d-flex gap-1">
               <button class="btn btn-sm btn-outline-info py-0 px-2 fw-semibold" style="font-size: 11px;" onclick="event.stopPropagation(); cambiarDocumentoActivo('taller_mapas_calor')">
-                <i class="bi bi-eye"></i> Abrir
+                <i class="bi bi-eye"></i> Abrir Taller
               </button>
-              <button class="btn btn-sm btn-outline-success py-0 px-2 fw-bold" style="font-size: 11px;" onclick="event.stopPropagation(); descargarArchivoTxt('taller_mapas_calor')">
-                <i class="bi bi-filetype-txt"></i> .TXT
-              </button>
-              <button class="btn btn-sm btn-warning text-dark py-0 px-2 fw-bold" style="font-size: 11px;" onclick="event.stopPropagation(); descargarDocumentoPDF('taller_mapas_calor')">
-                <i class="bi bi-file-pdf"></i> PDF
+              <button class="btn btn-sm btn-success text-dark py-0 px-2 fw-bold" style="font-size: 11px;" onclick="event.stopPropagation(); descargarArchivoTxt('taller_mapas_calor')">
+                <i class="bi bi-download"></i> Descargar .TXT
               </button>
             </div>
           </div>
@@ -250,13 +244,10 @@ function generarHtmlVistaEnriquecida(doc) {
             <div class="small text-secondary mb-2" style="font-size: 11px;">Clima, Cripto, Terremotos y Pósters en RAM.</div>
             <div class="d-flex gap-1">
               <button class="btn btn-sm btn-outline-info py-0 px-2 fw-semibold" style="font-size: 11px;" onclick="event.stopPropagation(); cambiarDocumentoActivo('taller_apis_publicas')">
-                <i class="bi bi-eye"></i> Abrir
+                <i class="bi bi-eye"></i> Abrir Taller
               </button>
-              <button class="btn btn-sm btn-outline-success py-0 px-2 fw-bold" style="font-size: 11px;" onclick="event.stopPropagation(); descargarArchivoTxt('taller_apis_publicas')">
-                <i class="bi bi-filetype-txt"></i> .TXT
-              </button>
-              <button class="btn btn-sm btn-warning text-dark py-0 px-2 fw-bold" style="font-size: 11px;" onclick="event.stopPropagation(); descargarDocumentoPDF('taller_apis_publicas')">
-                <i class="bi bi-file-pdf"></i> PDF
+              <button class="btn btn-sm btn-success text-dark py-0 px-2 fw-bold" style="font-size: 11px;" onclick="event.stopPropagation(); descargarArchivoTxt('taller_apis_publicas')">
+                <i class="bi bi-download"></i> Descargar .TXT
               </button>
             </div>
           </div>
@@ -398,9 +389,6 @@ function generarHtmlVistaEnriquecida(doc) {
           </button>
           <button class="btn btn-outline-info fw-bold px-3 py-2" onclick="alternarModoVistaDoc('raw_txt')">
             <i class="bi bi-card-text"></i> Abrir Modo Bloc de Notas (Raw)
-          </button>
-          <button class="btn btn-warning text-dark fw-bold px-3 py-2" onclick="descargarDocumentoPDF('${doc.id}')">
-            <i class="bi bi-file-earmark-pdf-fill"></i> Descargar PDF Oficial
           </button>
         </div>
       </div>
@@ -545,23 +533,8 @@ function filtrarContenidoDoc(query) {
 }
 
 function descargarDocumentoPDF(idOpcional) {
-  const id = idOpcional || docActivoId;
-  const normalizado = id === "libro_python_maestro" ? "libro_maestro_python" : id;
-  const infoPdf = MAPA_PDFS_COMPILADOS[normalizado];
-
-  if (infoPdf && infoPdf.url) {
-    const a = document.createElement("a");
-    a.href = infoPdf.url;
-    a.download = infoPdf.nombre;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    mostrarNotificacionFlotante(`📕 Descargando ${infoPdf.nombre}...`);
-    return;
-  }
-
-  // Fallback si no está compilado
-  window.print();
+  // Redirigido a descarga directa del Bloc de Notas TXT Oficial
+  descargarArchivoTxt(idOpcional);
 }
 
 function imprimirDocumentoNativo() {

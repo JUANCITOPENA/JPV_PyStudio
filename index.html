@@ -22,9 +22,6 @@
   <!-- html2canvas para Captura de Código Completo en PNG HD -->
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
-  <!-- html2pdf.js para Exportación de Libros y Talleres en PDF Editorial A4 -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-
   <!-- JSZip para Descarga de Suite Completa -->
   <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 
@@ -92,8 +89,8 @@
       
       <!-- Botones de Acción Desktop (>= 992px) -->
       <div class="d-none d-lg-flex align-items-center gap-2">
-        <button id="btn-header-libros-pdf" class="btn btn-sm btn-outline-warning text-warning fw-semibold btn-action" onclick="cambiarTab('documentos')" title="Abrir Visor Editorial de Libros y Talleres Python">
-          <i class="bi bi-book-half"></i> <span class="d-none d-xl-inline">Libros & Talleres</span><span class="d-inline d-xl-none">Libros</span>
+        <button id="btn-header-libros-pdf" class="btn btn-sm btn-outline-warning text-warning fw-semibold btn-action" onclick="cambiarTab('documentos')" title="Abrir Talleres Técnicos y Bloc de Notas Oficiales">
+          <i class="bi bi-journal-code"></i> <span class="d-none d-xl-inline">Talleres TXT</span><span class="d-inline d-xl-none">Talleres</span>
         </button>
 
         <button id="btn-config-gemini-key" class="btn btn-sm btn-outline-info text-info fw-semibold btn-action" onclick="abrirModalApiKey()" title="Configurar Google Gemini API Key">
@@ -124,7 +121,7 @@
         </button>
         <ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark border-secondary shadow-lg" aria-labelledby="dropdownMobileTools">
           <li><a class="dropdown-item small d-flex align-items-center gap-2" href="javascript:void(0)" onclick="abrirModalApiKey()"><i class="bi bi-key-fill text-warning"></i> Configurar Gemini API Key</a></li>
-          <li><a class="dropdown-item small d-flex align-items-center gap-2" href="javascript:void(0)" onclick="cambiarTab('documentos')"><i class="bi bi-book-half text-warning"></i> Libros & Talleres PDF</a></li>
+          <li><a class="dropdown-item small d-flex align-items-center gap-2" href="javascript:void(0)" onclick="cambiarTab('documentos')"><i class="bi bi-journal-code text-warning"></i> Talleres & Guías TXT</a></li>
           <li><hr class="dropdown-divider border-secondary my-1"></li>
           <li><a class="dropdown-item small d-flex align-items-center gap-2" href="javascript:void(0)" onclick="document.getElementById('input-archivo-local').click()"><i class="bi bi-upload text-info"></i> Subir CSV / Excel</a></li>
           <li><a class="dropdown-item small d-flex align-items-center gap-2" href="javascript:void(0)" onclick="mostrarArchivosEnMemoria()"><i class="bi bi-folder2-open text-warning"></i> Archivos en Memoria (VFS)</a></li>
@@ -158,8 +155,8 @@
         <span>🎈</span> <span>Streamlit</span>
         <span id="mobile-streamlit-dot" class="badge rounded-pill bg-danger p-1 d-none"></span>
       </button>
-      <button id="btn-mobile-documentos" type="button" class="mobile-segment-btn" onclick="cambiarVistaMovil('documentos')" title="Ver Libros y Documentos PDF">
-        <i class="bi bi-book text-warning"></i> <span>Libros</span>
+      <button id="btn-mobile-documentos" type="button" class="mobile-segment-btn" onclick="cambiarVistaMovil('documentos')" title="Ver Talleres y Bloc de Notas TXT">
+        <i class="bi bi-journal-code text-warning"></i> <span>Talleres</span>
       </button>
     </div>
     
@@ -419,9 +416,9 @@ print("\n💾 Archivo 'Reporte_Titanic_Descargado.csv' listo para descargar.")
               <button class="zoom-btn d-none d-sm-flex" onclick="resetZoomDoc()" title="Restablecer tamaño"><i class="bi bi-arrow-counterclockwise"></i></button>
             </div>
 
-            <!-- Botón Descargar PDF Oficial -->
-            <button id="btn-descargar-pdf-doc" class="btn btn-warning text-dark btn-action fw-bold px-2 py-0" style="height: 28px; font-size: 11px;" onclick="descargarDocumentoPDF()" title="Descargar libro o taller en PDF editorial limpio">
-              <i class="bi bi-file-earmark-pdf-fill"></i> <span class="d-none d-md-inline">PDF</span>
+            <!-- Botón Descargar .TXT Original -->
+            <button id="btn-descargar-txt-doc" class="btn btn-success text-dark btn-action fw-bold px-2 py-0" style="height: 28px; font-size: 11px;" onclick="descargarArchivoTxt()" title="Descargar Bloc de Notas Original (.TXT)">
+              <i class="bi bi-file-earmark-text-fill"></i> <span class="d-none d-md-inline">Descargar .TXT</span>
             </button>
 
             <!-- Botón Imprimir Nativo -->

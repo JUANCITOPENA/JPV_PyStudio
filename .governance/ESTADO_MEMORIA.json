@@ -1,7 +1,7 @@
 {
-  "version": "1.2.0",
-  "timestamp": "2026-11-26 15:18:00",
-  "etapa_actual": "TALLERES_TXT_Y_BLOC_DE_NOTAS_INTEGRADOS",
+  "version": "1.3.0",
+  "timestamp": "2026-11-26 15:46:00",
+  "etapa_actual": "PDF_ELIMINADO_ENFOQUE_100_PORCIENTO_TXT",
   "qa_status": {
     "passed_tests": 92,
     "total_tests": 92,
@@ -31,11 +31,11 @@
       "retos": 6
     }
   },
-  "visor_dual": {
+  "visor_txt_pro": {
     "vista_enriquecida": true,
     "vista_bloc_de_notas_raw": true,
     "inyectar_en_editor_directo": true,
     "descargar_txt": true,
-    "descargar_pdf": true
+    "pdf_eliminado_completamente": true
   }
 }
