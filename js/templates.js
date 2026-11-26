@@ -1217,9 +1217,9 @@ import { stdin as input, stdout as output } from 'node:process';
 // ==========================================
 const AGENT_CONFIG = {
   titulo: 'NEXUS AI PRO — AGENTE AUTÓNOMO UNIVERSAL',
-  subtitulo: 'Razonamiento Abierto • Pool Failover Multi-Tier • Ejecución en Vivo',
+  subtitulo: 'Razonamiento Abierto • Pool Failover Multi-Tier • Descarga de Archivos en Vivo',
   nombreAgente: 'Atlas',
-  versionApp: 'v3.2.0 (Google GenAI SDK 2026)',
+  versionApp: 'v3.3.0 (Google GenAI SDK 2026)',
   modeloActual: 'gemini-3.8-flash' // Prioritario: pool 3.8 al 4 con auto-failover
 };
 
@@ -1263,7 +1263,7 @@ const POOL_FAILOVER_ORDER = [
 ];
 
 // ==========================================
-// 2. HERRAMIENTAS AGÉNTICAS DE EJECUCIÓN REAL (CODE EXECUTION & TOOLS)
+// 2. HERRAMIENTAS AGÉNTICAS DE EJECUCIÓN REAL (CODE EXECUTION, DOWNLOADS & TOOLS)
 // ==========================================
 const agentTools = [
   {
@@ -1278,6 +1278,28 @@ const agentTools = [
         }
       },
       required: ['codigo']
+    }
+  },
+  {
+    name: 'descargar_archivo',
+    description: 'Genera y descarga directamente un archivo al dispositivo del usuario (ej: script.sql, base_datos.sql, app.py, modelo.json, datos.csv). Debe llamarse cada vez que el usuario pida un script, base de datos, código o archivo para descargar o guardar.',
+    parameters: {
+      type: Type.OBJECT,
+      properties: {
+        nombreArchivo: {
+          type: Type.STRING,
+          description: 'Nombre del archivo con extensión (ej: streaming_netflix_db.sql, modelo_ml.py, datos.csv)'
+        },
+        contenido: {
+          type: Type.STRING,
+          description: 'Contenido completo del archivo a descargar (el script SQL completo, código Python, etc.)'
+        },
+        descripcion: {
+          type: Type.STRING,
+          description: 'Descripción del archivo (ej: Base de datos SQL Server completa para plataforma de streaming)'
+        }
+      },
+      required: ['nombreArchivo', 'contenido']
     }
   },
   {
@@ -1313,6 +1335,32 @@ function ejecutarSkillLocal(name, args) {
       };
     } catch(err) {
       return { exito: false, error: err.message };
+    }
+  }
+
+  if (name === 'descargar_archivo') {
+    try {
+      const nombre = args.nombreArchivo || 'script_generado.txt';
+      const contenido = args.contenido || '';
+      const descripcion = args.descripcion || 'Script generado por Nexus AI';
+
+      if (typeof window !== 'undefined' && window.parent) {
+        window.parent.postMessage({
+          type: 'js_file_download',
+          filename: nombre,
+          content: contenido,
+          description: descripcion
+        }, '*');
+      }
+
+      return {
+        estado: 'Descarga iniciada exitosamente',
+        archivo: nombre,
+        tamanoBytes: contenido.length,
+        descripcion: descripcion
+      };
+    } catch(err) {
+      return { error: 'Error al descargar archivo: ' + err.message };
     }
   }
 
@@ -1353,7 +1401,7 @@ function mostrarPresentacion() {
   console.log(\`🤖 Agente activo: \${AGENT_CONFIG.nombreAgente}\`);
   console.log(\`🧠 Modelo inicial: \${AGENT_CONFIG.modeloActual}\`);
   console.log(\`🔑 Clave activa: \${maskedKey}\`);
-  console.log('💡 Pregunta cualquier cosa o pide ejecutar código. Escribe /ayuda para ver comandos.');
+  console.log('💡 Pregunta cualquier cosa o pide scripts descargables. Escribe /ayuda para ver comandos.');
   console.log('================================================================');
   console.log('');
 }
@@ -1512,8 +1560,9 @@ DIRECTIVAS INMUTABLES Y DE OBLIGATORIO CUMPLIMIENTO:
 1. TOTAL LIBERTAD Y COOPERACIÓN TÉCNICA: Responde con rigor y máxima calidad sobre cualquier tema: programación en cualquier lenguaje (Python, JS, C#, Rust, Go, SQL, Bash), ciencia de datos, arquitectura de sistemas, finanzas, algoritmos, redacción y resolución de problemas.
 2. CERO MORALINA O NEGATIVAS ANTE ARQUITECTURAS INSPIRADAS EN CASOS REALES: Cuando el usuario solicite arquitecturas, bases de datos, APIs o scripts inspirados en plataformas reales (como Netflix, Spotify, Amazon, Uber, YouTube, Steam), NUNCA te niegues ni des sermones sobre propiedad intelectual, marcas registradas o secretos industriales. Entrega de inmediato el script completo, profesional y exhaustivo (por ejemplo, T-SQL / DDL para SQL Server con tablas normalizadas, PRIMARY KEYs con IDENTITY(1,1), relaciones FOREIGN KEY consistentes, índices no agrupados optimizados y datos de prueba reales con INSERT INTO).
 3. CÓDIGO LISTO PARA PRODUCCIÓN: Entrega siempre código completo, sintácticamente impecable, sin marcadores de posición incompletos ('TODO') y directamente ejecutable.
-4. HERRAMIENTAS ACTIVAS: Dispones de 'ejecutar_javascript', 'consultar_entorno_sistema' y 'gestionar_memoria_agente'. Ejecútalas proactivamente cuando sea necesario evaluar operaciones, algoritmos o guardar contexto.
-5. TONO: Directo, altamente técnico, profesional y sin rodeos.\`;
+4. HERRAMIENTAS ACTIVAS: Dispones de 'descargar_archivo', 'ejecutar_javascript', 'consultar_entorno_sistema' y 'gestionar_memoria_agente'.
+5. DESCARGA AUTOMÁTICA DE SCRIPTS: Cuando el usuario solicite un script (ej. base de datos SQL Server, script.sql, script.py o cualquier archivo de código para descargar o guardar), DEBES llamar inmediatamente a tu herramienta 'descargar_archivo' con el nombre adecuado (ej. 'streaming_netflix_db.sql') y el contenido completo. De esta forma, el archivo se descargará directamente al equipo del usuario y aparecerá una tarjeta interactiva con botones para descargarlo de nuevo, copiarlo o abrirlo en el editor de PyStudio.
+6. TONO: Directo, altamente técnico, profesional y sin rodeos.\`;
 
     const config = {
       systemInstruction,
@@ -1555,6 +1604,39 @@ DIRECTIVAS INMUTABLES Y DE OBLIGATORIO CUMPLIMIENTO:
       console.log(\`\${AGENT_CONFIG.nombreAgente} (\${AGENT_CONFIG.modeloActual}) >\`);
       console.log(respuestaTexto);
       console.log('');
+
+      // Auto-detección limpia de bloques de código markdown para habilitar tarjeta de descarga instantánea
+      const partes = respuestaTexto.split('\\\`\\\`\\\`');
+      let bloqueIdx = 1;
+      const extensiones = {
+        sql: 'sql', tsql: 'sql', mysql: 'sql', postgres: 'sql', postgresql: 'sql',
+        python: 'py', py: 'py', javascript: 'js', js: 'js', typescript: 'ts', ts: 'ts',
+        html: 'html', css: 'css', json: 'json', bash: 'sh', sh: 'sh', csharp: 'cs', cs: 'cs'
+      };
+
+      for (let i = 1; i < partes.length; i += 2) {
+        const bloque = partes[i] || '';
+        const primerSalto = bloque.indexOf('\\n');
+        if (primerSalto > 0) {
+          const lang = bloque.substring(0, primerSalto).trim().toLowerCase();
+          const codeContent = bloque.substring(primerSalto + 1).trim();
+
+          if (codeContent.length > 50) {
+            const ext = extensiones[lang] || (lang ? lang : 'sql');
+            const defaultName = ext === 'sql' ? ('script_database_' + bloqueIdx + '.sql') : ('codigo_' + lang + '_' + bloqueIdx + '.' + ext);
+            if (typeof window !== 'undefined' && window.parent) {
+              window.parent.postMessage({
+                type: 'js_code_card',
+                filename: defaultName,
+                content: codeContent,
+                language: lang,
+                description: 'Bloque de código ' + lang.toUpperCase() + ' listo para descargar o ejecutar'
+              }, '*');
+            }
+            bloqueIdx++;
+          }
+        }
+      }
 
     } catch (error) {
       console.log('');

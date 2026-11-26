@@ -20,9 +20,133 @@ const WASM_SKILL_HEX = "0061736d0100000001070160027c7c017c030201000715011163616c
 let ejecutandoJsActivo = false;
 let iframeJsRunner = null;
 
+// =======================================================
+// GESTIÓN DE ARCHIVOS Y TARJETAS INTERACTIVAS DESCARGABLES
+// =======================================================
+window.__archivosDescargables = {};
+
+window.descargarArchivoTexto = function(idOArchivo, textoDirecto) {
+  let nombre = typeof idOArchivo === "string" ? idOArchivo : "script_descargado.txt";
+  let contenido = textoDirecto;
+
+  if (window.__archivosDescargables[idOArchivo]) {
+    nombre = window.__archivosDescargables[idOArchivo].filename;
+    contenido = window.__archivosDescargables[idOArchivo].content;
+  }
+  if (!contenido) return;
+
+  const blob = new Blob([contenido], { type: "text/plain;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = nombre;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+
+  const tiempoLbl = document.getElementById("tiempo-ejecucion");
+  if (tiempoLbl) {
+    const orig = tiempoLbl.innerText;
+    tiempoLbl.innerText = `💾 Descargado: ${nombre}`;
+    setTimeout(() => { tiempoLbl.innerText = orig; }, 3000);
+  }
+};
+
+window.copiarCodigoAlPortapapeles = function(btn, fileId) {
+  const item = window.__archivosDescargables[fileId];
+  if (!item || !item.content) return;
+
+  navigator.clipboard.writeText(item.content).then(() => {
+    const origHtml = btn.innerHTML;
+    btn.innerHTML = `<i class="bi bi-check2"></i> ¡Copiado!`;
+    setTimeout(() => { btn.innerHTML = origHtml; }, 2000);
+  }).catch(() => {
+    alert("Código listo en pantalla. Puedes descargarlo directamente.");
+  });
+};
+
+window.cargarCodigoEnEditor = function(btn, fileId) {
+  const item = window.__archivosDescargables[fileId];
+  if (!item || !item.content) return;
+
+  if (typeof editor !== "undefined") {
+    editor.value = item.content;
+    if (typeof actualizarContador === "function") actualizarContador();
+    if (typeof sincronizarPrism === "function") sincronizarPrism();
+    if (typeof actualizarDeteccionCodigo === "function") actualizarDeteccionCodigo();
+
+    if (typeof cambiarVistaMovil === "function" && window.innerWidth < 992) {
+      cambiarVistaMovil("editor");
+    }
+
+    const origHtml = btn.innerHTML;
+    btn.innerHTML = `<i class="bi bi-check2-all"></i> ¡Cargado en Editor!`;
+    setTimeout(() => { btn.innerHTML = origHtml; }, 2000);
+  }
+};
+
+window.renderizarTarjetaDescarga = function(filename, content, description) {
+  if (!terminal) return;
+
+  const fileId = "file_" + Math.random().toString(36).slice(2, 9);
+  window.__archivosDescargables[fileId] = {
+    filename: filename,
+    content: content,
+    description: description
+  };
+
+  const kbSize = (content.length / 1024).toFixed(1);
+  const cardDiv = document.createElement("div");
+  cardDiv.className = "terminal-code-card";
+  cardDiv.innerHTML = `
+    <div class="terminal-code-card-header">
+      <div class="terminal-code-card-title">
+        <span>💾</span>
+        <span>${filename}</span>
+        <span class="terminal-code-card-badge">${kbSize} KB</span>
+      </div>
+      <div class="small text-secondary text-truncate" style="max-width: 320px;">
+        ${description || "Script generado listo para usar"}
+      </div>
+    </div>
+    <div class="terminal-code-card-actions">
+      <button type="button" class="btn-terminal-action btn-terminal-download" onclick="window.descargarArchivoTexto('${fileId}')">
+        <i class="bi bi-download"></i> Descargar ${filename.endsWith('.sql') ? 'Script SQL' : 'Archivo'}
+      </button>
+      <button type="button" class="btn-terminal-action btn-terminal-copy" onclick="window.copiarCodigoAlPortapapeles(this, '${fileId}')">
+        <i class="bi bi-clipboard"></i> Copiar Código
+      </button>
+      <button type="button" class="btn-terminal-action btn-terminal-editor" onclick="window.cargarCodigoEnEditor(this, '${fileId}')">
+        <i class="bi bi-code-slash"></i> Abrir en Editor de PyStudio
+      </button>
+    </div>
+  `;
+
+  terminal.appendChild(cardDiv);
+  if (terminalContainer) terminalContainer.scrollTop = terminalContainer.scrollHeight;
+};
+
 // Escuchador de mensajes del ejecutor JavaScript
 window.addEventListener("message", (e) => {
   if (!e.data) return;
+
+  if (e.data.type === "js_file_download") {
+    if (typeof window.descargarArchivoTexto === "function") {
+      window.descargarArchivoTexto(e.data.filename, e.data.content);
+    }
+    if (typeof window.renderizarTarjetaDescarga === "function") {
+      window.renderizarTarjetaDescarga(e.data.filename, e.data.content, e.data.description);
+    }
+    return;
+  }
+
+  if (e.data.type === "js_code_card") {
+    if (typeof window.renderizarTarjetaDescarga === "function") {
+      window.renderizarTarjetaDescarga(e.data.filename, e.data.content, e.data.description);
+    }
+    return;
+  }
 
   if (e.data.type === "js_input_request") {
     const promptText = e.data.prompt || "";
