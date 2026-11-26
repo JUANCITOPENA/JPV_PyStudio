@@ -291,8 +291,8 @@ registrar_resultado("Nexus AI: Validador universal de Gemini Key", tiene_validad
 # Versión de Caché PWA en sw.js
 with open("sw.js", "r", encoding="utf-8") as f:
     sw_code = f.read()
-sw_v4 = 'const CACHE_APP_NAME = "pystudio-app-v4";' in sw_code
-registrar_resultado("Service Worker PWA: Cache Eviction", sw_v4, "pystudio-app-v4 configurada en sw.js")
+sw_v5 = 'const CACHE_APP_NAME = "pystudio-app-v5";' in sw_code
+registrar_resultado("Service Worker PWA: Cache Eviction", sw_v5, "pystudio-app-v5 configurada en sw.js")
 
 # ------------------------------------------------------------------------------
 # 7. AUDITORIA DE SEGURIDAD (Cero Hardcoding de API Keys)

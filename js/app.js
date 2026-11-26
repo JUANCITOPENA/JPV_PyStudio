@@ -409,9 +409,9 @@ function abrirModalApiKey() {
 function guardarApiKeyDesdeModal() {
   const inputKey = document.getElementById("input-gemini-key-modal");
   if (!inputKey) return;
-  const rawValue = inputKey.value || "";
-  // Limpieza profunda de espacios, saltos de línea y comillas
-  const key = rawValue.replace(/[\r\n\t\f\v\u00A0\u200B-\u200D\uFEFF]/g, "").replace(/^["'`]|["'`]$/g, "").trim();
+  let key = (inputKey.value || "").trim();
+  while (key.length > 0 && (key[0] === '"' || key[0] === "'" || key[0] === '`')) key = key.slice(1).trim();
+  while (key.length > 0 && (key[key.length - 1] === '"' || key[key.length - 1] === "'" || key[key.length - 1] === '`')) key = key.slice(0, -1).trim();
 
   if (!key) {
     alert("⚠️ Por favor pega una Gemini API Key antes de guardar.");

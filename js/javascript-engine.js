@@ -238,8 +238,9 @@ async function ejecutarCodigoJavaScript(code) {
   }
 
   // Pre-validación de API Key si el script requiere Google GenAI
-  const keyLocalRaw = localStorage.getItem("GEMINI_API_KEY") || "";
-  const keyLocal = keyLocalRaw.replace(/[\r\n\t\f\v\u00A0\u200B-\u200D\uFEFF]/g, "").replace(/^["'`]|["'`]$/g, "").trim();
+  let keyLocal = (localStorage.getItem("GEMINI_API_KEY") || "").trim();
+  while (keyLocal.length > 0 && (keyLocal[0] === '"' || keyLocal[0] === "'" || keyLocal[0] === '`')) keyLocal = keyLocal.slice(1).trim();
+  while (keyLocal.length > 0 && (keyLocal[keyLocal.length - 1] === '"' || keyLocal[keyLocal.length - 1] === "'" || keyLocal[keyLocal.length - 1] === '`')) keyLocal = keyLocal.slice(0, -1).trim();
 
   if (code.includes("@google/genai") && keyLocal.length < 15) {
     ejecutandoJsActivo = false;

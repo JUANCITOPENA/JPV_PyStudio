@@ -1453,10 +1453,14 @@ async function llamarConPoolFailover(ai, historial, config) {
 async function iniciarChat() {
   const rl = readline.createInterface({ input, output });
 
-  // Limpieza profunda de cualquier espacio, salto de línea, comillas o caracteres no imprimibles
+  // Limpieza segura mediante métodos de string (cero expresiones regulares ni backticks literales)
   const limpiarKey = (txt) => {
     if (!txt || typeof txt !== 'string') return '';
-    return txt.replace(/[\r\n\t\f\v\u00A0\u200B-\u200D\uFEFF]/g, '').replace(/^["'\u0060]|["'\u0060]$/g, '').trim();
+    let s = txt.trim();
+    const bt = String.fromCharCode(96);
+    while (s.length > 0 && (s[0] === '"' || s[0] === "'" || s[0] === bt)) s = s.slice(1).trim();
+    while (s.length > 0 && (s[s.length - 1] === '"' || s[s.length - 1] === "'" || s[s.length - 1] === bt)) s = s.slice(0, -1).trim();
+    return s;
   };
 
   const esKeyValida = (k) => {
