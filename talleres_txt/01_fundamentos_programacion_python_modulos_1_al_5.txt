@@ -1,0 +1,671 @@
+================================================================================
+📘 TALLER MAESTRO: FUNDAMENTOS DE PROGRAMACIÓN CON PYTHON (PARTE 1: MÓDULOS 1 AL 5)
+DataIADev | Por: Ing. Juancito Peña
+(Ingeniero en Sistemas y Computación · M.Sc. en Sistemas Mención Gerencial · Esp. en Desarrollo de Software)
+Nota Editorial: Extractos del Libro "Lo que nadie te enseña de Python y su ecosistema"
+================================================================================
+
+
+================================================================================
+🧠 MÓDULO 1: FUNDAMENTOS DE LA PROGRAMACIÓN, HISTORIA DE PYTHON Y ECOSISTEMA
+================================================================================
+
+1. PRESENTACIÓN DIDÁCTICA:
+Antes de escribir la primera línea de código, todo ingeniero o analista debe comprender qué ocurre detrás de pantalla cuando una computadora ejecuta una orden. La programación no consiste en memorizar comandos aislados, sino en aprender a descomponer un problema complejo del mundo real en pasos lógicos, finitos y verificables que una máquina pueda procesar a gran velocidad.
+
+2. DEFINICIÓN Y CONCEPTUALIZACIÓN:
+- Programación: Es el proceso de diseñar, codificar, depurar y mantener el código fuente de programas computacionales utilizando un lenguaje formal que traduce el razonamiento humano a instrucciones binarias ejecutables por el procesador.
+- Python: Es un lenguaje de programación de alto nivel, interpretado, multiparadigma (soporta programación estructurada, orientada a objetos y funcional), multiplataforma y de tipado dinámico.
+- Historia y Creador: Fue creado por el programador neerlandés Guido van Rossum en diciembre de 1989 en el Centrum Wiskunde & Informatica (CWI) en los Países Bajos, como sucesor del lenguaje ABC. Su primera versión pública (0.9.0) se lanzó el 20 de febrero de 1991. Su nombre rinde homenaje al grupo humorístico británico "Monty Python's Flying Circus", reflejando la filosofía de que programar debe ser claro y agradable.
+
+3. EXPLICACIÓN Y ESCENARIOS DE USO EN EL MUNDO REAL:
+Python domina la industria tecnológica moderna por su sintaxis legible (cercana al inglés) y su inmenso ecosistema de librerías:
+- Desarrollo Web y Backend: Instagram, Spotify, Pinterest, Dropbox y Reddit procesan millones de peticiones diarias usando Django, Flask y FastAPI.
+- Inteligencia Artificial y Machine Learning: OpenAI, Google DeepMind, Tesla y Meta entrenan redes neuronales y modelos generativos con PyTorch, TensorFlow y LangChain.
+- Finanzas y Banca Cuantitativa: JPMorgan Chase, Goldman Sachs y PayPal analizan riesgos financieros, algoritmos de trading y detección de fraude.
+- Ciencia, Aeroespacial y Cine: La NASA procesa telemetría espacial, el CERN analiza colisiones de partículas y Pixar automatiza renderizado 3D.
+
+4. MAPA COMPLETO DE SKILLS, LIBRERÍAS Y MANEJO DE ARCHIVOS EN PYTHON:
+- Programación Base y Consola: os, sys, math, random, datetime, time, pathlib, shutil, collections, itertools.
+- Análisis de Datos (Data Analytics): pandas, numpy, polars, openpyxl, xlrd.
+- Ingeniería de Datos (Data Engineering): pyspark, sqlalchemy, pyodbc, psycopg2, apache-airflow, prefect, dask.
+- Ciencia de Datos y Estadística: scipy, statsmodels, pingouin, jupyter.
+- Machine Learning e IA: scikit-learn, tensorflow, pytorch, keras, xgboost, lightgbm, transformers, openai, langchain.
+- Finanzas, Mercados y Tasas de Cambio: yfinance, ccxt, forex-python, quantlib, ta-lib.
+- APIs y Web Scraping: requests, httpx, aiohttp, fastapi, flask, django, beautifulsoup4, selenium, playwright.
+- Visualización de Datos y Dashboards: matplotlib, seaborn, plotly, altair, bokeh, streamlit, dash.
+- Manejo de Todo Tipo de Archivos:
+  * CSV y TXT: csv, pandas, función nativa open().
+  * Excel (.xlsx / .xls): openpyxl, pandas, xlsxwriter.
+  * JSON y XML: json, xml.etree.ElementTree, lxml, xmltodict.
+  * PDF: pypdf, pdfplumber, reportlab, weasyprint, fitz (PyMuPDF).
+  * Bases de Datos SQL / NoSQL: pyodbc (SQL Server), sqlite3, psycopg2 (PostgreSQL), mysql-connector, pymongo.
+  * Web (HTML / APIs REST): requests, urllib, beautifulsoup4.
+
+
+--------------------------------------------------------------------------------
+📌 3 EJEMPLOS DIDÁCTICOS DEL ECOSISTEMA Y ENTORNO DE EJECUCIÓN
+--------------------------------------------------------------------------------
+
+# EJEMPLO 1: Inspección del entorno de Python, sistema operativo y fecha del sistema
+import sys
+import platform
+import datetime
+
+# Consultamos versión de Python, arquitectura del equipo y fecha actual
+version_python = sys.version.split()[0]
+sistema_op = platform.system()
+fecha_hoy = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+
+print("=== DIAGNÓSTICO DEL ENTORNO DE EJECUCIÓN ===")
+print(f"Versión de Python instalada: {version_python}")
+print(f"Sistema Operativo anfitrión: {sistema_op}")
+print(f"Fecha y hora del servidor:   {fecha_hoy}")
+--------------------------------------------------------------------------------
+
+# EJEMPLO 2: Lectura y escritura nativa de archivos TXT y JSON sin librerías externas
+import json
+
+# Creamos un diccionario con configuración de proyecto
+configuracion = {
+    "proyecto": "DataIADev Analytics",
+    "version": 1.0,
+    "modulos_activos": list(("Python Core", "SQL Server", "Streamlit"))
+}
+
+# Guardamos en formato JSON y lo volvemos a leer en memoria
+texto_json = json.dumps(configuracion, indent=4, ensure_ascii=False)
+datos_recuperados = json.loads(texto_json)
+
+print("=== SERIALIZACIÓN Y LECTURA JSON ===")
+print(texto_json)
+print("Primer módulo cargado:", datos_recuperados["modulos_activos"][0])
+--------------------------------------------------------------------------------
+
+# EJEMPLO 3: Procesamiento de cadenas CSV en memoria para analítica rápida
+registro_csv = "PROD-101,Laptop Dell XPS,1450.00,12"
+
+# Separamos los campos por coma usando split()
+campos = registro_csv.split(",")
+codigo = campos[0]
+nombre = campos[1]
+precio = float(campos[2])
+stock = int(campos[3])
+valor_inventario = precio * stock
+
+print("=== PARSEO DE REGISTRO CSV ===")
+print(f"Producto: {nombre} ({codigo}) | Valor total en almacén: US$ {valor_inventario:,.2f}")
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+🚀 3 EJERCICIOS DEL MUNDO REAL (MÓDULO 1)
+--------------------------------------------------------------------------------
+
+# EJERCICIO REAL 1: Generador de Rutas de Backup Automático por Fecha (Ingeniería de Datos)
+# Escenario: Un servidor necesita crear nombres de carpetas únicos cada día para respaldar bases de datos.
+import datetime
+import os
+
+base_ruta = "C:/Backups_SQLServer"
+fecha_carpeta = datetime.date.today().strftime("%Y_%m_%d")
+nombre_archivo = f"Respaldo_Comercial_{fecha_carpeta}.bak"
+ruta_completa = os.path.join(base_ruta, fecha_carpeta, nombre_archivo)
+
+print("EJERCICIO 1 - Ruta de respaldo generada:", ruta_completa)
+--------------------------------------------------------------------------------
+
+# EJERCICIO REAL 2: Conversor de Tasas de Cambio Multi-Divisa (Finanzas)
+# Escenario: Una casa de cambio recibe dólares (USD) y debe mostrar su equivalencia en DOP, EUR y MXN.
+monto_usd = 500.00
+tasas = {"DOP": 60.50, "EUR": 0.92, "MXN": 17.15}
+
+print("EJERCICIO 2 - Cotización en tiempo real para US$", monto_usd)
+print(f" -> Pesos Dominicanos (DOP): RD$ {monto_usd * tasas['DOP']:,.2f}")
+print(f" -> Euros (EUR):             €   {monto_usd * tasas['EUR']:,.2f}")
+print(f" -> Pesos Mexicanos (MXN):   MX$ {monto_usd * tasas['MXN']:,.2f}")
+--------------------------------------------------------------------------------
+
+# EJERCICIO REAL 3: Auditoría de Catálogo de Librerías por Rol Profesional (Tech HR)
+# Escenario: Clasificar herramientas requeridas según la vacante tecnológica a contratar.
+perfiles_tech = {
+    "Data Analyst": list(("pandas", "numpy", "seaborn", "matplotlib", "openpyxl")),
+    "Data Engineer": list(("pyspark", "sqlalchemy", "pyodbc", "apache-airflow")),
+    "AI Engineer": list(("pytorch", "transformers", "langchain", "openai"))
+}
+
+rol_buscado = "Data Engineer"
+print(f"EJERCICIO 3 - Stack obligatorio para {rol_buscado}: {', '.join(perfiles_tech[rol_buscado])}")
+--------------------------------------------------------------------------------
+
+
+================================================================================
+📦 MÓDULO 2: VARIABLES, TIPADO DINÁMICO, PARÁMETROS, INVOCACIONES Y OPERADORES
+================================================================================
+
+1. PRESENTACIÓN DIDÁCTICA:
+Todo programa recibe datos de entrada, los transforma en memoria y entrega un resultado. Para lograrlo, necesitamos contenedores llamados variables, reglas sobre qué tipo de información guardan, mecanismos para pasar esos datos entre bloques de código (parámetros, paso por valor y por referencia) y operadores que permitan calcular, comparar y tomar decisiones lógicas.
+
+2. DEFINICIÓN Y CONCEPTUALIZACIÓN:
+- Variable: Es un nombre simbólico asociado a una dirección en la memoria RAM donde se almacena un objeto o valor.
+- Tipado Dinámico: En Python no se declara el tipo antes de asignar el valor (`edad = 30`). El intérprete determina el tipo en tiempo de ejecución y permite que una variable cambie de tipo si se reasigna.
+- Asignación e Invocación: Asignar (`=`) es vincular un valor a un nombre. Invocar (`funcion()`) es llamar o ejecutar una función o método enviándole argumentos.
+- Paso por Valor vs. Paso por Referencia (En Python: Paso por Asignación de Objeto):
+  * Objetos Inmutables (`int`, `float`, `str`, `tuple`): Se comportan como "paso por valor". Si los modificas dentro de una función, se crea un nuevo objeto local y la variable original fuera de la función NO cambia.
+  * Objetos Mutables (`list`, `dict`, `set`): Se comportan como "paso por referencia". Si modificas sus elementos internos dentro de una función, el cambio SÍ afecta a la variable original en memoria.
+
+3. DESGLOSE DE TIPOS DE DATOS Y TODOS LOS OPERADORES:
+- Tipos de Datos Primitivos:
+  * `int`: Números enteros positivos o negativos sin decimales (ej. `42`, `-10`).
+  * `float`: Números reales de punto flotante con decimales (ej. `19.99`, `3.1416`).
+  * `str`: Cadenas de texto Unicode entre comillas simples o dobles (ej. `"Santo Domingo"`).
+  * `bool`: Valores lógicos binarios (`True` o `False`).
+  * `NoneType`: Representa la ausencia intencional de valor (`None`).
+
+- Operadores Aritméticos (Cálculos matemáticos):
+  * `+` (Suma): `10 + 5` -> `15`
+  * `-` (Resta): `10 - 5` -> `5`
+  * `*` (Multiplicación): `10 * 5` -> `50`
+  * `/` (División exacta, siempre retorna float): `10 / 4` -> `2.5`
+  * `//` (División entera, descarta decimales): `10 // 4` -> `2`
+  * `%` (Módulo o residuo de la división): `10 % 3` -> `1` (clave para saber si un número es par o múltiplo)
+  * `**` (Potenciación): `2 ** 3` -> `8`
+
+- Operadores de Comparación (Evalúan relaciones y retornan `True` o `False`):
+  * `==` (Igual a), `!=` (Diferente de), `>` (Mayor que), `<` (Menor que), `>=` (Mayor o igual), `<=` (Menor o igual).
+
+- Operadores Lógicos (Combinan condiciones booleanas):
+  * `and`: Devuelve `True` solo si AMBAS condiciones son verdaderas.
+  * `or`: Devuelve `True` si AL MENOS UNA condición es verdadera.
+  * `not`: Invierte el valor lógico (`not True` es `False`).
+
+- Operadores de Asignación Compuesta, Identidad y Pertenencia:
+  * Asignación: `=`, `+=`, `-=`, `*=`, `/=`, `//=`, `%=`, `**=`.
+  * Identidad: `is`, `is not` (verifican si dos variables apuntan exactamente al mismo objeto en memoria, ej. `x is None`).
+  * Pertenencia: `in`, `not in` (verifican si un elemento existe dentro de una secuencia o texto).
+
+
+--------------------------------------------------------------------------------
+📌 3 EJEMPLOS DIDÁCTICOS DE VARIABLES, PASO DE PARÁMETROS Y OPERADORES
+--------------------------------------------------------------------------------
+
+# EJEMPLO 1: Tipado dinámico, inspección de tipos e identidad en memoria (id)
+dato = 100
+print(f"Valor: {dato} | Tipo: {type(dato)} | ID Memoria: {id(dato)}")
+
+dato = "Cien Pesos"  # Reasignación dinámica a texto
+print(f"Valor: {dato} | Tipo: {type(dato)} | ID Memoria: {id(dato)}")
+
+dato = None          # Ausencia de valor validada con 'is'
+print("¿El dato está vacío?:", dato is None)
+--------------------------------------------------------------------------------
+
+# EJEMPLO 2: Demostración de Paso por Valor (Inmutable) vs Paso por Referencia (Mutable)
+def procesar_datos(numero_inmutable, lista_mutable):
+    numero_inmutable += 50          # Crea una copia local, no altera el original
+    lista_mutable.append("Nuevo")   # Modifica la lista original en memoria
+
+saldo = 100
+etiquetas = list(("Base",))
+
+procesar_datos(saldo, etiquetas)
+print("Saldo fuera de función (Inmutable - no cambió):", saldo)
+print("Lista fuera de función (Mutable - sí cambió):", etiquetas)
+--------------------------------------------------------------------------------
+
+# EJEMPLO 3: Uso combinado de todos los operadores aritméticos, comparación y lógicos
+total_segundos = 3725
+horas = total_segundos // 3600              # División entera
+minutos = (total_segundos % 3600) // 60     # Módulo + división entera
+segundos = total_segundos % 60              # Residuo final
+
+es_mayor_una_hora = (horas >= 1) and (minutos > 0)
+print(f"{total_segundos} seg equivalen a: {horas}h {minutos}m {segundos}s")
+print("¿Supera la hora exacta?:", es_mayor_una_hora)
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+🚀 3 EJERCICIOS DEL MUNDO REAL (MÓDULO 2)
+--------------------------------------------------------------------------------
+
+# EJERCICIO REAL 1: Cajero Dispensador de Billetes Óptimos (Banca / ATM)
+# Escenario: Dado un monto a retirar, calcular cuántos billetes de 2000, 1000, 500 y 100 entregar usando // y %.
+monto_retiro = 7800
+
+b_2000 = monto_retiro // 2000
+resto = monto_retiro % 2000
+
+b_1000 = resto // 1000
+resto = resto % 1000
+
+b_500 = resto // 500
+resto = resto % 500
+
+b_100 = resto // 100
+
+print(f"EJERCICIO 1 - Desglose para RD$ {monto_retiro}:")
+print(f"Billetes de 2000: {b_2000} | De 1000: {b_1000} | De 500: {b_500} | De 100: {b_100}")
+--------------------------------------------------------------------------------
+
+# EJERCICIO REAL 2: Motor de Reglas para Aprobación de Crédito Hipotecario (Finanzas)
+# Escenario: Evaluar múltiples requisitos simultáneos usando operadores de comparación, lógicos y pertenencia.
+ingresos_mensuales = 120000
+deudas_actuales = 25000
+score_buro = 720
+ciudad_inmueble = "Santo Domingo"
+ciudades_cobertura = list(("Santo Domingo", "Santiago", "Punta Cana", "La Romana"))
+
+ratio_endeudamiento = deudas_actuales / ingresos_mensuales
+aprobado = (
+    ingresos_mensuales >= 80000
+    and ratio_endeudamiento <= 0.35
+    and score_buro >= 680
+    and (ciudad_inmueble in ciudades_cobertura)
+)
+
+print(f"EJERCICIO 2 - Ratio deuda: {ratio_endeudamiento:.1%} | ¿Crédito Aprobado?: {aprobado}")
+--------------------------------------------------------------------------------
+
+# EJERCICIO REAL 3: Cálculo de Factura Comercial con Descuento Escalonado e ITBIS (Retail)
+# Escenario: Aplicar operadores de asignación compuesta (+=, -=, *=) en un punto de venta (POS).
+subtotal = 4500.00
+porcentaje_descuento = 0.10
+tasa_itbis = 0.18
+
+subtotal -= (subtotal * porcentaje_descuento)   # Restamos el 10% de descuento
+impuesto = subtotal * tasa_itbis
+total_pagar = subtotal + impuesto
+
+print(f"EJERCICIO 3 - Subtotal con desc.: RD$ {subtotal:,.2f} | ITBIS: RD$ {impuesto:,.2f} | Total: RD$ {total_pagar:,.2f}")
+--------------------------------------------------------------------------------
+
+
+================================================================================
+🚦 MÓDULO 3: ESTRUCTURAS DE CONTROL (IF/ELSE, IF ANIDADO Y MATCH-CASE / SWITCH)
+================================================================================
+
+1. PRESENTACIÓN DIDÁCTICA:
+Un programa sin estructuras de control sería como un tren sin cambios de vía: siempre seguiría el mismo camino sin importar lo que ocurra. Las estructuras condicionales permiten que el software analice escenarios, bifurque su ejecución y reaccione inteligentemente ante distintas entradas de datos.
+
+2. DEFINICIÓN Y CONCEPTUALIZACIÓN:
+- Condicional Simple (`if`): Ejecuta un bloque de código únicamente si la condición evaluada resulta `True`.
+- Condicional Doble (`if / else`): Establece dos caminos mutuamente excluyentes: si se cumple la condición ejecuta el bloque `if`; de lo contrario, ejecuta el bloque `else`.
+- Condicional Encadenado (`if / elif / else`): Evalúa múltiples condiciones secuenciales de arriba hacia abajo y ejecuta solo la primera que sea verdadera.
+- Condicional Anidado (`if` dentro de otro `if`): Permite validar sub-condiciones jerárquicas (primero valida un requisito general y, solo si pasa, evalúa reglas internas más específicas).
+- Selección Múltiple (`match / case` — Equivalente a `switch` en Python 3.10+): Compara una variable o patrón contra múltiples casos exactos, evitando cadenas largas de `elif` y soportando el comodín `case _:` como caso por defecto (`default`).
+
+3. ESCENARIOS DE USO:
+- Cálculo de tramos de impuestos progresivos (ISR).
+- Validación de permisos de acceso por rol y estado de cuenta (activo/suspendido).
+- Enrutamiento de menús de atención al cliente (IVR telefónico o chatbots) y códigos de estado HTTP (`200`, `404`, `500`).
+
+
+--------------------------------------------------------------------------------
+📌 3 EJEMPLOS DIDÁCTICOS DE ESTRUCTURAS DE CONTROL
+--------------------------------------------------------------------------------
+
+# EJEMPLO 1: Condicional encadenado (if / elif / else) para clasificación académica
+nota_final = 88
+
+if nota_final >= 90:
+    literal = "A (Excelente)"
+elif nota_final >= 80:
+    literal = "B (Muy Bueno)"
+elif nota_final >= 70:
+    literal = "C (Suficiente)"
+else:
+    literal = "F (Reprobado)"
+
+print(f"Calificación: {nota_final} -> Literal Universitario: {literal}")
+--------------------------------------------------------------------------------
+
+# EJEMPLO 2: Condicional anidado (if dentro de if) para seguridad de acceso
+usuario_activo = True
+rol_usuario = "ADMIN"
+doble_factor_ok = False
+
+if usuario_activo:
+    if rol_usuario == "ADMIN":
+        if doble_factor_ok:
+            print("🔓 Acceso total concedido al panel de administración.")
+        else:
+            print("⚠️ Alerta: Administrador requiere verificar código 2FA.")
+    else:
+        print("👤 Acceso concedido en modo lectura estándar.")
+else:
+    print("🚫 Cuenta bloqueada. Contacte a soporte técnico.")
+--------------------------------------------------------------------------------
+
+# EJEMPLO 3: Estructura match / case (Equivalente a SWITCH) para códigos HTTP de APIs
+codigo_http = 404
+
+match codigo_http:
+    case 200 | 201:
+        print("✅ Éxito: La API respondió y procesó los datos correctamente.")
+    case 400:
+        print("⚠️ Error 400: Petición mal formada por el cliente.")
+    case 401 | 403:
+        print("🔐 Error de Seguridad: Token inválido o sin permisos.")
+    case 404:
+        print("🔍 Error 404: El recurso o endpoint solicitado no existe.")
+    case 500:
+        print("🔥 Error 500: Fallo interno en el servidor remoto.")
+    case _:
+        print(f"ℹ️ Código HTTP no catalogado: {codigo_http}")
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+🚀 3 EJERCICIOS DEL MUNDO REAL (MÓDULO 3)
+--------------------------------------------------------------------------------
+
+# EJERCICIO REAL 1: Detector Oficial de Años Bisiestos (Calendario Gregoriano / RRHH)
+# Regla real: Un año es bisiesto si es divisible entre 4, EXCEPTO si es divisible entre 100,
+# a menos que también sea divisible entre 400.
+anio = 2024
+
+if (anio % 4 == 0 and anio % 100 != 0) or (anio % 400 == 0):
+    dias_febrero = 29
+    dias_anio = 366
+    estado = "ES BISIESTO"
+else:
+    dias_febrero = 28
+    dias_anio = 365
+    estado = "NO ES BISIESTO"
+
+print(f"EJERCICIO 1 - El año {anio} {estado} (Febrero tiene {dias_febrero} días | Total año: {dias_anio} días).")
+--------------------------------------------------------------------------------
+
+# EJERCICIO REAL 2: Calculadora de Impuesto Sobre la Renta (ISR) Escalonado (Contabilidad)
+# Escenario: Calcular el impuesto anual de un empleado según su escala salarial neta.
+salario_anual = 750000.00
+
+if salario_anual <= 416220.00:
+    isr_anual = 0.0
+    tramo = "Exento (0%)"
+elif salario_anual <= 624329.00:
+    isr_anual = (salario_anual - 416220.01) * 0.15
+    tramo = "Escala 15%"
+elif salario_anual <= 867123.00:
+    isr_anual = 31216.00 + ((salario_anual - 624329.01) * 0.20)
+    tramo = "Escala 20%"
+else:
+    isr_anual = 79776.00 + ((salario_anual - 867123.01) * 0.25)
+    tramo = "Escala 25%"
+
+print(f"EJERCICIO 2 - Salario Anual: RD$ {salario_anual:,.2f} | Tramo: {tramo} | ISR Anual: RD$ {isr_anual:,.2f}")
+--------------------------------------------------------------------------------
+
+# EJERCICIO REAL 3: Enrutador de Tarifas de Envío Logístico por Zona y Peso (E-Commerce)
+# Escenario: Combinar match/case por región con condicional anidado por peso del paquete.
+zona_envio = "INTERNACIONAL"
+peso_kg = 6.5
+
+match zona_envio:
+    case "LOCAL":
+        costo = 150.0 if peso_kg <= 5 else 250.0
+    case "NACIONAL":
+        costo = 350.0 if peso_kg <= 5 else 550.0
+    case "INTERNACIONAL":
+        if peso_kg <= 2:
+            costo = 1200.0
+        elif peso_kg <= 5:
+            costo = 2400.0
+        else:
+            costo = 2400.0 + ((peso_kg - 5) * 400.0)
+    case _:
+        costo = 0.0
+
+print(f"EJERCICIO 3 - Envío {zona_envio} ({peso_kg} kg) -> Tarifa calculada: RD$ {costo:,.2f}")
+--------------------------------------------------------------------------------
+
+
+================================================================================
+🔄 MÓDULO 4: BUCLES E ITERACIONES (FOR, WHILE, EQUIVALENCIA DO-WHILE Y FOR ANIDADO)
+================================================================================
+
+1. PRESENTACIÓN DIDÁCTICA:
+La verdadera potencia de una computadora radica en repetir millones de operaciones en fracciones de segundo sin cansarse ni cometer errores. Los bucles permiten recorrer bases de datos completas, generar reportes automáticos, validar entradas hasta que sean correctas y procesar matrices multidimensionales.
+
+2. DEFINICIÓN Y CONCEPTUALIZACIÓN:
+- Bucle `for` (For-Each / Iterador de secuencias): En Python, todo bucle `for` funciona nativamente como un `for-each`: toma una colección (`list`, `str`, `dict`, `range`) y extrae uno a uno cada elemento hasta agotarla.
+- Bucle `while` (Ciclo condicional previo): Evalúa una condición ANTES de entrar al bloque. Si la condición es `False` desde el inicio, el bucle no se ejecuta ni una sola vez.
+- Equivalencia de `do-while` en Python (Ciclo de ejecución mínima garantizada): Python no incluye la palabra clave `do`, pero el estándar profesional consiste en escribir `while True:` y colocar al final del bloque la validación `if condicion_salida: break`. Así se garantiza que el cuerpo del ciclo se ejecute al menos una vez antes de evaluar la salida.
+- Bucle `for` Anidado: Un ciclo `for` ubicado dentro de otro ciclo `for`. Por cada iteración del ciclo externo, el ciclo interno realiza todas sus vueltas completas. Es esencial para matrices, tablas de multiplicar y cruces de datos.
+- Control de Flujo Interno: `break` (detiene y sale del bucle inmediatamente) y `continue` (salta la iteración actual y pasa a la siguiente).
+
+3. ESCENARIOS DE USO:
+- Procesamiento por lotes (Batch) de miles de facturas o registros CSV.
+- Menús interactivos de consola que permanecen activos hasta que el usuario elige "Salir".
+- Generación de tablas matemáticas, calendarios completos y cruces de sucursales vs. meses.
+
+
+--------------------------------------------------------------------------------
+📌 3 EJEMPLOS DIDÁCTICOS DE BUCLES (FOR, WHILE, DO-WHILE Y ANIDADO)
+--------------------------------------------------------------------------------
+
+# EJEMPLO 1: Bucle FOR (For-Each) con enumerate() y filtro continue
+productos = list(("Monitor", "Teclado", "AGOTADO_Mouse", "Webcam"))
+
+print("=== INVENTARIO DISPONIBLE (FOR-EACH) ===")
+for indice, item in enumerate(productos, start=1):
+    if "AGOTADO" in item:
+        continue  # Salta los productos agotados sin detener el ciclo
+    print(f"{indice}. Producto listo para venta: {item}")
+--------------------------------------------------------------------------------
+
+# EJEMPLO 2: Bucle WHILE vs Equivalencia DO-WHILE en Python
+# Parte A: WHILE tradicional (proyección de ahorro mensual)
+ahorro = 1000
+meses = 0
+while ahorro < 3000:
+    ahorro += 650
+    meses += 1
+print(f"WHILE: Se necesitaron {meses} meses para alcanzar RD$ {ahorro}")
+
+# Parte B: Equivalencia DO-WHILE (se ejecuta al menos 1 vez antes de validar)
+lecturas_sensor = list((45, 78, 92))
+pos = 0
+while True:
+    valor_actual = lecturas_sensor[pos]
+    print(f"DO-WHILE -> Leyendo temperatura de motor: {valor_actual}°C")
+    pos += 1
+    if valor_actual > 90 or pos >= len(lecturas_sensor):
+        print("🚨 Alerta térmica o fin de lecturas. Deteniendo monitoreo.")
+        break
+--------------------------------------------------------------------------------
+
+# EJEMPLO 3: Bucle FOR ANIDADO para generar combinaciones de turnos
+dias_laborales = list(("Lunes", "Martes", "Miércoles"))
+horarios = list(("08:00 AM", "02:00 PM"))
+
+print("=== CRONOGRAMA DE GUARDIAS (FOR ANIDADO) ===")
+for dia in dias_laborales:
+    for hora in horarios:
+        print(f"Turno asignado -> {dia} a las {hora}")
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+🚀 3 EJERCICIOS DEL MUNDO REAL (MÓDULO 4)
+--------------------------------------------------------------------------------
+
+# EJERCICIO REAL 1: Generador de Tabla de Multiplicar Dinámica (Usuario) y Tabla Completa (1 al 10)
+# Escenario: Primero imprime la tabla específica elegida por un usuario y luego la matriz completa del 1 al 5.
+numero_usuario = 7  # Simula el número ingresado por el usuario
+
+print(f"EJERCICIO 1A - TABLA DEL {numero_usuario} SOLICITADA POR EL USUARIO:")
+for i in range(1, 11):
+    print(f"   {numero_usuario} x {i:2d} = {numero_usuario * i:3d}")
+
+print("\nEJERCICIO 1B - TABLAS DE MULTIPLICAR COMPLETAS (DEL 1 AL 5 CON FOR ANIDADO):")
+for tabla in range(1, 6):
+    linea = f"Tabla del {tabla}: "
+    for mult in range(1, 11):
+        linea += f"{tabla * mult:2d} | "
+    print(linea)
+--------------------------------------------------------------------------------
+
+# EJERCICIO REAL 2: Calculadora Exacta de Edad en Años, Meses y Días Vividos (RRHH / Salud)
+# Escenario: Dada una fecha de nacimiento y la fecha actual, calcular años, meses, días exactos y días totales.
+import datetime
+
+fecha_nacimiento = datetime.date(1992, 5, 18)
+fecha_actual = datetime.date(2026, 11, 26)
+
+# Cálculo de días totales vividos
+dias_totales_vividos = (fecha_actual - fecha_nacimiento).days
+
+# Desglose exacto de años, meses y días calendario
+anios = fecha_actual.year - fecha_nacimiento.year
+meses = fecha_actual.month - fecha_nacimiento.month
+dias = fecha_actual.day - fecha_nacimiento.day
+
+if dias < 0:
+    meses -= 1
+    dias += 30  # Ajuste promedio de días del mes anterior
+if meses < 0:
+    anios -= 1
+    meses += 12
+
+print(f"\nEJERCICIO 2 - Fecha Nacimiento: {fecha_nacimiento} | Hoy: {fecha_actual}")
+print(f"Edad exacta: {anios} años, {meses} meses y {dias} días (Total: {dias_totales_vividos:,} días vividos).")
+--------------------------------------------------------------------------------
+
+# EJERCICIO REAL 3: Contador de Días del Año y Auditoría de Años Bisiestos en un Rango Histórico
+# Escenario: Recorrer una década completa (2020-2026) calculando los días exactos de cada año.
+total_dias_periodo = 0
+
+print("\nEJERCICIO 3 - AUDITORÍA DE DÍAS POR AÑO (2020 - 2026):")
+for anio_eval in range(2020, 2027):
+    es_bisiesto = (anio_eval % 4 == 0 and anio_eval % 100 != 0) or (anio_eval % 400 == 0)
+    dias_del_anio = 366 if es_bisiesto else 365
+    total_dias_periodo += dias_del_anio
+    etiqueta = "Bisiesto" if es_bisiesto else "Normal  "
+    print(f"   Año {anio_eval} [{etiqueta}] -> {dias_del_anio} días")
+
+print(f"Total de días transcurridos en el periodo analizado: {total_dias_periodo:,} días.")
+--------------------------------------------------------------------------------
+
+
+================================================================================
+🗂️ MÓDULO 5: ESTRUCTURAS DE DATOS (LISTAS, ARRAYS, TUPLAS, SETS, DICCIONARIOS Y MATRICES)
+================================================================================
+
+1. PRESENTACIÓN DIDÁCTICA:
+Cuando trabajamos con cientos o millones de registros, crear variables sueltas (`cliente1`, `cliente2`...) es imposible. Las estructuras de datos organizan colecciones de información en memoria con reglas específicas de orden, mutabilidad y velocidad de búsqueda.
+
+2. DEFINICIÓN, CONCEPTUALIZACIÓN Y ESCENARIOS DE USO DE CADA ESTRUCTURA:
+- Lista (`list`): Secuencia ordenada, indexada desde 0 y mutable (`[10, 20, 30]`). Permite duplicados y mezclar tipos. Escenario: Carrito de compras, cola de tareas, historial dinámico.
+- Array (`array.array` / `numpy.ndarray`): Estructura contigua en memoria que almacena elementos de un ÚNICO tipo numérico homogéneo. Consume hasta 70% menos RAM que una lista y opera a velocidad de lenguaje C. Escenario: Procesamiento de señales, sensores IoT y vectores matemáticos.
+- Tupla (`tuple`): Secuencia ordenada e INMUTABLE (`(18.48, -69.93)`). Una vez creada no se puede alterar, lo que protege datos críticos y acelera su lectura. Escenario: Coordenadas GPS, registros devueltos por una consulta SQL, claves compuestas.
+- Conjunto (`set`): Colección desordenada de elementos ÚNICOS sin duplicados (`{"RD", "US", "ES"}`). Permite operaciones matemáticas de conjuntos (unión, intersección, diferencia) en tiempo constante $O(1)$. Escenario: Deduplicación masiva de correos o cédulas, comparación de permisos entre usuarios.
+- Diccionario (`dict`): Estructura asociativa de pares `clave: valor` (`{"id": 101, "nombre": "Ana"}`). Las claves son únicas e inmutables y permiten búsquedas instantáneas. Escenario: Respuestas de APIs REST (JSON), perfiles de usuario, catálogos indexados.
+- Matriz (Lista bidimensional / Matriz NumPy): Tabla organizada en filas y columnas (`matriz[fila][columna]`). Escenario: Tableros de control, imágenes digitales (píxeles), horarios semanales y álgebra lineal.
+
+
+--------------------------------------------------------------------------------
+📌 3 EJEMPLOS DIDÁCTICOS DE ESTRUCTURAS DE DATOS
+--------------------------------------------------------------------------------
+
+# EJEMPLO 1: Operaciones CRUD en Listas y Comprensión de Listas (List Comprehension)
+ventas = list((1200, 450, 3200, 800, 5100))
+ventas.append(2750)                         # Agregar al final
+ventas.sort(reverse=True)                   # Ordenar de mayor a menor
+
+# Filtramos ventas mayores a 2000 en una sola línea profesional
+ventas_vip = list((v for v in ventas if v > 2000))
+
+print("Todas las ventas ordenadas:", ventas)
+print("Ventas VIP (> 2000):", ventas_vip)
+--------------------------------------------------------------------------------
+
+# EJEMPLO 2: Teoría de Conjuntos con SETS (Intersección y Diferencia)
+clientes_tienda_fisica = set(("C01", "C02", "C03", "C04"))
+clientes_tienda_web = set(("C03", "C04", "C05", "C06"))
+
+omnicanal = clientes_tienda_fisica & clientes_tienda_web     # Intersección (compran en ambos)
+solo_web = clientes_tienda_web - clientes_tienda_fisica      # Diferencia (exclusivos web)
+
+print("Clientes omnicanal (Física y Web):", omnicanal)
+print("Clientes exclusivos de la Web:", solo_web)
+--------------------------------------------------------------------------------
+
+# EJEMPLO 3: Diccionarios anidados y recorrido de una Matriz 3x3
+empresa = {
+    "nombre": "DataIADev SRL",
+    "departamentos": {
+        "Ingenieria": 12,
+        "Analitica": 8
+    }
+}
+print("Empleados en Analítica:", empresa["departamentos"]["Analitica"])
+
+# Matriz 3x3 de calificaciones (3 estudiantes x 3 parciales)
+notas_matriz = list((
+    list((90, 85, 92)),
+    list((78, 80, 84)),
+    list((95, 98, 96))
+))
+for idx, fila in enumerate(notas_matriz, start=1):
+    promedio = sum(fila) / len(fila)
+    print(f"Estudiante {idx} -> Notas: {fila} | Promedio: {promedio:.1f}")
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+🚀 3 EJERCICIOS DEL MUNDO REAL (MÓDULO 5)
+--------------------------------------------------------------------------------
+
+# EJERCICIO REAL 1: Limpieza y Deduplicación de Base de Datos de Leads (Marketing / CRM)
+# Escenario: Un archivo exportado tiene teléfonos repetidos y espacios; limpiarlos y preservar orden.
+leads_sucios = list(("809-555-0101", "809-555-0102", "809-555-0101", "829-555-0199", "809-555-0102"))
+leads_limpios = list(dict.fromkeys(leads_sucios))  # Elimina duplicados manteniendo el orden original
+
+print(f"EJERCICIO 1 - Registros recibidos: {len(leads_sucios)} | Únicos válidos: {len(leads_limpios)}")
+print("Lista depurada:", leads_limpios)
+--------------------------------------------------------------------------------
+
+# EJERCICIO REAL 2: Motor de Inventario y Valorización de Almacén con Diccionarios (ERP)
+# Escenario: Calcular el valor total del inventario y detectar productos con stock crítico (< 5 unidades).
+inventario = {
+    "SKU-01": {"nombre": "Router WiFi 6", "precio": 120.0, "stock": 14},
+    "SKU-02": {"nombre": "Cable UTP Cat6", "precio": 45.0, "stock": 3},
+    "SKU-03": {"nombre": "Servidor NAS", "precio": 680.0, "stock": 2}
+}
+
+valor_total_almacen = 0.0
+print("\nEJERCICIO 2 - REPORTE DE INVENTARIO:")
+for sku, info in inventario.items():
+    subtotal_sku = info["precio"] * info["stock"]
+    valor_total_almacen += subtotal_sku
+    alerta = "⚠️ REORDENAR" if info["stock"] < 5 else "✅ OK"
+    print(f"   [{sku}] {info['nombre']:16s} | Stock: {info['stock']:2d} | Valor: US$ {subtotal_sku:7.2f} | {alerta}")
+
+print(f"Valorización total del almacén: US$ {valor_total_almacen:,.2f}")
+--------------------------------------------------------------------------------
+
+# EJERCICIO REAL 3: Análisis de Matriz de Ventas por Sucursal y Trimestre (Business Intelligence)
+# Escenario: Sumar ventas por fila (sucursal) y por columna (trimestre) sobre una matriz 3x4.
+sucursales_nombres = list(("Santo Domingo", "Santiago", "Punta Cana"))
+ventas_trimestrales = list((
+    list((150, 180, 210, 250)),  # Santo Domingo (Q1, Q2, Q3, Q4)
+    list((110, 130, 145, 170)),  # Santiago
+    list((140, 190, 220, 260))   # Punta Cana
+))
+
+print("\nEJERCICIO 3 - CONSOLIDADO ANUAL POR SUCURSAL:")
+for i, sucursal in enumerate(sucursales_nombres):
+    total_sucursal = sum(ventas_trimestrales[i])
+    print(f"   {sucursal:15s} -> Total Anual: US$ {total_sucursal}K")
+
+totales_por_trimestre = list((sum(fila[col] for fila in ventas_trimestrales) for col in range(4)))
+print("   Totales por Trimestre (Q1 a Q4 en miles):", totales_por_trimestre)
+--------------------------------------------------------------------------------
+
+================================================================================
+FIN DE LA PARTE 1 (MÓDULOS 1 AL 5) — CONTINÚA EN LA PARTE 2 (MÓDULOS 6 AL 9)
+DataIADev | Por: Ing. Juancito Peña | Contacto: Juancito Peña
+Extractos del Libro: "Lo que nadie te enseña de Python y su ecosistema"
+================================================================================

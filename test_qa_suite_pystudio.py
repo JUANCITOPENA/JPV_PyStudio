@@ -291,8 +291,8 @@ registrar_resultado("Nexus AI: Validador universal de Gemini Key", tiene_validad
 # Versión de Caché PWA en sw.js
 with open("sw.js", "r", encoding="utf-8") as f:
     sw_code = f.read()
-sw_v5 = 'const CACHE_APP_NAME = "pystudio-app-v5";' in sw_code
-registrar_resultado("Service Worker PWA: Cache Eviction", sw_v5, "pystudio-app-v5 configurada en sw.js")
+sw_v6 = 'const CACHE_APP_NAME = "pystudio-app-v6";' in sw_code
+registrar_resultado("Service Worker PWA: Cache Eviction", sw_v6, "pystudio-app-v6 configurada en sw.js")
 
 # ------------------------------------------------------------------------------
 # 7. AUDITORIA DE SEGURIDAD (Cero Hardcoding de API Keys)
@@ -343,6 +343,34 @@ with open("js/pdf-viewer.js", "r", encoding="utf-8") as f:
 
 tiene_mapa_compilados = "MAPA_PDFS_COMPILADOS" in js_pdf_content and "01_LIBRO_PYTHON" in js_pdf_content
 registrar_resultado("Integración WebView: Estantería y Descarga Directa", tiene_mapa_compilados, "MAPA_PDFS_COMPILADOS activo en js/pdf-viewer.js")
+
+# ------------------------------------------------------------------------------
+# 9. AUDITORIA DE ARCHIVOS DE TEXTO Y BLOC DE NOTAS (talleres_txt/)
+# ------------------------------------------------------------------------------
+print("\n=== 9. AUDITORIA DE ARCHIVOS DE TEXTO Y BLOC DE NOTAS (talleres_txt/) ===")
+talleres_esperados = [
+    ("talleres_txt/01_fundamentos_programacion_python_modulos_1_al_5.txt", "Taller 1: Fundamentos (Módulos 1 al 5)", 30_000),
+    ("talleres_txt/02_taller_mapas_de_calor_seaborn_matplotlib.txt", "Taller 2: Mapas de Calor Seaborn & Matplotlib", 30_000),
+    ("talleres_txt/03_taller_consumo_apis_publicas_sin_key.txt", "Taller 3: Consumo de APIs Públicas sin Key", 10_000)
+]
+
+for ruta_txt, desc_taller, min_bytes in talleres_esperados:
+    if os.path.exists(ruta_txt):
+        sz = os.path.getsize(ruta_txt)
+        with open(ruta_txt, "r", encoding="utf-8", errors="ignore") as f:
+            total_lineas = len(f.readlines())
+        if sz >= min_bytes and total_lineas > 50:
+            registrar_resultado(f"Bloc de Notas TXT: {desc_taller}", True, f"{sz/1024:.1f} KB - {total_lineas} líneas íntegras")
+        else:
+            registrar_resultado(f"Bloc de Notas TXT: {desc_taller}", False, f"Archivo incompleto o truncado ({sz} bytes)")
+    else:
+        registrar_resultado(f"Bloc de Notas TXT: {desc_taller}", False, f"No existe: {ruta_txt}")
+
+with open("js/editorial-content.js", "r", encoding="utf-8") as f:
+    js_ed_code = f.read()
+
+tiene_raw_txt = "TALLERES_TXT_RAW" in js_ed_code and "01_fundamentos" in js_ed_code
+registrar_resultado("Soporte Dual: TALLERES_TXT_RAW en memoria", tiene_raw_txt, "Textos íntegros integrados en js/editorial-content.js")
 
 # ------------------------------------------------------------------------------
 # RESUMEN Y VEREDICTO DE CALIDAD

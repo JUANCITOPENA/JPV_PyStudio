@@ -1,0 +1,816 @@
+
+🔥 RETO #1: VISUALIZA DATOS COMO UN ANALISTA DE DATOS
+
+En este proyecto utilizamos Python junto con las librerías Seaborn y Matplotlib para transformar una matriz numérica en un mapa de calor. Este tipo de gráfico permite identificar rápidamente valores altos y bajos mediante colores, facilitando el análisis visual sin necesidad de revisar cada número manualmente.
+
+La instrucción `import seaborn as sns` carga la librería especializada en visualización de datos. La instrucción `import matplotlib.pyplot as plt` permite mostrar y personalizar gráficos. Finalmente, `sns.heatmap(datos, annot=True)` genera el mapa de calor mostrando los valores dentro de cada celda, mientras que `plt.show()` presenta el resultado en pantalla.
+
+🎬 Reto para el video: Construye un mapa de calor con las calificaciones de una clase y determina visualmente cuáles estudiantes tienen el mejor rendimiento en menos de 10 segundos. ¿Podrías identificar los patrones solamente observando los colores?
+
+
+
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# 1. Datos básicos (una matriz de 3x3)
+datos = [
+    [10, 20, 30],
+    [40, 50, 60],
+    [70, 80, 90]
+]
+
+# 2. Crear el mapa de calor
+sns.heatmap(datos, annot=True)  # annot=True muestra los números dentro de cada cuadro
+
+# 3. Mostrar el gráfico en pantalla
+plt.show()
+
+
+
+
+🔥 RETO #2: DESCUBRE EL MEJOR MOMENTO PARA VENDER
+
+En este ejercicio utilizamos Python, Pandas, Seaborn y Matplotlib para analizar ventas semanales organizadas por días y turnos. El objetivo es convertir una tabla de datos en una visualización capaz de revelar oportunidades de negocio con un simple vistazo.
+
+La instrucción `import pandas as pd` permite crear estructuras tabulares para el análisis de datos. Mediante `pd.DataFrame()` se construye la tabla de ventas. Luego, `sns.heatmap(tabla_ventas, annot=True, fmt="d", cmap="YlGnBu")` transforma la información en un mapa de calor utilizando una escala de colores avanzada. La función `plt.title()` agrega un título al gráfico y `plt.show()` despliega el resultado final.
+
+🎬 Reto para el video: Analiza las ventas de una tienda durante toda la semana y descubre qué día y qué turno generan más ingresos. ¿Serías capaz de identificar el mejor horario para vender sin realizar ningún cálculo matemático?
+
+
+🚀 ¿Por qué esto importa?
+
+Estas mismas técnicas son utilizadas por Data Analysts, Data Engineers, Científicos de Datos y especialistas en Business Intelligence para encontrar patrones, detectar anomalías y apoyar la toma de decisiones basadas en datos. Lo que para una persona son cientos de números, para un mapa de calor se convierte en información visual lista para interpretar en segundos.
+
+
+
+
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# 1. Creamos la tabla usando paréntesis para evitar errores de copiado
+datos = {
+    'Lunes': list((150, 300, 200)),
+    'Martes': list((180, 320, 250)),
+    'Miércoles': list((200, 400, 300)),
+    'Jueves': list((220, 380, 350)),
+    'Viernes': list((300, 500, 600))
+}
+
+# Ponemos nombre a las filas (los turnos)
+tabla_ventas = pd.DataFrame(datos, index=list(('Mañana', 'Tarde', 'Noche')))
+
+# 2. Creamos el mapa de calor
+sns.heatmap(tabla_ventas, annot=True, fmt="d", cmap="YlGnBu")
+
+# 3. Agregamos título y mostramos el gráfico
+plt.title("Ventas semanales por turno ($)")
+plt.show()
+
+
+
+🔥 RETO #3: RADAR CLIMÁTICO — ¿QUÉ DÍA HACE MÁS CALOR?
+
+En este proyecto utilizamos Python, Pandas, Seaborn y Matplotlib para analizar las temperaturas registradas durante toda una semana en distintas zonas de una ciudad (por ejemplo, Santo Domingo, Santiago y Punta Cana). Este tipo de visualización permite detectar olas de calor y comparar microclimas con un solo vistazo, sin necesidad de leer filas interminables de reportes meteorológicos.
+
+La instrucción fmt=".1f" indica a Seaborn que muestre los valores con un decimal exacto (ideal para mediciones científicas o climáticas). Por su parte, la paleta cmap="YlOrRd" (Amarillo → Naranja → Rojo intenso) asocia intuitivamente los tonos cálidos con las temperaturas más extremas, mientras que linewidths=1 dibuja líneas blancas entre celdas para separar visualmente cada día.
+
+🎬 Reto para el video: Observa el mapa de calor de temperaturas y determina en menos de 5 segundos cuál es el día más caluroso de la semana y en qué ciudad se registró el pico máximo. ¿Puedes notar qué ciudad mantiene el clima más fresco en promedio solo mirando los tonos amarillos?
+
+🚀 ¿Por qué esto importa?
+
+Los ingenieros ambientales, empresas de energía y plataformas de logística utilizan mapas de calor térmicos para predecir picos de consumo eléctrico (por uso de aires acondicionados) y proteger cadenas de suministro sensibles al calor.
+
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# 1. Temperaturas promedio (°C) por día y ciudad
+datos_clima = {
+    'Lun': list((31.2, 29.5, 30.0)),
+    'Mar': list((32.0, 30.1, 30.8)),
+    'Mié': list((33.5, 31.0, 31.5)),
+    'Jue': list((34.8, 32.4, 32.1)),
+    'Vie': list((33.9, 31.8, 31.9)),
+    'Sáb': list((32.5, 30.5, 31.2)),
+    'Dom': list((31.8, 29.8, 30.4))
+}
+
+tabla_clima = pd.DataFrame(datos_clima, index=list(('Santo Domingo', 'Santiago', 'Punta Cana')))
+
+# 2. Creamos el mapa de calor con formato decimal (.1f) y bordes
+sns.heatmap(tabla_clima, annot=True, fmt=".1f", cmap="YlOrRd", linewidths=1)
+
+# 3. Personalizamos títulos y etiquetas
+plt.title("Temperatura Máxima Semanal (°C)")
+plt.xlabel("Día de la Semana")
+plt.ylabel("Ciudad")
+plt.show()
+
+
+
+
+🔥 RETO #4: TRÁFICO EN TIENDA — ¿CUÁNDO NOS VISITAN MÁS CLIENTES?
+
+En este ejercicio aplicamos analítica de Retail (comercio minorista) para medir el flujo de clientes que entran a una tienda física según el día de la semana y la franja horaria. Aquí subimos el nivel incorporando plt.figure(figsize=(9, 4)) para controlar las dimensiones exactas del lienzo y evitar que los números se amontonen.
+La paleta cmap="Greens" escala desde el blanco hasta el verde esmeralda intenso, facilitando la identificación de las "horas pico" de afluencia. Además, usamos plt.xlabel() y plt.ylabel() para documentar profesionalmente ambos ejes del gráfico.
+
+🎬 Reto para el video: Analiza el tráfico de visitantes de la tienda y decide cuándo deberías programar a todo tu personal de caja y cuándo aprovechar para reabastecer mercancía en los pasillos sin molestar a los clientes.
+🚀 ¿Por qué esto importa?
+
+Las grandes cadenas de supermercados y tiendas por departamento cruzan estos mapas de calor con sus sistemas de punto de venta (POS) para optimizar turnos de empleados, reducir filas en caja y lanzar ofertas relámpago en las horas de menor tráfico.
+
+
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# 1. Cantidad de visitantes por franja horaria
+datos_tienda = {
+    'Lunes': list((45, 80, 60, 95)),
+    'Martes': list((50, 85, 65, 100)),
+    'Miércoles': list((55, 90, 70, 110)),
+    'Jueves': list((60, 105, 80, 130)),
+    'Viernes': list((75, 140, 115, 190)),
+    'Sábado': list((120, 210, 185, 240)),
+    'Domingo': list((90, 160, 140, 110))
+}
+
+franjas = list(('09:00 - 12:00', '12:00 - 15:00', '15:00 - 18:00', '18:00 - 21:00'))
+tabla_visitas = pd.DataFrame(datos_tienda, index=franjas)
+
+# 2. Ajustamos el tamaño del gráfico antes de dibujarlo
+plt.figure(figsize=(9, 4))
+sns.heatmap(tabla_visitas, annot=True, fmt="d", cmap="Greens", linewidths=0.5)
+
+# 3. Títulos y ejes
+plt.title("Flujo de Visitantes en Tienda por Horario")
+plt.xlabel("Día de la Semana")
+plt.ylabel("Franja Horaria")
+plt.show()
+
+
+
+🔥 RETO #5: ANALÍTICA DE STREAMING — ¿QUÉ DÍA SE VEN MÁS PELÍCULAS?
+
+En este proyecto simulamos el comportamiento de los usuarios de una plataforma de streaming (como Netflix o Disney+), midiendo las horas totales de reproducción por género cinematográfico a lo largo de la semana. Aquí introducimos cbar_kws={'label': 'Horas Vistas'}, un parámetro avanzado que le pone nombre propio a la barra de colores lateral.
+
+La paleta cmap="Purples" ofrece un contraste limpio y moderno ideal para dashboards de entretenimiento digital, permitiendo comparar de inmediato qué géneros dominan entre semana frente al fin de semana.
+
+🎬 Reto para el video: Observa las horas de reproducción por género y descubre qué día explota el consumo de películas de Acción y qué día prefieren los usuarios ver Comedia o Documentales. ¿Qué película recomendarías en la pantalla principal el viernes por la noche?
+
+🚀 ¿Por qué esto importa?
+
+Los motores de recomendación y equipos de contenido de las plataformas de streaming analizan estos patrones horarios para decidir qué día y a qué hora estrenar sus series o películas estrella y maximizar el impacto en redes sociales.
+
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# 1. Miles de horas reproducidas por género y día
+datos_streaming = {
+    'Lun': list((120, 95, 80, 40)),
+    'Mar': list((115, 100, 85, 45)),
+    'Mié': list((130, 110, 90, 50)),
+    'Jue': list((150, 125, 95, 55)),
+    'Vie': list((280, 210, 160, 70)),
+    'Sáb': list((340, 260, 220, 95)),
+    'Dom': list((310, 240, 250, 110))
+}
+
+generos = list(('Acción', 'Comedia', 'Ciencia Ficción', 'Documentales'))
+tabla_peliculas = pd.DataFrame(datos_streaming, index=generos)
+
+# 2. Mapa de calor con etiqueta en la barra de color (cbar_kws)
+plt.figure(figsize=(8, 4))
+sns.heatmap(
+    tabla_peliculas, 
+    annot=True, 
+    fmt="d", 
+    cmap="Purples", 
+    cbar_kws={'label': 'Horas Reproducidas (Miles)'}
+)
+
+# 3. Títulos y limpieza visual
+plt.title("Consumo Semanal de Películas por Género")
+plt.xlabel("Día")
+plt.ylabel("Género")
+plt.show()
+
+
+
+
+
+🔥 RETO #6 (NIVEL PRO): TRIAGE HOSPITALARIO — PICOS DE URGENCIAS Y HERIDOS
+
+En este desafío final damos un salto hacia la analítica crítica en salud, analizando el ingreso de pacientes a la sala de emergencias de un hospital según la gravedad del caso (Triage) y el día de la semana. Este escenario representa el uso real de datos para salvar vidas y gestionar recursos médicos limitados.
+
+Aquí combinamos múltiples técnicas profesionales: cálculo dinámico de totales por fila usando .sum(axis=1) en consola antes de graficar, control de proporciones con figsize=(10, 4.5), bordes marcados linecolor='black', y la paleta de alerta clínica cmap="Reds", donde el rojo carmesí alerta sobre saturación en emergencias críticas (traumas, accidentes de tránsito o heridos).
+
+🎬 Reto para el video: Actúa como el Director de Operaciones del Hospital. Analiza el mapa de calor de urgencias y responde en 10 segundos: ¿Qué día de la semana se disparan los ingresos por traumas/heridos graves y qué día requiere reforzar el turno de pediatría de urgencia?
+
+🚀 ¿Por qué esto importa?
+
+En el sector salud (Healthcare Analytics), los mapas de calor permiten anticipar colapsos hospitalarios, programar cirujanos de guardia los fines de semana (cuando aumentan los accidentes viales) y asegurar disponibilidad de camas en cuidados intensivos (UCI).
+
+
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# 1. Pacientes atendidos en Emergencias por tipo de urgencia y día
+datos_hospital = {
+    'Lunes': list((12, 35, 60, 25)),
+    'Martes': list((10, 30, 55, 22)),
+    'Miércoles': list((14, 32, 58, 28)),
+    'Jueves': list((18, 40, 62, 30)),
+    'Viernes': list((38, 55, 70, 35)),
+    'Sábado': list((52, 68, 75, 48)),
+    'Domingo': list((45, 60, 65, 50))
+}
+
+categorias_urgencia = list((
+    'Trauma / Heridos Graves', 
+    'Urgencia Cardiovascular', 
+    'Medicina General Aguda', 
+    'Emergencia Pediátrica'
+))
+
+tabla_urgencias = pd.DataFrame(datos_hospital, index=categorias_urgencia)
+
+# Bonus de análisis rápido en consola antes de graficar
+print("Total semanal de pacientes por área:")
+print(tabla_urgencias.sum(axis=1))
+
+# 2. Mapa de calor de alerta clínica (Nivel Pro)
+plt.figure(figsize=(10, 4.5))
+sns.heatmap(
+    tabla_urgencias, 
+    annot=True, 
+    fmt="d", 
+    cmap="Reds", 
+    linewidths=1, 
+    linecolor='white',
+    cbar_kws={'label': 'Cantidad de Pacientes'}
+)
+
+# 3. Títulos ejecutivos
+plt.title("Monitor de Urgencias Hospitalarias - Ingresos Semanales", fontsize=13, fontweight='bold')
+plt.xlabel("Día de la Semana")
+plt.ylabel("Clasificación de Urgencia (Triage)")
+plt.tight_layout()  # Ajusta márgenes automáticamente para que no se corte el texto
+plt.show()
+
+
+
+🔥 RETO #7 (NIVEL MAESTRO): MAPA DE CALOR 24/7 CON NUMPY — CIBERSEGURIDAD Y TRÁFICO WEB
+
+En este desafío damos el salto a la ciencia de datos a gran escala. En lugar de escribir los números manualmente, utilizamos la librería NumPy para simular una matriz completa de 168 datos (24 horas del día × 7 días de la semana), representando el tráfico de conexiones o intentos de acceso a un servidor en la nube.
+
+La función np.random.randint() genera datos aleatorios controlados, mientras que annot=False apaga los números dentro de los cuadros (porque en matrices grandes los números ensucian la vista y lo importante es el patrón visual). Además, cmap="magma" aplica una paleta térmica de alto contraste usada en ingeniería y ciberseguridad para detectar anomalías nocturnas.
+
+🎬 Reto para el video: Analiza este radar de 24 horas durante toda la semana sin mirar ni un solo número. ¿Puedes detectar exactamente en qué horario se produce el pico máximo de tráfico y si existe alguna actividad sospechosa en la madrugada?
+
+🚀 ¿Por qué esto importa?
+
+Los ingenieros de infraestructura (Cloud/DevOps) y analistas de ciberseguridad monitorean matrices 24/7 en tiempo real para detectar ataques informáticos (DDoS) en la madrugada o programar mantenimientos de servidores en las horas de menor actividad sin afectar a los usuarios.
+
+import numpy as np
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# 1. Simulamos 24 horas x 7 días con NumPy (168 puntos de datos)
+np.random.seed(42)  # Fija los datos para que siempre salgan igual en tu video
+trafico = np.random.randint(20, 80, size=(24, 7))
+
+# Simulamos un pico de tráfico en horario laboral (9 AM a 6 PM) de Lunes a Viernes
+trafico[9:18, 0:5] += np.random.randint(60, 120, size=(9, 5))
+
+# Simulamos una anomalía sospechosa el Sábado a las 3:00 AM
+trafico[3, 5] = 210
+
+# Convertimos la matriz en un DataFrame con horas y días
+dias = list(('Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'))
+horas = list((f"{h:02d}:00" for h in range(24)))
+tabla_servidor = pd.DataFrame(trafico, index=horas, columns=dias)
+
+# 2. Mapa de calor 24/7 (sin números internos para priorizar el patrón visual)
+plt.figure(figsize=(9, 7))
+sns.heatmap(
+    tabla_servidor, 
+    annot=False, 
+    cmap="magma", 
+    cbar_kws={'label': 'Peticiones por Segundo'}
+)
+
+# 3. Títulos y formato
+plt.title("Monitor de Tráfico de Servidor 24/7 (Detección de Anomalías)", fontweight='bold')
+plt.xlabel("Día de la Semana")
+plt.ylabel("Hora del Día")
+plt.tight_layout()
+plt.show()
+
+
+
+
+🏆 BONUS EJECUTIVO: DASHBOARD 2x2 EN UNA SOLA PANTALLA
+
+En este proyecto final combinamos Clima, Tienda, Streaming y Hospital dentro de una sola figura dividida en 4 cuadrantes usando plt.subplots(2, 2). Esta es la estructura base para crear reportes ejecutivos automatizados en Python.
+La variable axes funciona como una cuadrícula de coordenadas (axes[0, 0] arriba a la izquierda, axes[0, 1] arriba a la derecha, axes[1, 0] abajo a la izquierda y axes[1, 1] abajo a la derecha), permitiendo renderizar múltiples mapas de calor con distintas paletas de colores simultáneamente.
+
+
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+dias = list(('Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'))
+
+# 1. Preparamos los 4 datasets
+df_clima = pd.DataFrame({
+    'Lun': list((31, 29, 30)), 'Mar': list((32, 30, 31)), 'Mié': list((34, 31, 32)),
+    'Jue': list((35, 32, 32)), 'Vie': list((34, 32, 32)), 'Sáb': list((33, 31, 31)), 'Dom': list((32, 30, 30))
+}, index=list(('Sto. Dgo.', 'Santiago', 'P. Cana')))
+
+df_tienda = pd.DataFrame({
+    'Lun': list((45, 80, 95)), 'Mar': list((50, 85, 100)), 'Mié': list((55, 90, 110)),
+    'Jue': list((60, 105, 130)), 'Vie': list((75, 140, 190)), 'Sáb': list((120, 210, 240)), 'Dom': list((90, 160, 110))
+}, index=list(('Mañana', 'Tarde', 'Noche')))
+
+df_cine = pd.DataFrame({
+    'Lun': list((120, 95, 40)), 'Mar': list((115, 100, 45)), 'Mié': list((130, 110, 50)),
+    'Jue': list((150, 125, 55)), 'Vie': list((280, 210, 70)), 'Sáb': list((340, 260, 95)), 'Dom': list((310, 240, 110))
+}, index=list(('Acción', 'Comedia', 'Docum.')))
+
+df_hospital = pd.DataFrame({
+    'Lun': list((12, 35, 25)), 'Mar': list((10, 30, 22)), 'Mié': list((14, 32, 28)),
+    'Jue': list((18, 40, 30)), 'Vie': list((38, 55, 35)), 'Sáb': list((52, 68, 48)), 'Dom': list((45, 60, 50))
+}, index=list(('Trauma', 'Cardio', 'Pediatría')))
+
+# 2. Creamos la cuadrícula de 2 filas x 2 columnas
+fig, axes = plt.subplots(2, 2, figsize=(14, 8))
+fig.suptitle("DASHBOARD EJECUTIVO DE MAPAS DE CALOR EN PYTHON", fontsize=15, fontweight='bold')
+
+# Cuadrante Superior Izquierdo: Clima
+sns.heatmap(df_clima, annot=True, fmt="d", cmap="YlOrRd", ax=axes[0, 0])
+axes[0, 0].set_title("1. Temperatura Máxima (°C)")
+
+# Cuadrante Superior Derecho: Tienda
+sns.heatmap(df_tienda, annot=True, fmt="d", cmap="Greens", ax=axes[0, 1])
+axes[0, 1].set_title("2. Visitantes en Tienda")
+
+# Cuadrante Inferior Izquierdo: Streaming
+sns.heatmap(df_cine, annot=True, fmt="d", cmap="Purples", ax=axes[1, 0])
+axes[1, 0].set_title("3. Horas de Películas Vistas (Miles)")
+
+# Cuadrante Inferior Derecho: Hospital
+sns.heatmap(df_hospital, annot=True, fmt="d", cmap="Reds", ax=axes[1, 1])
+axes[1, 1].set_title("4. Urgencias Hospitalarias")
+
+# 3. Ajustamos espacios para que no se solapen los títulos y guardamos imagen
+plt.tight_layout()
+plt.savefig("dashboard_mapas_calor.png", dpi=150)
+plt.show()
+
+
+
+
+
+🔥 RETO #1: VISUALIZA DATOS COMO UN ANALISTA DE DATOS (NIVEL INICIAL)
+
+En este proyecto utilizamos Python junto con las librerías Seaborn y Matplotlib para transformar una matriz numérica en un mapa de calor. Este tipo de gráfico permite identificar rápidamente valores altos y bajos mediante colores, facilitando el análisis visual sin necesidad de revisar cada número manualmente.
+
+La instrucción import seaborn as sns carga la librería especializada en visualización de datos. La instrucción import matplotlib.pyplot as plt permite mostrar y personalizar gráficos. Finalmente, sns.heatmap(datos, annot=True) genera el mapa de calor mostrando los valores dentro de cada celda, mientras que plt.show() presenta el resultado en pantalla.
+
+🎬 Reto para el video: Construye un mapa de calor con las calificaciones de una clase y determina visualmente cuáles estudiantes tienen el mejor rendimiento en menos de 10 segundos. ¿Podrías identificar los patrones solamente observando los colores?
+
+🚀 ¿Por qué esto importa?
+
+Es la base de la alfabetización visual de datos: aprender a leer matrices de color te permite interpretar cualquier reporte complejo en una fracción del tiempo que tomaría leer una tabla tradicional.
+
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# 1. Datos básicos (una matriz de 3x3)
+datos = list((
+    list((10, 20, 30)),
+    list((40, 50, 60)),
+    list((70, 80, 90))
+))
+
+# 2. Crear el mapa de calor
+sns.heatmap(datos, annot=True)
+
+# 3. Mostrar el gráfico en pantalla
+plt.title("Mapa de Calor Básico (Matriz 3x3)")
+plt.show()
+
+
+🔥 RETO #2: DESCUBRE EL MEJOR MOMENTO PARA VENDER (NIVEL BÁSICO - VENTAS)
+
+En este ejercicio utilizamos Python, Pandas, Seaborn y Matplotlib para analizar ventas semanales organizadas por días y turnos. El objetivo es convertir una tabla de datos en una visualización capaz de revelar oportunidades de negocio con un simple vistazo.
+
+La instrucción import pandas as pd permite crear estructuras tabulares para el análisis de datos. Mediante pd.DataFrame() se construye la tabla de ventas. Luego, sns.heatmap(tabla_ventas, annot=True, fmt="d", cmap="YlGnBu") transforma la información en un mapa de calor utilizando una escala de colores avanzada. La función plt.title() agrega un título al gráfico y plt.show() despliega el resultado final.
+
+🎬 Reto para el video: Analiza las ventas de una tienda durante toda la semana y descubre qué día y qué turno generan más ingresos. ¿Serías capaz de identificar el mejor horario para vender sin realizar ningún cálculo matemático?
+🚀 ¿Por qué esto importa?
+
+Estas mismas técnicas son utilizadas por Data Analysts, Data Engineers, Científicos de Datos y especialistas en Business Intelligence para encontrar patrones, detectar anomalías y apoyar la toma de decisiones basadas en datos.
+
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# 1. Creamos la tabla de ventas semanales ($)
+datos = {
+    'Lunes': list((150, 300, 200)),
+    'Martes': list((180, 320, 250)),
+    'Miércoles': list((200, 400, 300)),
+    'Jueves': list((220, 380, 350)),
+    'Viernes': list((300, 500, 600))
+}
+
+tabla_ventas = pd.DataFrame(datos, index=list(('Mañana', 'Tarde', 'Noche')))
+
+# 2. Creamos el mapa de calor
+sns.heatmap(tabla_ventas, annot=True, fmt="d", cmap="YlGnBu")
+
+# 3. Agregamos título y mostramos el gráfico
+plt.title("Ventas Semanales por Turno ($)")
+plt.show()
+
+
+🔥 RETO #3: RADAR CLIMÁTICO — ¿QUÉ DÍA HACE MÁS CALOR? (NIVEL INTERMEDIO - DECIMALES)
+
+En este proyecto analizamos las temperaturas registradas durante toda una semana en distintas ciudades. Este tipo de visualización permite detectar olas de calor y comparar microclimas con un solo vistazo, sin necesidad de leer filas interminables de reportes meteorológicos.
+
+La instrucción fmt=".1f" indica a Seaborn que muestre los valores con un decimal exacto. Por su parte, la paleta cmap="YlOrRd" (Amarillo → Naranja → Rojo intenso) asocia intuitivamente los tonos cálidos con las temperaturas más extremas, mientras que linewidths=1 dibuja líneas blancas entre celdas para separar visualmente cada día.
+
+🎬 Reto para el video: Observa el mapa de calor de temperaturas y determina en menos de 5 segundos cuál es el día más caluroso de la semana y en qué ciudad se registró el pico máximo. ¿Puedes notar qué ciudad mantiene el clima más fresco en promedio solo mirando los tonos amarillos?
+
+🚀 ¿Por qué esto importa?
+
+Los ingenieros ambientales, empresas de energía y plataformas de logística utilizan mapas de calor térmicos para predecir picos de consumo eléctrico y proteger cadenas de suministro sensibles al calor.
+
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# 1. Temperaturas promedio (°C) por día y ciudad
+datos_clima = {
+    'Lun': list((31.2, 29.5, 30.0)),
+    'Mar': list((32.0, 30.1, 30.8)),
+    'Mié': list((33.5, 31.0, 31.5)),
+    'Jue': list((34.8, 32.4, 32.1)),
+    'Vie': list((33.9, 31.8, 31.9)),
+    'Sáb': list((32.5, 30.5, 31.2)),
+    'Dom': list((31.8, 29.8, 30.4))
+}
+
+tabla_clima = pd.DataFrame(datos_clima, index=list(('Santo Domingo', 'Santiago', 'Punta Cana')))
+
+# 2. Mapa de calor con formato decimal (.1f) y bordes
+sns.heatmap(tabla_clima, annot=True, fmt=".1f", cmap="YlOrRd", linewidths=1)
+
+# 3. Personalizamos títulos y etiquetas
+plt.title("Temperatura Máxima Semanal (°C)")
+plt.xlabel("Día de la Semana")
+plt.ylabel("Ciudad")
+plt.show()
+
+
+🔥 RETO #4: TRÁFICO EN TIENDA — ¿CUÁNDO NOS VISITAN MÁS CLIENTES? (NIVEL INTERMEDIO - RETAIL)
+
+En este ejercicio aplicamos analítica de Retail para medir el flujo de clientes que entran a una tienda física según el día de la semana y la franja horaria. Incorporamos plt.figure(figsize=(9, 4)) para controlar las dimensiones exactas del lienzo y evitar que los números se amontonen.
+
+La paleta cmap="Greens" escala desde el blanco hasta el verde esmeralda intenso, facilitando la identificación de las "horas pico" de afluencia, mientras que plt.xlabel() y plt.ylabel() documentan profesionalmente ambos ejes.
+
+🎬 Reto para el video: Analiza el tráfico de visitantes de la tienda y decide cuándo deberías programar a todo tu personal de caja y cuándo aprovechar para reabastecer mercancía en los pasillos sin molestar a los clientes.
+🚀 ¿Por qué esto importa?
+
+Las grandes cadenas de supermercados y tiendas cruzan estos mapas de calor con sus sistemas de punto de venta (POS) para optimizar turnos de empleados, reducir filas en caja y lanzar ofertas relámpago en las horas valle.
+
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# 1. Cantidad de visitantes por franja horaria
+datos_tienda = {
+    'Lunes': list((45, 80, 60, 95)),
+    'Martes': list((50, 85, 65, 100)),
+    'Miércoles': list((55, 90, 70, 110)),
+    'Jueves': list((60, 105, 80, 130)),
+    'Viernes': list((75, 140, 115, 190)),
+    'Sábado': list((120, 210, 185, 240)),
+    'Domingo': list((90, 160, 140, 110))
+}
+
+franjas = list(('09:00 - 12:00', '12:00 - 15:00', '15:00 - 18:00', '18:00 - 21:00'))
+tabla_visitas = pd.DataFrame(datos_tienda, index=franjas)
+
+# 2. Ajustamos el tamaño del gráfico antes de dibujarlo
+plt.figure(figsize=(9, 4))
+sns.heatmap(tabla_visitas, annot=True, fmt="d", cmap="Greens", linewidths=0.5)
+
+# 3. Títulos y ejes
+plt.title("Flujo de Visitantes en Tienda por Horario")
+plt.xlabel("Día de la Semana")
+plt.ylabel("Franja Horaria")
+plt.show()
+
+
+🔥 RETO #5: ANALÍTICA DE STREAMING — ¿QUÉ DÍA SE VEN MÁS PELÍCULAS? (NIVEL INTERMEDIO-ALTO)
+
+En este proyecto simulamos el comportamiento de los usuarios de una plataforma de streaming, midiendo las horas totales de reproducción por género cinematográfico a lo largo de la semana. Introducimos cbar_kws={'label': 'Horas Vistas'}, un parámetro que le pone nombre propio a la barra de colores lateral.
+
+La paleta cmap="Purples" ofrece un contraste limpio y moderno ideal para dashboards de entretenimiento digital, permitiendo comparar de inmediato qué géneros dominan entre semana frente al fin de semana.
+
+🎬 Reto para el video: Observa las horas de reproducción por género y descubre qué día explota el consumo de películas de Acción y qué día prefieren los usuarios ver Documentales. ¿Qué película recomendarías en la pantalla principal el viernes por la noche?
+
+🚀 ¿Por qué esto importa?
+
+Los motores de recomendación y equipos de contenido de las plataformas de streaming analizan estos patrones horarios para decidir qué día y a qué hora estrenar sus producciones estrella y maximizar el impacto en audiencia.
+
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# 1. Miles de horas reproducidas por género y día
+datos_streaming = {
+    'Lun': list((120, 95, 80, 40)),
+    'Mar': list((115, 100, 85, 45)),
+    'Mié': list((130, 110, 90, 50)),
+    'Jue': list((150, 125, 95, 55)),
+    'Vie': list((280, 210, 160, 70)),
+    'Sáb': list((340, 260, 220, 95)),
+    'Dom': list((310, 240, 250, 110))
+}
+
+generos = list(('Acción', 'Comedia', 'Ciencia Ficción', 'Documentales'))
+tabla_peliculas = pd.DataFrame(datos_streaming, index=generos)
+
+# 2. Mapa de calor con etiqueta en la barra de color (cbar_kws)
+plt.figure(figsize=(8, 4))
+sns.heatmap(
+    tabla_peliculas, 
+    annot=True, 
+    fmt="d", 
+    cmap="Purples", 
+    cbar_kws={'label': 'Horas Reproducidas (Miles)'}
+)
+
+# 3. Títulos y limpieza visual
+plt.title("Consumo Semanal de Películas por Género")
+plt.xlabel("Día")
+plt.ylabel("Género")
+plt.show()
+
+
+🔥 RETO #6: TRIAGE HOSPITALARIO — PICOS DE URGENCIAS Y HERIDOS (NIVEL PRO - SALUD)
+
+En este desafío damos un salto hacia la analítica crítica en salud, analizando el ingreso de pacientes a la sala de emergencias de un hospital según la gravedad del caso (Triage) y el día de la semana.
+
+Aquí combinamos cálculo dinámico de totales por fila usando .sum(axis=1) en consola antes de graficar, control de proporciones con figsize=(10, 4.5), bordes marcados y la paleta de alerta clínica cmap="Reds", donde el rojo carmesí alerta sobre saturación en emergencias críticas (traumas, accidentes de tránsito o heridos).
+
+🎬 Reto para el video: Actúa como el Director de Operaciones del Hospital. Analiza el mapa de calor de urgencias y responde en 10 segundos: ¿Qué día de la semana se disparan los ingresos por traumas/heridos graves y qué día requiere reforzar el turno de pediatría de urgencia?
+
+🚀 ¿Por qué esto importa?
+
+En el sector salud (Healthcare Analytics), los mapas de calor permiten anticipar colapsos hospitalarios, programar cirujanos de guardia los fines de semana y asegurar disponibilidad de camas en cuidados intensivos (UCI).
+
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# 1. Pacientes atendidos en Emergencias por tipo de urgencia y día
+datos_hospital = {
+    'Lunes': list((12, 35, 60, 25)),
+    'Martes': list((10, 30, 55, 22)),
+    'Miércoles': list((14, 32, 58, 28)),
+    'Jueves': list((18, 40, 62, 30)),
+    'Viernes': list((38, 55, 70, 35)),
+    'Sábado': list((52, 68, 75, 48)),
+    'Domingo': list((45, 60, 65, 50))
+}
+
+categorias_urgencia = list((
+    'Trauma / Heridos Graves', 
+    'Urgencia Cardiovascular', 
+    'Medicina General Aguda', 
+    'Emergencia Pediátrica'
+))
+
+tabla_urgencias = pd.DataFrame(datos_hospital, index=categorias_urgencia)
+
+# Bonus de análisis rápido en consola antes de graficar
+print("Total semanal de pacientes por área:")
+print(tabla_urgencias.sum(axis=1))
+
+# 2. Mapa de calor de alerta clínica (Nivel Pro)
+plt.figure(figsize=(10, 4.5))
+sns.heatmap(
+    tabla_urgencias, 
+    annot=True, 
+    fmt="d", 
+    cmap="Reds", 
+    linewidths=1, 
+    linecolor='white',
+    cbar_kws={'label': 'Cantidad de Pacientes'}
+)
+
+# 3. Títulos ejecutivos
+plt.title("Monitor de Urgencias Hospitalarias - Ingresos Semanales", fontsize=13, fontweight='bold')
+plt.xlabel("Día de la Semana")
+plt.ylabel("Clasificación de Urgencia (Triage)")
+plt.tight_layout()
+plt.show()
+
+🔥 RETO #7: RADAR DE CIBERSEGURIDAD 24/7 CON NUMPY (NIVEL MAESTRO - BIG DATA)
+
+En este desafío damos el salto a la ciencia de datos a gran escala. Utilizamos la librería NumPy para simular una matriz completa de 168 puntos de datos (24 horas del día × 7 días de la semana), representando el tráfico de conexiones a un servidor en la nube.
+
+La función np.random.randint() genera datos aleatorios controlados, mientras que annot=False apaga los números dentro de los cuadros para priorizar el patrón visual. Además, cmap="magma" aplica una paleta térmica de alto contraste usada en ingeniería y ciberseguridad para detectar anomalías nocturnas.
+
+🎬 Reto para el video: Analiza este radar de 24 horas durante toda la semana sin mirar ni un solo número. ¿Puedes detectar exactamente en qué horario se produce el pico máximo de tráfico y si existe alguna actividad sospechosa en la madrugada del fin de semana?
+
+🚀 ¿Por qué esto importa?
+
+Los ingenieros de infraestructura (Cloud/DevOps) y analistas de ciberseguridad monitorean matrices 24/7 en tiempo real para detectar ataques informáticos (DDoS) en la madrugada o programar mantenimientos sin afectar a los usuarios.
+
+import numpy as np
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# 1. Simulamos 24 horas x 7 días con NumPy (168 puntos de datos)
+np.random.seed(42)
+trafico = np.random.randint(20, 80, size=(24, 7))
+
+# Simulamos horario laboral activo (9 AM a 6 PM, Lunes a Viernes)
+trafico[9:18, 0:5] = trafico[9:18, 0:5] + np.random.randint(60, 120, size=(9, 5))
+
+# Inyectamos una anomalía sospechosa el Sábado (col 5) a las 3:00 AM (fila 3)
+trafico.itemset((3, 5), 210)
+
+# Convertimos la matriz en un DataFrame con horas y días
+dias = list(('Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'))
+horas = list((f"{h:02d}:00" for h in range(24)))
+tabla_servidor = pd.DataFrame(trafico, index=horas, columns=dias)
+
+# 2. Mapa de calor 24/7 (sin números internos para priorizar el patrón visual)
+plt.figure(figsize=(9, 7))
+sns.heatmap(
+    tabla_servidor, 
+    annot=False, 
+    cmap="magma", 
+    cbar_kws={'label': 'Peticiones por Segundo'}
+)
+
+# 3. Títulos y formato
+plt.title("Monitor de Tráfico de Servidor 24/7 (Detección de Anomalías)", fontweight='bold')
+plt.xlabel("Día de la Semana")
+plt.ylabel("Hora del Día")
+plt.tight_layout()
+plt.show()
+
+
+🔥 RETO #8: DASHBOARD EJECUTIVO 2x2 EN UNA SOLA PANTALLA (NIVEL ARQUITECTO BI)
+
+En este proyecto final combinamos Clima, Tienda, Streaming y Hospital dentro de una sola figura dividida en 4 cuadrantes usando plt.subplots(2, 2) y la función .flat de NumPy para asignar cada gráfico de forma limpia y sin errores de indexación.
+
+Esta es la estructura base para crear reportes ejecutivos automatizados en Python y exportarlos directamente en alta resolución (dpi=150) con plt.savefig().
+
+🎬 Reto para el video: Presenta 4 áreas críticas de negocio en un solo panel ejecutivo y demuestra cómo un analista de datos resume 84 métricas diferentes en una sola imagen lista para la junta directiva.
+
+🚀 ¿Por qué esto importa?
+
+En el mundo corporativo, los directores no quieren 10 gráficos sueltos; quieren un tablero unificado que conecte variables externas (clima) con operaciones internas (tráfico, consumo y capacidad de respuesta).
+
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# 1. Preparamos los 4 datasets
+df_clima = pd.DataFrame({
+    'Lun': list((31, 29, 30)), 'Mar': list((32, 30, 31)), 'Mié': list((34, 31, 32)),
+    'Jue': list((35, 32, 32)), 'Vie': list((34, 32, 32)), 'Sáb': list((33, 31, 31)), 'Dom': list((32, 30, 30))
+}, index=list(('Sto. Dgo.', 'Santiago', 'P. Cana')))
+
+df_tienda = pd.DataFrame({
+    'Lun': list((45, 80, 95)), 'Mar': list((50, 85, 100)), 'Mié': list((55, 90, 110)),
+    'Jue': list((60, 105, 130)), 'Vie': list((75, 140, 190)), 'Sáb': list((120, 210, 240)), 'Dom': list((90, 160, 110))
+}, index=list(('Mañana', 'Tarde', 'Noche')))
+
+df_cine = pd.DataFrame({
+    'Lun': list((120, 95, 40)), 'Mar': list((115, 100, 45)), 'Mié': list((130, 110, 50)),
+    'Jue': list((150, 125, 55)), 'Vie': list((280, 210, 70)), 'Sáb': list((340, 260, 95)), 'Dom': list((310, 240, 110))
+}, index=list(('Acción', 'Comedia', 'Docum.')))
+
+df_hospital = pd.DataFrame({
+    'Lun': list((12, 35, 25)), 'Mar': list((10, 30, 22)), 'Mié': list((14, 32, 28)),
+    'Jue': list((18, 40, 30)), 'Vie': list((38, 55, 35)), 'Sáb': list((52, 68, 48)), 'Dom': list((45, 60, 50))
+}, index=list(('Trauma', 'Cardio', 'Pediatría')))
+
+# 2. Creamos la cuadrícula de 2x2 y desempaquetamos los 4 ejes
+fig, axes = plt.subplots(2, 2, figsize=(14, 8))
+ax1, ax2, ax3, ax4 = axes.flat
+fig.suptitle("DASHBOARD EJECUTIVO DE MAPAS DE CALOR EN PYTHON", fontsize=15, fontweight='bold')
+
+# Cuadrante 1: Clima
+sns.heatmap(df_clima, annot=True, fmt="d", cmap="YlOrRd", ax=ax1)
+ax1.set_title("1. Temperatura Máxima (°C)")
+
+# Cuadrante 2: Tienda
+sns.heatmap(df_tienda, annot=True, fmt="d", cmap="Greens", ax=ax2)
+ax2.set_title("2. Visitantes en Tienda")
+
+# Cuadrante 3: Streaming
+sns.heatmap(df_cine, annot=True, fmt="d", cmap="Purples", ax=ax3)
+ax3.set_title("3. Horas de Películas Vistas (Miles)")
+
+# Cuadrante 4: Hospital
+sns.heatmap(df_hospital, annot=True, fmt="d", cmap="Reds", ax=ax4)
+ax4.set_title("4. Urgencias Hospitalarias")
+
+# 3. Ajustamos espacios y guardamos imagen en alta calidad
+plt.tight_layout()
+plt.savefig("dashboard_mapas_calor.png", dpi=150)
+plt.show()
+
+
+
+
+🎯 RETO #3: SEGMENTACIÓN DE 75 CLIENTES DISPERSOS CON IA (CLUSTERING K-MEANS)
+
+En este proyecto aplicamos Machine Learning no supervisado (KMeans) junto con NumPy, Pandas, Seaborn y Matplotlib para segmentar automáticamente una cartera simulada de 75 clientes dispersos, cruzando su frecuencia de compra mensual, su gasto acumulado y su método de pago preferido (Efectivo, Tarjeta o Transferencia).
+
+
+import numpy as np
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+from sklearn.cluster import KMeans
+
+# Fijamos la semilla para que los puntos dispersos salgan siempre igual
+np.random.seed(42)
+
+# 1. Generamos 75 clientes bien dispersos (25 por cada grupo)
+# Grupo A: Frecuencia baja (1 a 6) y Gasto bajo ($30 a $280)
+frec_a = np.random.uniform(1, 6, 25).round(1)
+gasto_a = np.random.uniform(30, 280, 25).round(0)
+pago_a = np.random.choice(list(('Efectivo', 'Tarjeta')), size=25, p=list((0.75, 0.25)))
+
+# Grupo B: Frecuencia media (7 a 14) y Gasto medio ($400 a $900)
+frec_b = np.random.uniform(7, 14, 25).round(1)
+gasto_b = np.random.uniform(400, 900, 25).round(0)
+pago_b = np.random.choice(list(('Tarjeta', 'Efectivo', 'Transferencia')), size=25, p=list((0.70, 0.15, 0.15)))
+
+# Grupo C: Frecuencia alta (15 a 25) y Gasto alto ($1,050 a $2,000)
+frec_c = np.random.uniform(15, 25, 25).round(1)
+gasto_c = np.random.uniform(1050, 2000, 25).round(0)
+pago_c = np.random.choice(list(('Transferencia', 'Tarjeta')), size=25, p=list((0.80, 0.20)))
+
+# Unimos todo en una sola tabla
+clientes_ventas = pd.DataFrame({
+    'Frecuencia_Mes': np.concatenate(list((frec_a, frec_b, frec_c))),
+    'Gasto_Total_USD': np.concatenate(list((gasto_a, gasto_b, gasto_c))),
+    'Tipo_Pago': np.concatenate(list((pago_a, pago_b, pago_c)))
+})
+
+# 2. Entrenamos el modelo K-Means
+variables_numericas = clientes_ventas.loc[:, list(('Frecuencia_Mes', 'Gasto_Total_USD'))]
+modelo = KMeans(n_clusters=3, random_state=42, n_init=10)
+clusters_num = modelo.fit_predict(variables_numericas)
+
+# Ordenamos los clusters por gasto promedio para asignar Cliente A, B y C
+orden_gasto = pd.Series(clientes_ventas.get('Gasto_Total_USD')).groupby(clusters_num).mean().sort_values().index
+nombres_clientes = list(('Cliente A', 'Cliente B', 'Cliente C'))
+mapa_etiquetas = dict(zip(orden_gasto, nombres_clientes))
+
+clientes_ventas['Segmento'] = pd.Series(clusters_num).map(mapa_etiquetas)
+
+print(f"🎯 TOTAL DE CLIENTES ANALIZADOS: {len(clientes_ventas)}")
+print(clientes_ventas.value_counts('Segmento'))
+
+# 3. Gráfico amplio y disperso
+plt.figure(figsize=(11, 6))
+sns.scatterplot(
+    data=clientes_ventas,
+    x='Frecuencia_Mes',
+    y='Gasto_Total_USD',
+    hue='Segmento',
+    hue_order=nombres_clientes,
+    style='Tipo_Pago',
+    palette='Set1',
+    s=130,
+    edgecolor='black',  # Borde fino en cada figura para distinguirlos aún mejor
+    alpha=0.9
+)
+
+plt.title("Clustering de 75 Clientes Dispersos: Frecuencia, Gasto y Tipo de Pago", fontweight='bold')
+plt.xlabel("Frecuencia de Compra (Promedio Mensual)")
+plt.ylabel("Gasto Mensual Acumulado ($ USD)")
+plt.grid(True, linestyle='--', alpha=0.4)
+plt.legend(bbox_to_anchor=(1.02, 1), loc='upper left')
+plt.tight_layout()
+plt.show()

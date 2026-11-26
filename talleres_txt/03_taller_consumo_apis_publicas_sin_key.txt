@@ -1,0 +1,303 @@
+
+🌐 RETO API #1: EL CLIMA EN VIVO (SOLO CONSOLA — NIVEL INICIAL)
+
+En este primer proyecto conectamos Python directamente con los servidores meteorológicos de Open-Meteo para consultar la temperatura y velocidad del viento actuales en Santo Domingo en tiempo real, sin necesidad de contraseñas ni llaves de acceso.
+
+La librería requests permite hacer peticiones a Internet igual que un navegador web, mientras que .json() convierte la respuesta de la API en un diccionario fácil de leer en Python.
+
+🎬 Reto para el video: Ejecuta el script y obtén la temperatura exacta de tu ciudad en menos de 2 segundos directamente en la terminal de Python. ¿Puedes cambiar las coordenadas para consultar el clima de otra ciudad del mundo?
+
+
+
+import requests
+
+# 1. Armamos la URL por partes para evitar recortes del editor
+base = "https://api." + "open-meteo.com"
+ruta = "/v1/forecast?latitude=18.48&longitude=-69.93&current_weather=true"
+
+# 2. Pedimos los datos a la API y los convertimos a JSON
+respuesta = requests.get(base + ruta).json()
+clima = respuesta.get("current_weather")
+
+# 3. Mostramos los resultados en consola
+print("🌤️ REPORTE DEL CLIMA EN VIVO (SANTO DOMINGO)")
+print("Temperatura actual:", clima.get("temperature"), "°C")
+print("Velocidad del viento:", clima.get("windspeed"), "km/h")
+
+
+
+🌐 RETO API #2: COTIZACIÓN DEL DÓLAR Y BITCOIN EN TIEMPO REAL (SOLO CONSOLA)
+
+En este ejercicio consumimos la API abierta de CoinGecko para consultar en vivo el precio del Bitcoin y compararlo con monedas reales, demostrando cómo las aplicaciones financieras obtienen precios al instante sin intermediarios.
+Utilizamos requests.get(url).json() para descargar la cotización actual y mostramos los datos formateados directamente en pantalla.
+
+🎬 Reto para el video: Conecta tu programa al mercado financiero global en 6 líneas de código y muestra el precio en vivo de Bitcoin y Ethereum en consola sin crear ninguna cuenta.
+
+import requests
+
+# 1. Armamos la URL por partes
+base = "https://api." + "coinbase.com"
+ruta_btc = "/v2/prices/" + "BTC-USD/spot"
+ruta_eth = "/v2/prices/" + "ETH-USD/spot"
+
+# 2. Descargamos los datos
+btc = requests.get(base + ruta_btc).json()
+eth = requests.get(base + ruta_eth).json()
+
+# 3. Mostramos los precios en consola
+print("💰 PRECIOS EN VIVO DEL MERCADO CRIPTO")
+print("Bitcoin (USD): $", btc.get("data").get("amount"))
+print("Ethereum (USD): $", eth.get("data").get("amount"))
+
+
+
+📊 RETO API #3: MONITOR DE TERREMOTOS EN VIVO (CONSOLA + GRÁFICO BÁSICO)
+
+En este proyecto damos el salto a la visualización de datos en tiempo real conectándonos al Servicio Geológico de Estados Unidos (USGS). Extraemos los últimos sismos ocurridos en el planeta hoy, imprimimos su ubicación en consola y dibujamos un gráfico de barras básico con sus magnitudes.
+
+Combinamos requests para leer la API científica gratuita y matplotlib.pyplot para transformar esos datos en un gráfico visual en segundos.
+
+🎬 Reto para el video: Conecta Python con los sensores sísmicos mundiales, lista los últimos 5 terremotos en consola y visualiza cuál fue el más fuerte mediante un gráfico de barras automático.
+
+
+import requests
+import matplotlib.pyplot as plt
+
+# 1. Armamos la URL del Servicio Geológico (USGS) por partes
+base = "https://earthquake." + "usgs.gov"
+ruta = "/earthquakes/feed/v1.0/summary/4.5_day.geojson"
+
+datos = requests.get(base + ruta).json()
+
+# Tomamos los primeros 5 sismos de la lista de forma segura
+todas_features = datos.get("features")
+sismos = list((todas_features.pop(0) for _ in range(5)))
+
+lugares = list()
+magnitudes = list()
+
+print("🌍 ÚLTIMOS 5 SISMOS REGISTRADOS EN EL MUNDO:")
+for sismo in sismos:
+    info = sismo.get("properties")
+    lugar_completo = str(info.get("place"))
+    lugar_corto = lugar_completo.split(",")[-1].strip()
+    mag = info.get("mag")
+    
+    print("-", lugar_corto, "| Magnitud:", mag)
+    lugares.append(lugar_corto)
+    magnitudes.append(mag)
+
+# 2. Gráfico de barras básico
+plt.bar(lugares, magnitudes, color="orange")
+plt.title("Magnitud de los Últimos 5 Sismos en el Mundo")
+plt.ylabel("Magnitud (Richter)")
+plt.xticks(rotation=20)
+plt.tight_layout()
+plt.show()
+
+
+
+📊 RETO API #4: COMPARADOR DE POBLACIÓN MUNDIAL (CONSOLA + GRÁFICO BÁSICO)
+
+En este último reto utilizamos la API abierta REST Countries para consultar datos demográficos oficiales de varios países de Latinoamérica (República Dominicana, México, Colombia y Argentina), imprimir su población exacta en consola y compararlos visualmente en un gráfico.
+
+Este ejercicio demuestra cómo automatizar reportes comparativos extrayendo información oficial directamente desde fuentes públicas sin descargar archivos Excel manualmente.
+
+🎬 Reto para el video: Consulta la población oficial de 4 países en tiempo real, muéstrala en consola y genera un gráfico comparativo listo para una presentación en menos de 15 líneas de código.
+
+
+import requests
+import matplotlib.pyplot as plt
+
+# 1. Armamos la URL base por partes
+base = "https://api." + "coinbase.com"
+monedas = list(("ETH", "SOL", "LTC", "AVAX"))
+precios = list()
+
+print("📊 COTIZACIÓN EN VIVO DE CRIPTOMONEDAS (USD):")
+
+for moneda in monedas:
+    ruta = "/v2/prices/" + moneda + "-USD/spot"
+    respuesta = requests.get(base + ruta).json()
+    valor = float(respuesta.get("data").get("amount"))
+    
+    print("-", moneda, ": $", round(valor, 2))
+    precios.append(valor)
+
+# 2. Gráfico de barras básico
+plt.bar(monedas, precios, color="skyblue")
+plt.title("Precio Actual en Dólares (Coinbase API)")
+plt.ylabel("Precio (USD)")
+plt.show()
+
+
+
+
+🎬 RETO API #5: CATÁLOGO DE CINE ANIMADO (SOLO CONSOLA — STUDIO GHIBLI API)
+
+En este proyecto nos conectamos a la API pública de Studio Ghibli (famoso estudio ganador del Óscar por El viaje de Chihiro) para consultar en tiempo real el director, año de estreno y puntuación de sus películas más famosas sin necesidad de contraseñas.
+
+import requests
+
+# 1. Armamos la URL pública por partes para evitar recortes del editor
+base = "https://ghibliapi." + "vercel.app"
+ruta = "/films?limit=5"
+
+# 2. Descargamos la lista de películas
+peliculas = requests.get(base + ruta).json()
+
+# 3. Mostramos los datos en consola
+print("🎬 TOP 5 PELÍCULAS DE STUDIO GHIBLI:")
+for peli in peliculas:
+    titulo = peli.get("title")
+    director = peli.get("director")
+    anio = peli.get("release_date")
+    score = peli.get("rt_score")
+    
+    print(f"- {titulo} ({anio}) | Dir: {director} | Puntuación: {score}/100")
+
+
+🍿 RETO API #6: RANKING DE CINE Y SERIES DE ACCIÓN (CONSOLA + GRÁFICO — TVMAZE API)
+
+En este ejercicio consumimos la API abierta de TVMaze para buscar títulos populares en tiempo real (por ejemplo, saga Batman), extraer la calificación oficial del público en consola y generar un gráfico de barras comparativo.
+
+import requests
+import matplotlib.pyplot as plt
+
+# 1. Armamos la URL pública de TVMaze por partes
+base = "https://api." + "tvmaze.com"
+ruta = "/search/shows?q=" + "batman"
+
+resultados = requests.get(base + ruta).json()
+
+titulos = list()
+puntuaciones = list()
+
+print("🍿 PUNTUACIÓN DE AUDIENCIA EN VIVO (BÚSQUEDA: BATMAN):")
+for item in resultados:
+    show = item.get("show")
+    nombre = show.get("name")
+    rating = show.get("rating").get("average")
+    
+    # Filtramos solo los que tienen calificación numérica
+    if rating is not None:
+        print(f"- {nombre}: ⭐ {rating}/10")
+        titulos.append(nombre[:15])  # Acortamos el nombre para el gráfico
+        puntuaciones.append(rating)
+
+# 2. Gráfico de barras horizontal básico
+plt.barh(titulos, puntuaciones, color="purple")
+plt.title("Calificación de Audiencia (TVMaze API)")
+plt.xlabel("Puntuación (0 a 10)")
+plt.tight_layout()
+plt.show()
+
+
+
+
+🎬 VERSIÓN MODERNA #1: CARTELERA DE CINE ACTUAL (CONSOLA + PORTADA EN PANTALLA)
+
+Este código busca películas recientes (por ejemplo, de Jason Statham o cualquier actor/título moderno), imprime sus datos en consola, descarga el póster oficial desde Internet y lo dibuja como una imagen en Python.
+python
+import requests
+import matplotlib.pyplot as plt
+from PIL import Image
+from io import BytesIO
+
+# 1. API pública de Apple Movies (sin API key) - Buscamos películas modernas
+base = "https://itunes." + "apple.com"
+ruta = "/search?term=" + "Jason+Statham" + "&entity=movie&limit=4"
+
+datos = requests.get(base + ruta).json()
+peliculas = datos.get("results")
+
+# 2. Preparamos una fila de 4 espacios para mostrar las portadas
+fig, axes = plt.subplots(1, 4, figsize=(13, 4))
+fig.suptitle("CARTELERA MODERNA CON PORTADAS EN VIVO", fontsize=14, fontweight="bold")
+
+print("🎬 PELÍCULAS ENCONTRADAS EN VIVO:")
+for i, peli in enumerate(peliculas):
+    titulo = peli.get("trackName")
+    anio = str(peli.get("releaseDate"))[:4]
+    genero = peli.get("primaryGenreName")
+    
+    # Obtenemos la URL de la portada y subimos su resolución de 100x100 a 400x400
+    url_portada = str(peli.get("artworkUrl100")).replace("100x100", "400x400")
+    
+    print(f"- {titulo} ({anio}) | Género: {genero}")
+    
+    # Descargamos la imagen del póster y la dibujamos
+    img_bytes = requests.get(url_portada).content
+    imagen = Image.open(BytesIO(img_bytes))
+    
+    ax = axes.flat.__getitem__(i)
+    ax.imshow(imagen)
+    ax.set_title(f"{titulo[:16]}...\n({anio})", fontsize=9)
+    ax.axis("off")  # Quitamos los números de los ejes
+
+plt.tight_layout()
+plt.show()
+Usa el código con precaución.
+
+🍿 VERSIÓN MODERNA #2: SERIES/PELÍCULAS TOP ACTUALES (PORTADAS + GRÁFICO DE PUNTUACIÓN)
+
+En este segundo ejemplo usamos TVMaze (que devuelve estrenos recientes y sus pósters oficiales) para crear un panel mixto profesional: a la izquierda muestra las 3 portadas reales y a la derecha dibuja el gráfico de barras con sus calificaciones.
+python
+import requests
+import matplotlib.pyplot as plt
+from PIL import Image
+from io import BytesIO
+
+# 1. API pública de TVMaze (buscamos sagas modernas, ej. "Dune" o "Avengers")
+base = "https://api." + "tvmaze.com"
+ruta = "/search/shows?q=" + "dune"
+
+resultados = requests.get(base + ruta).json()
+
+titulos = list()
+puntuaciones = list()
+imagenes = list()
+
+print("🍿 TÍTULOS MODERNOS Y CALIFICACIONES:")
+for item in resultados:
+    show = item.get("show")
+    rating = show.get("rating").get("average")
+    img_dict = show.get("image")
+    
+    # Verificamos que tenga calificación y portada disponible
+    if rating is not None and img_dict is not None and len(titulos) < 3:
+        nombre = show.get("name")
+        url_img = img_dict.get("medium")
+        
+        print(f"- {nombre} | Puntuación: ⭐ {rating}/10")
+        titulos.append(nombre[:15])
+        puntuaciones.append(rating)
+        
+        # Descargamos la portada en memoria
+        contenido_img = requests.get(url_img).content
+        imagenes.append(Image.open(BytesIO(contenido_img)))
+
+# 2. Creamos el panel: 3 portadas arriba y 1 gráfico de barras abajo
+fig = plt.figure(figsize=(10, 7))
+fig.suptitle("ANÁLISIS VISUAL DE CINE Y SERIES MODERNAS", fontsize=13, fontweight="bold")
+
+for i in range(len(imagenes)):
+    ax_img = fig.add_subplot(2, 3, i + 1)
+    ax_img.imshow(imagenes.__getitem__(i))
+    ax_img.set_title(titulos.__getitem__(i), fontsize=10)
+    ax_img.axis("off")
+
+# Gráfico de barras en la parte inferior ocupando todo el ancho
+ax_bar = fig.add_subplot(2, 1, 2)
+ax_bar.bar(titulos, puntuaciones, color="crimson")
+ax_bar.set_title("Comparativa de Puntuación Oficial (0 a 10)")
+ax_bar.set_ylabel("Puntuación")
+ax_bar.set_ylim(0, 10)
+
+plt.tight_layout()
+plt.show()
+Usa el código con precaución.
+
+¿Qué librerías extra se usan aquí?
+
+• PIL (Pillow) e io.BytesIO: Vienen incluidas por defecto en Pyodide y en casi cualquier instalación de Python. Sirven para convertir los bytes descargados desde la URL de la portada directamente en una imagen que Matplotlib puede dibujar sin tener que guardar archivos en tu disco duro.

@@ -318,7 +318,7 @@ print("\n💾 Archivo 'Reporte_Titanic_Descargado.csv' listo para descargar.")
             <span id="streamlit-dot" class="badge rounded-pill bg-danger p-1 d-none"></span>
           </button>
           <button id="tab-btn-documentos" class="tab-btn" onclick="cambiarTab('documentos')">
-            <i class="bi bi-book-half text-warning"></i> <span class="d-none d-sm-inline">Libros & Talleres PDF</span><span class="d-inline d-sm-none">Libros</span>
+            <i class="bi bi-journal-code text-warning"></i> <span class="d-none d-sm-inline">Talleres & Guías TXT</span><span class="d-inline d-sm-none">Talleres</span>
             <span id="documentos-dot" class="badge rounded-pill bg-warning p-1 d-none"></span>
           </button>
         </div>
@@ -387,18 +387,28 @@ print("\n💾 Archivo 'Reporte_Titanic_Descargado.csv' listo para descargar.")
           <div id="tools-documentos" class="d-flex align-items-center gap-1 gap-md-2 d-none">
             <!-- Selector de Documento -->
             <div class="d-flex align-items-center gap-1 bg-dark border border-secondary rounded px-2 py-0" style="height: 28px;">
-              <span class="text-warning small fw-bold d-none d-sm-inline" style="font-size: 11px;"><i class="bi bi-journal-bookmark-fill"></i> Doc:</span>
-              <select id="select-doc-activo" class="form-select form-select-sm bg-dark text-warning border-0 p-0 shadow-none fw-bold" style="font-size: 11px; width: auto; cursor: pointer; max-width: 190px;" onchange="cambiarDocumentoActivo(this.value)" title="Elegir libro o taller editorial">
-                <option value="libro_maestro_python" selected>📖 Vol 1: Python Masterclass, POO & SQL</option>
-                <option value="taller_mapas_calor">📊 Vol 2: Analítica Visual Seaborn & ML</option>
-                <option value="taller_apis_publicas">🌐 Vol 3: Consumo de APIs Públicas</option>
+              <span class="text-warning small fw-bold d-none d-sm-inline" style="font-size: 11px;"><i class="bi bi-journal-bookmark-fill"></i> Taller:</span>
+              <select id="select-doc-activo" class="form-select form-select-sm bg-dark text-warning border-0 p-0 shadow-none fw-bold" style="font-size: 11px; width: auto; cursor: pointer; max-width: 190px;" onchange="cambiarDocumentoActivo(this.value)" title="Elegir taller técnico o guía didáctica">
+                <option value="libro_maestro_python" selected>📘 Taller 1: Fundamentos (Mód 1-5)</option>
+                <option value="taller_mapas_calor">🔥 Taller 2: Mapas de Calor & ML</option>
+                <option value="taller_apis_publicas">🌐 Taller 3: Consumo de APIs REST</option>
               </select>
             </div>
+
+            <!-- Alternar Modo Vista (Enriquecida vs Bloc de Notas Raw) -->
+            <button class="btn btn-outline-info text-info btn-action py-0 px-2 fw-semibold" style="height: 28px; font-size: 11px;" onclick="alternarModoVistaDoc()" title="Alternar entre Vista Técnica Enriquecida y Vista Bloc de Notas (TXT Raw)">
+              <i class="bi bi-file-text"></i> <span class="d-none d-md-inline">Modo TXT</span>
+            </button>
+
+            <!-- Botón Descargar .TXT Original -->
+            <button class="btn btn-outline-success text-success btn-action py-0 px-2 fw-bold" style="height: 28px; font-size: 11px;" onclick="descargarArchivoTxt()" title="Descargar Bloc de Notas Original (.TXT)">
+              <i class="bi bi-download"></i> <span class="d-none d-md-inline">.TXT</span>
+            </button>
 
             <!-- Buscador rápido en el documento -->
             <div class="d-none d-md-flex align-items-center bg-dark border border-secondary rounded px-1" style="height: 28px;">
               <i class="bi bi-search text-secondary small me-1"></i>
-              <input type="text" id="input-buscar-doc" placeholder="Buscar concepto..." class="bg-transparent text-light border-0 small p-0" style="font-size: 11px; width: 110px; outline: none;" onkeyup="filtrarContenidoDoc(this.value)">
+              <input type="text" id="input-buscar-doc" placeholder="Buscar..." class="bg-transparent text-light border-0 small p-0" style="font-size: 11px; width: 95px; outline: none;" onkeyup="filtrarContenidoDoc(this.value)">
             </div>
 
             <!-- Zoom toolbar -->
@@ -410,8 +420,8 @@ print("\n💾 Archivo 'Reporte_Titanic_Descargado.csv' listo para descargar.")
             </div>
 
             <!-- Botón Descargar PDF Oficial -->
-            <button id="btn-descargar-pdf-doc" class="btn btn-warning text-dark btn-action fw-bold px-2 py-0" style="height: 28px; font-size: 11.5px;" onclick="descargarDocumentoPDF()" title="Descargar libro o taller en PDF editorial limpio">
-              <i class="bi bi-file-earmark-pdf-fill"></i> <span class="d-none d-md-inline">Descargar PDF</span>
+            <button id="btn-descargar-pdf-doc" class="btn btn-warning text-dark btn-action fw-bold px-2 py-0" style="height: 28px; font-size: 11px;" onclick="descargarDocumentoPDF()" title="Descargar libro o taller en PDF editorial limpio">
+              <i class="bi bi-file-earmark-pdf-fill"></i> <span class="d-none d-md-inline">PDF</span>
             </button>
 
             <!-- Botón Imprimir Nativo -->
