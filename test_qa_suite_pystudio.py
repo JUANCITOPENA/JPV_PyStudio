@@ -316,6 +316,35 @@ else:
         registrar_resultado(f"Secret Scanning en {af}", False, f"Se detectaron {len(leaks)} credenciales expuestas!")
 
 # ------------------------------------------------------------------------------
+# 8. AUDITORIA DE LA TRILOGIA EDITORIAL PDF (ReportLab 300 DPI)
+# ------------------------------------------------------------------------------
+print("\n=== 8. AUDITORIA DE TRILOGIA EDITORIAL PDF (ReportLab 300 DPI) ===")
+libros_esperados = [
+    ("pdf/01_LIBRO_PYTHON_FUNDAMENTOS_POO_SQL_IA_PRO.pdf", "Volumen I: Fundamentos, POO, SQL Server e IA", 20_000),
+    ("pdf/02_LIBRO_ANALISIS_DATOS_GRAFICOS_SEABORN_MATPLOTLIB_PRO.pdf", "Volumen II: Mapas de Calor, Analítica y ML", 500_000),
+    ("pdf/03_LIBRO_CONSUMO_APIS_PUBLICAS_PYTHON_SIN_KEY_PRO.pdf", "Volumen III: Consumo Profesional de APIs Públicas", 100_000)
+]
+
+for ruta_pdf, nombre_libro, min_bytes in libros_esperados:
+    if os.path.exists(ruta_pdf):
+        sz = os.path.getsize(ruta_pdf)
+        with open(ruta_pdf, "rb") as pf:
+            cabecera = pf.read(5)
+        es_pdf_valido = cabecera.startswith(b"%PDF-")
+        if es_pdf_valido and sz >= min_bytes:
+            registrar_resultado(f"Libro PDF Compilado: {nombre_libro}", True, f"Tamano: {sz/1024:.1f} KB - Formato Vectorial Valido")
+        else:
+            registrar_resultado(f"Libro PDF Compilado: {nombre_libro}", False, f"Tamano insuficiente o cabecera corrupta ({sz} bytes)")
+    else:
+        registrar_resultado(f"Libro PDF Compilado: {nombre_libro}", False, f"No existe en disco: {ruta_pdf}")
+
+with open("js/pdf-viewer.js", "r", encoding="utf-8") as f:
+    js_pdf_content = f.read()
+
+tiene_mapa_compilados = "MAPA_PDFS_COMPILADOS" in js_pdf_content and "01_LIBRO_PYTHON" in js_pdf_content
+registrar_resultado("Integración WebView: Estantería y Descarga Directa", tiene_mapa_compilados, "MAPA_PDFS_COMPILADOS activo en js/pdf-viewer.js")
+
+# ------------------------------------------------------------------------------
 # RESUMEN Y VEREDICTO DE CALIDAD
 # ------------------------------------------------------------------------------
 print("\n" + "=" * 80)

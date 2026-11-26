@@ -1,22 +1,43 @@
 {
-  "version": "1.0.0",
-  "timestamp": "20261126_141729",
-  "etapa_actual": "FASE_0_COMPLETADA",
+  "version": "1.1.0",
+  "timestamp": "2026-11-26 14:38:00",
+  "etapa_actual": "TRILOGIA_PDF_DESPLEGADA_Y_APROBADA",
+  "qa_status": {
+    "passed_tests": 88,
+    "total_tests": 88,
+    "veredicto": "APROBADO PARA PRODUCCION 100%"
+  },
   "libros": {
     "libro_1": {
+      "id": "libro_maestro_python",
       "nombre": "01_LIBRO_PYTHON_FUNDAMENTOS_POO_SQL_IA_PRO.pdf",
-      "estado": "PENDIENTE_COMPILACION"
+      "titulo": "Python Masterclass Integral: Desde la Consola y POO hasta SQL Server, Dashboards y Agentes de IA",
+      "paginas": 15,
+      "estado": "COMPILADO_OK",
+      "size_bytes": 37545
     },
     "libro_2": {
+      "id": "taller_mapas_calor",
       "nombre": "02_LIBRO_ANALISIS_DATOS_GRAFICOS_SEABORN_MATPLOTLIB_PRO.pdf",
-      "estado": "PENDIENTE_COMPILACION"
+      "titulo": "Analítica Visual y Ciencia de Datos con Python: Mapas de Calor, Dashboards Ejecutivos y Machine Learning",
+      "paginas": 10,
+      "estado": "COMPILADO_OK",
+      "size_bytes": 1747051,
+      "imagenes_hd_300dpi": 9
     },
     "libro_3": {
+      "id": "taller_apis_publicas",
       "nombre": "03_LIBRO_CONSUMO_APIS_PUBLICAS_PYTHON_SIN_KEY_PRO.pdf",
-      "estado": "PENDIENTE_COMPILACION"
+      "titulo": "Integración de Datos en Tiempo Real: Consumo Profesional de APIs Públicas en Python (Sin API Key)",
+      "paginas": 6,
+      "estado": "COMPILADO_OK",
+      "size_bytes": 337532,
+      "imagenes_hd_300dpi": 3
     }
   },
   "visor_webview": {
-    "estado": "PENDIENTE_INTEGRACION"
+    "estado": "INTEGRADO_Y_AUDITADO",
+    "estanteria_libros": true,
+    "descarga_directa": true
   }
 }

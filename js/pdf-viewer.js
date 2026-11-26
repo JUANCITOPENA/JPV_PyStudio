@@ -4,19 +4,58 @@
 // Estándar Editorial DataIADev • Rúbrica República Dominicana
 // =====================================================================
 
+// =====================================================================
+// MAPA OFICIAL DE LA TRILOGÍA EDITORIAL COMPILADA EN PDF (REPORTLAB 300 DPI)
+// =====================================================================
+const MAPA_PDFS_COMPILADOS = {
+  libro_maestro_python: {
+    url: "pdf/01_LIBRO_PYTHON_FUNDAMENTOS_POO_SQL_IA_PRO.pdf",
+    nombre: "01_LIBRO_PYTHON_FUNDAMENTOS_POO_SQL_IA_PRO.pdf",
+    paginas: "15 páginas",
+    peso: "37 KB",
+    volumen: "Volumen 1 de 3",
+    tituloCorto: "Fundamentos, POO, SQL Server e IA"
+  },
+  libro_python_maestro: {
+    url: "pdf/01_LIBRO_PYTHON_FUNDAMENTOS_POO_SQL_IA_PRO.pdf",
+    nombre: "01_LIBRO_PYTHON_FUNDAMENTOS_POO_SQL_IA_PRO.pdf",
+    paginas: "15 páginas",
+    peso: "37 KB",
+    volumen: "Volumen 1 de 3",
+    tituloCorto: "Fundamentos, POO, SQL Server e IA"
+  },
+  taller_mapas_calor: {
+    url: "pdf/02_LIBRO_ANALISIS_DATOS_GRAFICOS_SEABORN_MATPLOTLIB_PRO.pdf",
+    nombre: "02_LIBRO_ANALISIS_DATOS_GRAFICOS_SEABORN_MATPLOTLIB_PRO.pdf",
+    paginas: "10 páginas",
+    peso: "1.7 MB",
+    volumen: "Volumen 2 de 3",
+    tituloCorto: "Analítica Visual, Seaborn, Matplotlib & ML"
+  },
+  taller_apis_publicas: {
+    url: "pdf/03_LIBRO_CONSUMO_APIS_PUBLICAS_PYTHON_SIN_KEY_PRO.pdf",
+    nombre: "03_LIBRO_CONSUMO_APIS_PUBLICAS_PYTHON_SIN_KEY_PRO.pdf",
+    paginas: "6 páginas",
+    peso: "330 KB",
+    volumen: "Volumen 3 de 3",
+    tituloCorto: "Consumo Profesional de APIs sin Key"
+  }
+};
+
 let docActivoId = "libro_maestro_python";
 let docZoomActual = 1.0;
 
 function cambiarDocumentoActivo(nuevoId) {
-  if (BIBLIOTECA_DOCUMENTOS[nuevoId]) {
-    docActivoId = nuevoId;
+  const normalizado = nuevoId === "libro_python_maestro" ? "libro_maestro_python" : nuevoId;
+  if (BIBLIOTECA_DOCUMENTOS[normalizado]) {
+    docActivoId = normalizado;
     renderizarDocumentoEnVisor();
     
     // Sincronizar selectores si existen en varios lugares
     const selTab = document.getElementById("select-doc-activo");
     const selModal = document.getElementById("select-doc-modal");
-    if (selTab && selTab.value !== nuevoId) selTab.value = nuevoId;
-    if (selModal && selModal.value !== nuevoId) selModal.value = nuevoId;
+    if (selTab && selTab.value !== normalizado) selTab.value = normalizado;
+    if (selModal && selModal.value !== normalizado) selModal.value = normalizado;
   }
 }
 
@@ -24,7 +63,86 @@ function generarHtmlDocumento(doc) {
   if (!doc) return "<div class='p-4 text-warning'>Documento no encontrado.</div>";
 
   const rubrica = RUBRICA_OFICIAL_JPV;
-  const modulosHtml = doc.modulos.map((m, idx) => {
+
+  // Estantería de la Trilogía de 3 Libros
+  const estanteriaHtml = `
+    <div class="estanteria-trilogia-container mb-4 p-3 bg-dark rounded border border-secondary shadow">
+      <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+        <div class="d-flex align-items-center gap-2">
+          <span class="fs-5">📚</span>
+          <h6 class="fw-bold text-white mb-0">Trilogía Editorial Oficial DataIADev (Libros PDF 300 DPI)</h6>
+        </div>
+        <span class="badge bg-warning text-dark fw-bold px-2 py-1">Estándar Universitario & Enterprise</span>
+      </div>
+
+      <div class="row g-2">
+        <!-- Tarjeta Libro 1 -->
+        <div class="col-12 col-lg-4">
+          <div class="p-2 rounded border ${doc.id === 'libro_maestro_python' || doc.id === 'libro_python_maestro' ? 'border-info bg-black' : 'border-secondary bg-dark'}" 
+               style="cursor: pointer; transition: all 0.2s ease;" onclick="cambiarDocumentoActivo('libro_maestro_python')">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <span class="badge bg-primary" style="font-size: 10px;">VOLUMEN 1</span>
+              <span class="text-secondary small" style="font-size: 10.5px;">15 Páginas • 37 KB</span>
+            </div>
+            <div class="fw-bold text-light text-truncate" style="font-size: 12.5px;">Python Masterclass, POO, SQL & IA</div>
+            <div class="small text-secondary mb-2" style="font-size: 11px;">Desde consola hasta SQL Server, Streamlit y Agentes.</div>
+            <div class="d-flex gap-1">
+              <button class="btn btn-sm btn-outline-info py-0 px-2 fw-semibold" style="font-size: 11px;" onclick="event.stopPropagation(); cambiarDocumentoActivo('libro_maestro_python')">
+                <i class="bi bi-eye"></i> Leer
+              </button>
+              <button class="btn btn-sm btn-warning text-dark py-0 px-2 fw-bold" style="font-size: 11px;" onclick="event.stopPropagation(); descargarDocumentoPDF('libro_maestro_python')">
+                <i class="bi bi-download"></i> Descargar PDF
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tarjeta Libro 2 -->
+        <div class="col-12 col-lg-4">
+          <div class="p-2 rounded border ${doc.id === 'taller_mapas_calor' ? 'border-info bg-black' : 'border-secondary bg-dark'}" 
+               style="cursor: pointer; transition: all 0.2s ease;" onclick="cambiarDocumentoActivo('taller_mapas_calor')">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <span class="badge bg-success" style="font-size: 10px;">VOLUMEN 2</span>
+              <span class="text-secondary small" style="font-size: 10.5px;">10 Páginas • 1.7 MB</span>
+            </div>
+            <div class="fw-bold text-light text-truncate" style="font-size: 12.5px;">Analítica Visual, Seaborn & ML</div>
+            <div class="small text-secondary mb-2" style="font-size: 11px;">8 Retos de Heatmaps, Dashboards y K-Means.</div>
+            <div class="d-flex gap-1">
+              <button class="btn btn-sm btn-outline-info py-0 px-2 fw-semibold" style="font-size: 11px;" onclick="event.stopPropagation(); cambiarDocumentoActivo('taller_mapas_calor')">
+                <i class="bi bi-eye"></i> Leer
+              </button>
+              <button class="btn btn-sm btn-warning text-dark py-0 px-2 fw-bold" style="font-size: 11px;" onclick="event.stopPropagation(); descargarDocumentoPDF('taller_mapas_calor')">
+                <i class="bi bi-download"></i> Descargar PDF
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tarjeta Libro 3 -->
+        <div class="col-12 col-lg-4">
+          <div class="p-2 rounded border ${doc.id === 'taller_apis_publicas' ? 'border-info bg-black' : 'border-secondary bg-dark'}" 
+               style="cursor: pointer; transition: all 0.2s ease;" onclick="cambiarDocumentoActivo('taller_apis_publicas')">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <span class="badge bg-warning text-dark fw-bold" style="font-size: 10px;">VOLUMEN 3</span>
+              <span class="text-secondary small" style="font-size: 10.5px;">6 Páginas • 330 KB</span>
+            </div>
+            <div class="fw-bold text-light text-truncate" style="font-size: 12.5px;">Consumo de APIs Públicas sin Key</div>
+            <div class="small text-secondary mb-2" style="font-size: 11px;">Feeds en vivo, Cripto, Clima y Pósters en RAM.</div>
+            <div class="d-flex gap-1">
+              <button class="btn btn-sm btn-outline-info py-0 px-2 fw-semibold" style="font-size: 11px;" onclick="event.stopPropagation(); cambiarDocumentoActivo('taller_apis_publicas')">
+                <i class="bi bi-eye"></i> Leer
+              </button>
+              <button class="btn btn-sm btn-warning text-dark py-0 px-2 fw-bold" style="font-size: 11px;" onclick="event.stopPropagation(); descargarDocumentoPDF('taller_apis_publicas')">
+                <i class="bi bi-download"></i> Descargar PDF
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  const modulosHtml = (doc.modulos || []).map((m, idx) => {
     return `
       <section class="doc-modulo-section mb-5" id="modulo-${m.id}">
         <div class="doc-modulo-header d-flex align-items-center gap-3 pb-2 mb-3 border-bottom border-secondary">
@@ -80,6 +198,9 @@ function generarHtmlDocumento(doc) {
   return `
     <article class="doc-articulo-editorial" style="transform-origin: top center; transform: scale(${docZoomActual});">
       
+      <!-- ESTANTERÍA VISUAL DE LOS 3 LIBROS -->
+      ${estanteriaHtml}
+
       <!-- PORTADA EDITORIAL CEREMONIAL (ESTÁNDAR INTERNACIONAL JPV) -->
       <div class="doc-portada-ceremonial text-center p-4 p-md-5 mb-5 rounded border border-2 border-info shadow-lg">
         <div class="d-flex align-items-center justify-content-between mb-3">
@@ -118,13 +239,20 @@ function generarHtmlDocumento(doc) {
           <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 pt-2 border-top border-secondary small text-secondary" style="font-size: 11px;">
             <span>📧 Correo: <a href="mailto:${rubrica.contacto.correo}" class="text-info text-decoration-none">${rubrica.contacto.correo}</a></span>
             <span>📺 Canal Educativo: <a href="${rubrica.contacto.canal}" target="_blank" class="text-warning text-decoration-none">@JuancitoDevV</a></span>
+            <span>🐙 GitHub: <a href="${rubrica.contacto.github}" target="_blank" class="text-info text-decoration-none">JUANCITOPENA</a></span>
           </div>
         </div>
 
-        <div class="mt-4 text-center">
-          <span class="badge bg-black border border-secondary text-secondary px-3 py-2 small">
-            📌 ${rubrica.notaEditorial}
-          </span>
+        <!-- Nota Editorial Oficial -->
+        <div class="mt-4 p-2 rounded bg-dark border border-secondary text-warning small font-monospace" style="max-width: 750px; margin: 0 auto;">
+          <i class="bi bi-shield-check"></i> <strong>Sello Editorial:</strong> "Extractos del libro oficial: «Lo que nadie te enseña de Python y su ecosistema»"
+        </div>
+
+        <!-- Botón de Descarga Directa del PDF Real -->
+        <div class="mt-4">
+          <button class="btn btn-warning text-dark fw-bold px-4 py-2 shadow" onclick="descargarDocumentoPDF('${doc.id}')">
+            <i class="bi bi-file-earmark-pdf-fill fs-5"></i> Descargar Libro Oficial en PDF (Formato Carta 300 DPI)
+          </button>
         </div>
       </div>
 
@@ -315,53 +443,35 @@ function filtrarContenidoDoc(query) {
   });
 }
 
-// Descarga en PDF mediante html2pdf o impresión nativa
+// Descarga directa del PDF real compilado en ReportLab (300 DPI)
 function descargarDocumentoPDF(idOpcional) {
   const docId = idOpcional || docActivoId;
-  const doc = BIBLIOTECA_DOCUMENTOS[docId];
-  if (!doc) return;
+  const normalizado = docId === "libro_python_maestro" ? "libro_maestro_python" : docId;
+  const infoPdf = MAPA_PDFS_COMPILADOS[normalizado];
 
-  const elemento = document.getElementById("documento-viewer-content") || document.getElementById("modal-documento-content");
-  if (!elemento) return;
+  if (infoPdf) {
+    const a = document.createElement("a");
+    a.href = infoPdf.url;
+    a.download = infoPdf.nombre;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
 
-  const btnDescarga = document.getElementById("btn-descargar-pdf-doc") || document.getElementById("btn-descargar-pdf-tab");
-  if (btnDescarga) {
-    btnDescarga.disabled = true;
-    btnDescarga.innerHTML = `<span class="spinner-border spinner-border-sm"></span> Generando PDF...`;
-  }
-
-  // Opciones editoriales para html2pdf
-  if (typeof html2pdf !== "undefined") {
-    const opt = {
-      margin: [10, 10, 10, 10],
-      filename: `${docId}_DataIADev_JuancitoPena.pdf`,
-      image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2, useCORS: true, logging: false },
-      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-      pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
-    };
-
-    html2pdf().set(opt).from(elemento).save().then(() => {
-      if (btnDescarga) {
-        btnDescarga.disabled = false;
-        btnDescarga.innerHTML = `<i class="bi bi-download"></i> Descargar PDF`;
-      }
-    }).catch(err => {
-      console.warn("Fallo html2pdf, conmutando a impresion nativa:", err);
-      if (btnDescarga) {
-        btnDescarga.disabled = false;
-        btnDescarga.innerHTML = `<i class="bi bi-download"></i> Descargar PDF`;
-      }
-      imprimirDocumentoNativo();
-    });
-  } else {
-    // Si no está disponible html2pdf, usar ventana de impresión nativa
-    imprimirDocumentoNativo();
+    const btnDescarga = document.getElementById("btn-descargar-pdf-doc") || document.getElementById("btn-descargar-pdf-tab");
     if (btnDescarga) {
-      btnDescarga.disabled = false;
-      btnDescarga.innerHTML = `<i class="bi bi-download"></i> Descargar PDF`;
+      const origText = btnDescarga.innerHTML;
+      btnDescarga.innerHTML = `<i class="bi bi-check2-circle"></i> ¡Descargando ${infoPdf.nombre}!`;
+      setTimeout(() => { btnDescarga.innerHTML = origText; }, 3000);
     }
+
+    if (typeof notificarUsuario === "function") {
+      notificarUsuario(`📥 Descargando ${infoPdf.nombre} (${infoPdf.paginas} • ${infoPdf.peso})`);
+    }
+    return;
   }
+
+  // Fallback a impresión nativa si no estuviera en el mapa
+  window.print();
 }
 
 function imprimirDocumentoNativo() {
